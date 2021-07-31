@@ -1,19 +1,30 @@
 <template>
-  <div id="nav">
-    <div class="text-red-500 text-4xl">Hello</div>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
   <router-view />
 </template>
 
-<style>
+<script lang="ts">
+import { defineComponent } from 'vue'
+export default defineComponent({
+  name: 'App'
+})
+</script>
+
+<style lang="postcss">
+html,
+body,
+#app {
+  @apply h-full w-full overflow-hidden;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: #20232b;
+}
+
+body {
+  @apply bg-gray-800;
 }
 
 #nav {
@@ -27,5 +38,9 @@
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+
+.sz-btn {
+  padding: 2px 10px !important;
 }
 </style>

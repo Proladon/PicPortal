@@ -1239,6 +1239,13 @@
   resolved "https://registry.nlark.com/@types/source-list-map/download/@types/source-list-map-0.1.2.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40types%2Fsource-list-map%2Fdownload%2F%40types%2Fsource-list-map-0.1.2.tgz#0078836063ffaf17412349bba364087e0ac02ec9"
   integrity sha1-AHiDYGP/rxdBI0m7o2QIfgrALsk=
 
+"@types/splitpanes@^2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@types/splitpanes/-/splitpanes-2.2.1.tgz#7ff67e639b16eecfc3ad403269dff320cf96e866"
+  integrity sha512-H5BgO6UdJRzz5ddRzuGvLBiPSPEuuHXb5ET+7avLLrEx1uc7f5Ut5oLMDQsfvGtHBBAFczt1QNYuDf27wHbvDQ==
+  dependencies:
+    vue "^2.0.0"
+
 "@types/tapable@^1":
   version "1.0.8"
   resolved "https://registry.nlark.com/@types/tapable/download/@types/tapable-1.0.8.tgz#b94a4391c85666c7b73299fd3ad79d4faa435310"
@@ -8930,6 +8937,13 @@ shell-quote@^1.6.1:
   resolved "https://registry.nlark.com/shell-quote/download/shell-quote-1.7.2.tgz#67a7d02c76c9da24f99d20808fcaded0e0e04be2"
   integrity sha1-Z6fQLHbJ2iT5nSCAj8re0ODgS+I=
 
+shelter-zone-ui@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/shelter-zone-ui/-/shelter-zone-ui-0.1.5.tgz#e11d4a68d6ad11de6a13fe6936a1cc97ccff2799"
+  integrity sha512-ZEs399W5U+D8l2mLp7XeMdjyzzkFJBskaBEUJ7BNTlAAe+pWGyYlIAj2rxNs8MPAm6o9OF+Zq7EylUtUOcqy1w==
+  dependencies:
+    vue "^3.0.5"
+
 side-channel@^1.0.4:
   version "1.0.4"
   resolved "https://registry.npm.taobao.org/side-channel/download/side-channel-1.0.4.tgz#efce5c8fdc104ee751b25c58d4290011fa5ea2cf"
@@ -9161,6 +9175,11 @@ split2@^3.0.0:
   integrity sha1-vyzyo32DgxLCSciSBv16F90SNl8=
   dependencies:
     readable-stream "^3.0.0"
+
+splitpanes@^3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/splitpanes/-/splitpanes-3.0.6.tgz#45636c36972d3391f837073807726a2dcc49af15"
+  integrity sha512-Ogxc+e2te4Tp5IpMwjOPO1ZvXUf2PsuEoyZhF9H5Hp6XOB0mLg/OnEZFaK2MxT7Q3O+WSEKE7CeOoTC+4zsQ6A==
 
 sprintf-js@^1.1.2:
   version "1.1.2"
@@ -10228,7 +10247,12 @@ vue-template-es2015-compiler@^1.9.0:
   resolved "https://registry.nlark.com/vue-template-es2015-compiler/download/vue-template-es2015-compiler-1.9.1.tgz#1ee3bc9a16ecbf5118be334bb15f9c46f82f5825"
   integrity sha1-HuO8mhbsv1EYvjNLsV+cRvgvWCU=
 
-vue@^3.0.0:
+vue@^2.0.0:
+  version "2.6.14"
+  resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.14.tgz#e51aa5250250d569a3fbad3a8a5a687d6036e235"
+  integrity sha512-x2284lgYvjOMj3Za7kqzRcUSxBboHqtgRE2zlos1qWaOye5yUmHn42LB1250NJBLRwEcdrB0JRwyPTEPhfQjiQ==
+
+vue@^3.0.0, vue@^3.0.5:
   version "3.1.5"
   resolved "https://registry.nlark.com/vue/download/vue-3.1.5.tgz#12879b11d0685ee4478c8869551799630a52f9fe"
   integrity sha1-EoebEdBoXuRHjIhpVReZYwpS+f4=
