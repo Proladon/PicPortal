@@ -6,10 +6,13 @@ import "windi.css"
 import SZUI from 'shelter-zone-ui'
 import 'shelter-zone-ui/dist/style.css'
 import 'splitpanes/dist/splitpanes.css'
+import VueTablerIcons from "vue-tabler-icons"
+
 
 
 createApp(App)
-  .use(store)
-  .use(router)
-  .use(SZUI)
-  .mount("#app")
+.use(store)
+.use(router)
+.use(SZUI)
+.use(VueTablerIcons)
+.mount("#app")
