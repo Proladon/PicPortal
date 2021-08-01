@@ -14,9 +14,11 @@
   "main": "background.js",
   "dependencies": {
     "core-js": "^3.6.5",
+    "electron-store": "^8.0.0",
     "shelter-zone-ui": "^0.1.5",
     "splitpanes": "^3.0.6",
     "vue": "^3.0.0",
+    "vue-i18n": "^9.1.7",
     "vue-router": "^4.0.0-0",
     "vue-tabler-icons": "^2.1.0",
     "vuex": "^4.0.0-0"

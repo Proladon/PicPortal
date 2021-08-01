@@ -2,7 +2,7 @@ import { createStore } from 'vuex'
 
 export default createStore({
   state: {
-    tagPane: 'left'
+    tagPane: 'left',
   },
   mutations: {
     EXCHANGE_TAG_PANE_SIDE: (state) => {
