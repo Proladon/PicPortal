@@ -3,9 +3,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, onMounted } from 'vue'
 export default defineComponent({
-  name: 'App'
+  name: 'App',
+  setup() {
+    onMounted(() => {
+      console.log('App.vue - window.ipcRenderer:', window)
+    })
+  }
 })
 </script>
 

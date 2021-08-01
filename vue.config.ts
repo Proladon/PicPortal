@@ -1,7 +1,8 @@
+import path from 'path'
 module.exports = {
   pluginOptions: {
     electronBuilder: {
-      nodeIntegration: true
+      preload: path.join(__dirname, 'preload.ts')
     }
   }
 }
