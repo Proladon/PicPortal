@@ -4,17 +4,21 @@ import ElectronStore from './store'
 const ipc = ipcMain
 
 export const ipcHandlers = () => {
-  console.log(ipc)
   
-  ipc.handle('Store-Get', (e, key: string): any | null => {
-    return ElectronStore.get(key) || null
+  ipc.handle('Store-Get', (e, key: string) => {
+    const res: any = ElectronStore.get(key) || null
+    return res
   })
   
-  ipc.handle('Store-Set', (e, key: string, data: any): void => {
+  ipc.handle('Store-Set', (e, key: string, data: any) => {
     ElectronStore.set(key, data)
   })
+
+  ipc.handle('Store-Remove', (e, key: string) => {
+    ElectronStore.delete(key)
+  })
   
-  ipc.handle('Store-Clear', (): void => {
+  ipc.handle('Store-Clear', () => {
     ElectronStore.clear() 
   })
 }
