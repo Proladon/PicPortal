@@ -1,6 +1,8 @@
-const { Application } = require('spectron')
-const { strict: assert } = require('assert')
-
+import { Application } from 'spectron'
+// const { Application } = require('spectron')
+import { strict } from 'assert'
+// const { strict: assert } = require('assert')
+const assert = strict
 const app = new Application({
   path: require('electron'),
   requireName: 'electronRequire',

@@ -1,4 +1,4 @@
-import { Module } from "vuex";
+import { Module } from "vuex"
 
 const app: Module<any, any> = {
   state: {
