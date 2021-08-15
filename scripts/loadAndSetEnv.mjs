@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-const {loadEnv} = require('vite')
+const { loadEnv } = require('vite')
 
 /**
  * Load variables from `.env.[mode]` files in cwd

@@ -1,24 +1,24 @@
-import { app, BrowserWindow } from "electron";
-import { join } from "path";
-import { URL } from "url";
+import { app, BrowserWindow } from "electron"
+import { join } from "path"
+import { URL } from "url"
 import ipcHandler from '../../preload/src/main'
 
 
 ipcHandler()
-const isSingleInstance = app.requestSingleInstanceLock();
+const isSingleInstance = app.requestSingleInstanceLock()
 
 if (!isSingleInstance) {
-  app.quit();
-  process.exit(0);
+  app.quit()
+  process.exit(0)
 }
 
-app.disableHardwareAcceleration();
+app.disableHardwareAcceleration()
 
 /**
  * Workaround for TypeScript bug
  * @see https://github.com/microsoft/TypeScript/issues/41468#issuecomment-727543400
  */
-const env = import.meta.env;
+const env = import.meta.env
 
 // Install "Vue.js devtools"
 if (env.MODE === "development") {
@@ -32,10 +32,10 @@ if (env.MODE === "development") {
         },
       })
     )
-    .catch((e) => console.error("Failed install extension:", e));
+    .catch((e) => console.error("Failed install extension:", e))
 }
 
-let mainWindow: BrowserWindow | null = null;
+let mainWindow: BrowserWindow | null = null
 
 const createWindow = async () => {
   mainWindow = new BrowserWindow({
@@ -45,7 +45,7 @@ const createWindow = async () => {
       contextIsolation: env.MODE !== "test", // Spectron tests can't work with contextIsolation: true
       enableRemoteModule: env.MODE === "test", // Spectron tests can't work with enableRemoteModule: false
     },
-  });
+  })
 
   /**
    * If you install `show: true` then it can cause issues when trying to close the window.
@@ -54,12 +54,12 @@ const createWindow = async () => {
    * @see https://github.com/electron/electron/issues/25012
    */
   mainWindow.on("ready-to-show", () => {
-    mainWindow?.show();
+    mainWindow?.show()
 
     if (env.MODE === "development") {
       mainWindow?.webContents.openDevTools();
     }
-  });
+  })
 
   /**
    * URL for main window.
@@ -72,29 +72,29 @@ const createWindow = async () => {
       : new URL(
           "../renderer/dist/index.html",
           "file://" + __dirname
-        ).toString();
+        ).toString()
 
-  await mainWindow.loadURL(pageUrl);
-};
+  await mainWindow.loadURL(pageUrl)
+}
 
 app.on("second-instance", () => {
   // Someone tried to run a second instance, we should focus our window.
   if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
   }
-});
+})
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
-    app.quit();
+    app.quit()
   }
-});
+})
 
 app
   .whenReady()
   .then(createWindow)
-  .catch((e) => console.error("Failed create window:", e));
+  .catch((e) => console.error("Failed create window:", e))
 
 // Auto-updates
 if (env.PROD) {
@@ -102,5 +102,5 @@ if (env.PROD) {
     .whenReady()
     .then(() => import("electron-updater"))
     .then(({ autoUpdater }) => autoUpdater.checkForUpdatesAndNotify())
-    .catch((e) => console.error("Failed check updates:", e));
+    .catch((e) => console.error("Failed check updates:", e))
 }
