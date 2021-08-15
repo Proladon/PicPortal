@@ -5,12 +5,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, onMounted } from 'vue'
 import AppNavigation from '/@/components/AppNavigation.vue'
 export default defineComponent({
   name: 'App',
   components: {
     AppNavigation
+  },
+
+  setup() {
+    onMounted(async () => {
+      await window.electron.userStore.set('test', 'test')
+      console.log(await window.electron.userStore.get('test'))
+      await window.electron.userStore.clear()
+      console.log(await window.electron.userStore.get('test'))
+    })
   }
 })
 </script>
