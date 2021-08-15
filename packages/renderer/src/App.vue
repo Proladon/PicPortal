@@ -1,6 +1,4 @@
 <template>
-  <router-link to="/about">About</router-link>
-  {{ $route.fullPath }}
   <router-view />
 </template>
 
