@@ -1,25 +1,25 @@
-import Store from 'electron-store'
+import ElectronStore from 'electron-store'
 import { ipcMain } from 'electron'
 
 const ipc = ipcMain
-const ElectronStore = new Store()
+const Store = new ElectronStore()
 
 const userStore = () => {
   ipc.handle('Store-Get', (e, key: string) => {
-    const res: any = ElectronStore.get(key) || null
+    const res: any = Store.get(key) || null
     return res
   })
   
   ipc.handle('Store-Set', (e, key: string, data: any) => {
-    ElectronStore.set(key, data)
+    Store.set(key, data)
   })
 
   ipc.handle('Store-Remove', (e, key: string) => {
-    ElectronStore.delete(key)
+    Store.delete(key)
   })
   
   ipc.handle('Store-Clear', () => {
-    ElectronStore.clear() 
+    Store.clear() 
   })
 }
 
