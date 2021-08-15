@@ -4,8 +4,7 @@
 
     <section class="main-wrapper">
       <Navbar />
-
-      <router-view />
+      <router-view class="main-view" />
     </section>
 
     <StatusBar />
@@ -27,6 +26,10 @@ export default defineComponent({
   @apply w-full h-full flex flex-col;
 }
 .main-wrapper {
-  @apply flex flex-1;
+  @apply flex flex-1 overflow-hidden;
+}
+
+.main-view {
+  @apply overflow-y-auto;
 }
 </style>

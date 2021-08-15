@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Layout from '../layout/index.vue'
 
 const routes = [
@@ -9,7 +9,6 @@ const routes = [
     children: [
       {
         path: '/',
-        name: 'Home',
         component: () => import('../views/Home.vue')
       },
       {
@@ -23,5 +22,5 @@ const routes = [
 
 export default createRouter({
   routes,
-  history: createWebHistory()
+  history: createWebHashHistory()
 })
