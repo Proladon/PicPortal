@@ -1,5 +1,6 @@
 import { contextBridge } from "electron"
 import userStore from './render/modules/userStore'
+import browserDialog from './render/modules/browserDialog'
 
 const apiKey = "electron"
 /**
@@ -7,7 +8,8 @@ const apiKey = "electron"
  */
 const api: ElectronApi = {
   versions: process.versions,
-  userStore
+  userStore,
+  browserDialog,
 }
 
 if (import.meta.env.MODE !== "test") {

@@ -56,9 +56,10 @@
     "windicss": "^3.1.7"
   },
   "dependencies": {
-    "electron-updater": "^4.4.5",
     "electron-store": "^8.0.0",
+    "electron-updater": "^4.4.5",
     "vue": "^3.2.2",
-    "vue-router": "^4.0.11"
+    "vue-router": "^4.0.11",
+    "vuex": "^4.0.2"
   }
 }

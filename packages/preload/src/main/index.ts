@@ -1,7 +1,9 @@
 import userStore from './modules/userStore'
+import browserDialog from './modules/browserDialog'
 
 const ipcHandler = () => {
-  userStore()
+  userStore(),
+  browserDialog()
 }
 
 

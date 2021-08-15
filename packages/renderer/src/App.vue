@@ -1,36 +1,27 @@
 <template>
-  <img alt="Vue logo" src="../assets/logo.svg" width="300" />
-  <app-navigation />
   <router-view />
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue'
-import AppNavigation from '/@/components/AppNavigation.vue'
-export default defineComponent({
-  name: 'App',
-  components: {
-    AppNavigation
-  },
+import { defineComponent } from 'vue'
 
-  setup() {
-    onMounted(async () => {
-      await window.electron.userStore.set('test', 'test')
-      console.log(await window.electron.userStore.get('test'))
-      await window.electron.userStore.clear()
-      console.log(await window.electron.userStore.get('test'))
-    })
-  }
+export default defineComponent({
+  name: 'App'
 })
 </script>
 
 <style lang="postcss">
+html,
+body,
+#app {
+  @apply w-full h-full overflow-hidden;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
   @apply bg-gray-800 text-white;
 }
 </style>
