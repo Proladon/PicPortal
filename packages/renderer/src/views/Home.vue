@@ -1,22 +1,32 @@
 <template>
   <div class="home">
     Home
-    <div :class="theme">Hello World</div>
+    <div>Hello World</div>
     <br />
-    <input class="text-gray-800" type="text" v-model="color" />
+    {{ pngs }}
+    <img v-for="img in pngs" :src="`local-resource://${img}`" :key="img" />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref, watch } from 'vue'
+import { useStore } from 'vuex'
+import { useElectron } from '../use/electron'
 export default defineComponent({
   name: 'Home',
   setup() {
-    const color = ref('#FFFFFF')
-    const theme = computed(() => {
-      return `bg-[${color.value}]`
+    const { fastGlob } = useElectron()
+    const store = useStore()
+    const mainFolder = computed(() => store.getters.mainFolder)
+    const pngs = ref<string[]>([])
+
+    watch(mainFolder, async () => {
+      console.log(mainFolder.value.path + '/**/*.png')
+      const res = await fastGlob.glob(mainFolder.value.path + '/**/*.png')
+      console.log(res)
+      pngs.value = res.splice(0, 6)
     })
-    return { theme, color }
+    return { pngs, mainFolder }
   }
 })
 </script>

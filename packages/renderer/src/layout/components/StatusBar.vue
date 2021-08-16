@@ -14,14 +14,14 @@ import { useElectron } from '/@/use/electron'
 export default defineComponent({
   name: 'StatusBar',
   setup() {
-    const electron = useElectron()
+    const { browserDialog } = useElectron()
     const store = useStore()
     const mainFolder = computed(() => store.getters.mainFolder)
 
     // Methods
     const choseMainFolder = async () => {
       try {
-        const res = await electron.browserDialog.open({
+        const res = await browserDialog.open({
           properties: ['openDirectory']
         })
 
