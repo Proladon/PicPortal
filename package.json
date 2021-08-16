@@ -58,6 +58,8 @@
   "dependencies": {
     "electron-store": "^8.0.0",
     "electron-updater": "^4.4.5",
+    "fast-glob": "^3.2.7",
+    "fs-extra": "^10.0.0",
     "vue": "^3.2.2",
     "vue-router": "^4.0.11",
     "vuex": "^4.0.2"

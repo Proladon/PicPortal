@@ -20,7 +20,7 @@ const app: Module<any, any> = {
   getters: {
     mainFolder: (state) => {
       return state.mainFolder
-    }
+    },
   }
 }
 

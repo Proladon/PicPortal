@@ -29,7 +29,7 @@ export default defineComponent({
           const chunk = res.filePaths[0].split('\\')
           const folder = {
             name: chunk[chunk.length - 1],
-            path: res.filePaths[0]
+            path: res.filePaths[0].replaceAll('\\', '/')
           }
           console.log(folder)
           store.dispatch('MAIN_FOLDER', folder)
