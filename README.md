@@ -1,8 +1,9 @@
 # Picnel.io-3
 
+[中文 Readme](https://github.com/Proladon/Picnel.io-3/blob/master/README-TW.md)
 > ⚠️ ⚠️ ⚠️ WARNING: This project is fully in early development !
 
-This is [Picnel.io-2]() next version.
+This is [Picnel.io-2](https://github.com/Proladon/Picnel.io-2) next version.
 
 ---
 
