@@ -1,6 +1,8 @@
 <template>
   <div class="home">
-    <Viewer :data="pngs" />
+    <keep-alive>
+      <Viewer />
+    </keep-alive>
   </div>
 </template>
 
