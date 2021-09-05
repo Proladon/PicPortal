@@ -7,6 +7,11 @@ const browserDialog = () => {
     const res: any = dialog.showOpenDialog(options)
     return res
   })
+
+  ipc.handle('Dialog-Save', (e, options) => {
+    const res: any = dialog.showSaveDialog(options)
+    return res
+  })
 }
 
 export default browserDialog
