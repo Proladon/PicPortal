@@ -1,9 +1,10 @@
-import { contextBridge } from "electron"
+import { contextBridge } from 'electron'
 import userStore from './render/modules/userStore'
 import browserDialog from './render/modules/browserDialog'
 import fastGlob from './render/modules/fastGlob'
+import fileSystem from './render/modules/fileSystem'
 
-const apiKey = "electron"
+const apiKey = 'electron'
 /**
  * @see https://github.com/electron/electron/issues/21437#issuecomment-573522360
  */
@@ -12,24 +13,24 @@ const api: ElectronApi = {
   userStore,
   browserDialog,
   fastGlob,
+  fileSystem,
 }
 
-if (import.meta.env.MODE !== "test") {
+if (import.meta.env.MODE !== 'test') {
   contextBridge.exposeInMainWorld(apiKey, api)
 } else {
-  
   const deepFreeze = (obj: any) => {
     // eslint-disable-line @typescript-eslint/no-explicit-any
-    if (typeof obj === "object" && obj !== null) {
+    if (typeof obj === 'object' && obj !== null) {
       Object.keys(obj).forEach((prop) => {
         const val = obj[prop]
         if (
-          (typeof val === "object" || typeof val === "function") &&
+          (typeof val === 'object' || typeof val === 'function') &&
           !Object.isFrozen(val)
         ) {
           deepFreeze(val)
         }
-      });
+      })
     }
 
     return Object.freeze(obj)
