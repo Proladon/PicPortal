@@ -2,7 +2,7 @@
 
 > ⚠️ ⚠️ ⚠️ 注意: 該專案目前正處於完全早期開發階段 !
 
-This is [Picnel.io-2]() next version.
+This is [Picnel.io-2](https://github.com/Proladon/Picnel.io-2) next version.
 
 ---
 
