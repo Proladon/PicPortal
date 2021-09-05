@@ -9,7 +9,7 @@ This is [Picnel.io-2](https://github.com/Proladon/Picnel.io-2) next version.
 
 ### Motivation
 
-Picnel.io-2 is my first electron app and was developed when I'm a beginner for Vue. Performance and Structure are quite terrible, and for long times used I aware some operation is not fast enough. For example like multiple select mode, it still can only tag one tag for the photo, if you want to change the tag of a specific photo, you need to deselect all of the selected photos.
+[Picnel.io-2](https://github.com/Proladon/Picnel.io-2) is my first electron app and was developed when I'm a beginner for Vue. Performance and Structure are quite terrible, and for long times used I aware some operation is not fast enough. For example like multiple select mode, it still can only tag one tag for the photo, if you want to change the tag of a specific photo, you need to deselect all of the selected photos.
 
 ---
 
