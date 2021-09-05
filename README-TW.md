@@ -1,20 +1,20 @@
 # Picnel.io-3
 
-> ⚠️ ⚠️ ⚠️ WARNING: This project is fully in early development !
+> ⚠️ ⚠️ ⚠️ 注意: 該專案目前正處於完全早期開發階段 !
 
 This is [Picnel.io-2]() next version.
 
 ---
 
-### Motivation
+### 開發動機
 
-Picnel.io-2 is my first electron app and was developed when I'm a beginner for Vue. Performance and Structure are quite terrible, and for long times used I aware some operation is not fast enough. For example like multiple select mode, it still can only tag one tag for the photo, if you want to change the tag of a specific photo, you need to deselect all of the selected photos.
+Picnel.io-2 是我第一個開發的 electron 應用，而且當時是我初學 Vue 的時候。效能結構都非常的糟，且長期使用下來，我自己也發現有些操作設計上不夠好，像是多選模式，雖然可以一次處理多張圖片，但是一次只能操作單一目的資料夾，假設已選 100 張圖片中，其中 20 張你突然想換目的資料夾，你只能全部取消選取並重新選取這 20 張。
 
 ---
 
 ## Features
 
-> ... wait for update
+> ... 待更新
 
 [vite]: https://github.com/vitejs/vite/
 [electron]: https://github.com/electron/electron
