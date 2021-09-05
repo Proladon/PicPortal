@@ -1,7 +1,7 @@
 <template>
   <div class="navbar">
-    <router-link to="/"> icon </router-link>
-    <router-link to="/about"> icon </router-link>
+    <router-link to="/"> Home </router-link>
+    <router-link to="/about"> About </router-link>
   </div>
 </template>
 

@@ -1,12 +1,17 @@
 <template>
-  <div class="home">Home</div>
+  <div class="home">
+    <keep-alive>
+      <Viewer />
+    </keep-alive>
+  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-export default defineComponent({
-  name: 'Home'
-})
+<script setup lang="ts">
+import Viewer from '/@/components/Viewer/index.vue'
 </script>
 
-<style scoped lang="postcss"></style>
+<style scoped lang="postcss">
+.home {
+  @apply w-full h-full;
+}
+</style>

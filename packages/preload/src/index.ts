@@ -1,6 +1,7 @@
 import { contextBridge } from "electron"
 import userStore from './render/modules/userStore'
 import browserDialog from './render/modules/browserDialog'
+import fastGlob from './render/modules/fastGlob'
 
 const apiKey = "electron"
 /**
@@ -10,6 +11,7 @@ const api: ElectronApi = {
   versions: process.versions,
   userStore,
   browserDialog,
+  fastGlob,
 }
 
 if (import.meta.env.MODE !== "test") {

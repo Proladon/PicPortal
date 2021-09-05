@@ -14,25 +14,25 @@ import { useElectron } from '/@/use/electron'
 export default defineComponent({
   name: 'StatusBar',
   setup() {
-    const electron = useElectron()
+    const { browserDialog } = useElectron()
     const store = useStore()
     const mainFolder = computed(() => store.getters.mainFolder)
 
     // Methods
     const choseMainFolder = async () => {
       try {
-        const res = await electron.browserDialog.open({
-          properties: ['openDirectory']
+        const res = await browserDialog.open({
+          properties: ['openDirectory'],
         })
 
         if (res.filePaths.length) {
           const chunk = res.filePaths[0].split('\\')
           const folder = {
             name: chunk[chunk.length - 1],
-            path: res.filePaths[0]
+            path: res.filePaths[0].replaceAll('\\', '/'),
           }
           console.log(folder)
-          store.dispatch('MAIN_FOLDER', folder)
+          store.commit('SET_MAIN_FOLDER', folder)
         }
       } catch (error) {
         console.log(error)
@@ -41,9 +41,9 @@ export default defineComponent({
 
     return {
       choseMainFolder,
-      mainFolder
+      mainFolder,
     }
-  }
+  },
 })
 </script>
 

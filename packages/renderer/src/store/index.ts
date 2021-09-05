@@ -1,5 +1,6 @@
-import {createStore } from 'vuex'
+import { createStore } from 'vuex'
 import app from './modules/app'
+import viewer from './modules/viewer'
 
 const store = createStore({
   state: {
@@ -11,12 +12,11 @@ const store = createStore({
       else if (state.tagPane === 'right') state.tagPane = 'left'
     },
   },
-  actions: {
-
-  },
+  actions: {},
   modules: {
     app,
-  }
+    viewer,
+  },
 })
 
 export default store

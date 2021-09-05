@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron"
+import { app, BrowserWindow, protocol } from "electron"
 import { join } from "path"
 import { URL } from "url"
 import ipcHandler from '../../preload/src/main'
@@ -91,6 +91,10 @@ app.on("window-all-closed", () => {
   }
 })
 
+app.on("ready", () => {
+  registerLocalResourceProtocol()
+})
+
 app
   .whenReady()
   .then(createWindow)
@@ -103,4 +107,19 @@ if (env.PROD) {
     .then(() => import("electron-updater"))
     .then(({ autoUpdater }) => autoUpdater.checkForUpdatesAndNotify())
     .catch((e) => console.error("Failed check updates:", e))
+}
+
+
+function registerLocalResourceProtocol() {
+  protocol.registerFileProtocol('local-resource', (request, callback) => {
+    const url = request.url.replace(/^local-resource:\/\//, '')
+    // Decode URL to prevent errors when loading filenames with UTF-8 chars or chars like "#"
+    const decodedUrl = decodeURI(url) // Needed in case URL contains spaces
+    try {
+      return callback(decodedUrl)
+    }
+    catch (error) {
+      console.error('ERROR: registerLocalResourceProtocol: Could not get file path:', error)
+    }
+  })
 }
