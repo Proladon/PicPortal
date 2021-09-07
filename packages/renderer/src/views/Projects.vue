@@ -1,61 +1,90 @@
 <template>
   <main class="projects">
-    <div>
-      <p v-for="(p, index) in projectsList" :key="index">{{ p }}</p>
+    <div class="project-list">
+      <div
+        class="project"
+        v-for="(p, index) in projectsList"
+        :key="index"
+        @click="openProject(p)"
+      >
+        <p>{{ p }}</p>
+      </div>
     </div>
-    <button @click="newProject">新增專案</button>
+    <button class="new-project-btn" @click="newProject">新增專案</button>
   </main>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref } from '@vue/runtime-core'
+import { saveProjectDialog } from '/@/utils/browserDialog'
 import { useElectron } from '../use/electron'
-const { browserDialog, fileSystem, userStore } = useElectron()
+const { fileSystem, userStore } = useElectron()
+import { findIndex } from 'lodash'
 
 const projectsList = ref([])
 
 // --- Methods ---
+// => 新增專案
 const newProject = async () => {
-  const res = await browserDialog.save({
-    title: '新增專案',
-    filters: [
-      {
-        name: 'Datebase',
-        extensions: ['db'],
-      },
-    ],
-  })
-  if (res.canceled) return
+  const save = await saveProjectDialog()
+  if (save.canceled) return
+  // TODO 覆蓋專案?
 
-  console.log(res)
-  const [, error] = await fileSystem.createFile(res.filePath)
+  const [, error] = await fileSystem.createFile(save.filePath)
   if (error) return console.log(error)
 
   const projects = await getProjects()
-  if (!projects) return await userStore.set('projects', [res.filePath])
-  projects.push(res.filePath)
+  if (!projects) return await userStore.set('projects', [save.filePath])
+  projects.push(save.filePath)
   await userStore.set('projects', projects)
-  projectsList.value = await getProjects()
+  await refreshProjects()
 }
 
-const openProject = () => {
+// => 開啟專案
+const openProject = async (projectPath: string) => {
   // TODO 開啟專案
-  // TODO 如果找不到檔案 刪除專案(清除位置)
+
+  // 檢查專案檔是否存在
+  const [res, error] = await fileSystem.checkExist(projectPath)
+  if (error) return console.log(error)
+  // TODO 找不到檔案 彈出提示刪除窗
+  if (!res) {
+    const projects = await userStore.get('projects')
+    const index = findIndex(projects, projectPath)
+    projects.splice(index, 1)
+    await userStore.set('projects', projects)
+    await refreshProjects()
+  }
 }
 
+// => 取得專案列表
 const getProjects = async () => {
   return await userStore.get('projects')
 }
 
+// => 重新整理專案列表
+const refreshProjects = async () => {
+  const projects = await getProjects()
+  if (!projects) await userStore.set('projects', [])
+  projectsList.value = projects
+}
+
 // --- Mounted ---
 onMounted(async () => {
-  // TODO 列出所有DB專案
-  const projects = await getProjects()
-  console.log(projects)
-  if (!projects) await userStore.set('projects', [])
-  console.log(await getProjects())
-  projectsList.value = projects
+  await refreshProjects()
 })
 </script>
 
-<style lang="postcss" scoped></style>
+<style lang="postcss" scoped>
+.project-list {
+  @apply flex p-10 gap-5;
+}
+.project {
+  @apply bg-gray-600 p-2 rounded-sm;
+  @apply cursor-pointer;
+}
+
+.new-project-btn {
+  @apply bg-teal-400 text-gray-800 px-5 py-2 rounded-sm;
+}
+</style>

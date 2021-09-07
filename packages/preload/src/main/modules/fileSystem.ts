@@ -12,6 +12,15 @@ const fileSystem = () => {
       return [null, error]
     }
   })
+
+  ipc.handle('Check-Exist', async (e, path) => {
+    try {
+      const res: any = await fs.pathExists(path)
+      return [res, null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
 }
 
 export default fileSystem
