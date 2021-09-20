@@ -1,14 +1,15 @@
 <template>
+  <div class="text-white">viewer</div>
   <div class="virtual-scroll-viewer" id="virtual-scroll-viewer">
     <div class="list-container" v-if="pngs.length">
-      <VirtualList :data="pngs" :itemSize="300" :poolBuffer="5">
+      <VirtualList :data="pngs" :itemSize="300" :poolBuffer="5" dataKey="path">
         <template v-slot="{ item, index }">
           <div class="item-container">
             <ImageItem
               @click="selectItem({ item, parent: index, child: childIndex })"
               v-for="(img, childIndex) in item.src"
               :key="childIndex"
-              :img="img"
+              :img="img.path"
             />
           </div>
         </template>
@@ -23,8 +24,8 @@ import { VirtualList } from 'vue3-virtual-list'
 import { computed, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
-import { chunk } from 'lodash'
-import { watch } from '@vue/runtime-core'
+import { chunk, map } from 'lodash'
+import { onMounted, watch } from '@vue/runtime-core'
 
 // --- Data ---
 const { fastGlob } = useElectron()
@@ -35,17 +36,27 @@ const selected = computed(() => store.state.viewer.selected)
 const pngs = ref<unknown>([])
 // --- Watch ---
 watch(mainFolder, async () => {
-  store.dispatch('GET_FOLDER_ALL_FILES')
-  const filesChunkList = chunk(folderFiles.value, 4)
+  await getAllFiles()
+})
+
+const getAllFiles = async () => {
+  await store.dispatch('GET_FOLDER_ALL_FILES')
+  const files = map(folderFiles.value, (path) => ({ path: path }))
+  console.log('files', files)
+  const filesChunkList = chunk(files, 4)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
   pngs.value = newData
-})
+}
 
 // --- Methods ---
 const selectItem = (data: unknown) => {
   console.log('in')
   store.commit('UPDATE_SELECTED', data)
 }
+
+onMounted(async () => {
+  await getAllFiles()
+})
 </script>
 
 <style lang="postcss" scoped>

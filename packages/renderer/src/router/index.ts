@@ -8,19 +8,24 @@ const routes = [
     component: Layout,
     children: [
       {
-        path: '/',
-        component: () => import('../views/Home.vue')
+        path: '/home',
+        component: () => import('../views/Home.vue'),
       },
       {
         path: '/about',
         name: 'About',
-        component: () => import('../views/About.vue')
+        component: () => import('../views/About.vue'),
       },
-    ]
-  }
+      {
+        path: '/projects',
+        name: 'Projects',
+        component: () => import('../views/Projects.vue'),
+      },
+    ],
+  },
 ]
 
 export default createRouter({
   routes,
-  history: createWebHashHistory()
+  history: createWebHashHistory(),
 })

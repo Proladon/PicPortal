@@ -4,7 +4,9 @@
 
     <section class="main-wrapper">
       <Navbar />
-      <router-view class="main-view" />
+      <keep-alive>
+        <router-view class="main-view" />
+      </keep-alive>
     </section>
 
     <StatusBar />
@@ -17,7 +19,7 @@ import Navbar from './components/NavBar.vue'
 import StatusBar from './components/StatusBar.vue'
 export default defineComponent({
   name: 'Layout',
-  components: { Navbar, StatusBar }
+  components: { Navbar, StatusBar },
 })
 </script>
 
