@@ -1,6 +1,7 @@
 <template>
   <main class="projects">
     <div class="project-list">
+      <p>15156353</p>
       <div
         class="project"
         v-for="(p, index) in projectsList"
@@ -18,9 +19,14 @@
 import { onMounted, ref } from '@vue/runtime-core'
 import { saveProjectDialog } from '/@/utils/browserDialog'
 import { useElectron } from '../use/electron'
-const { fileSystem, userStore } = useElectron()
+const { fileSystem, userStore, database } = useElectron()
 import { findIndex } from 'lodash'
+import { Low, JSONFile } from 'lowdb'
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 
+const store = useStore()
+const router = useRouter()
 const projectsList = ref([])
 
 // --- Methods ---
@@ -43,18 +49,22 @@ const newProject = async () => {
 // => 開啟專案
 const openProject = async (projectPath: string) => {
   // TODO 開啟專案
-
   // 檢查專案檔是否存在
-  const [res, error] = await fileSystem.checkExist(projectPath)
-  if (error) return console.log(error)
+  const [file, fileError] = await fileSystem.checkExist(projectPath)
+  if (fileError) return console.log(fileError)
   // TODO 找不到檔案 彈出提示刪除窗
-  if (!res) {
+  if (!file) {
     const projects = await userStore.get('projects')
     const index = findIndex(projects, projectPath)
     projects.splice(index, 1)
     await userStore.set('projects', projects)
     await refreshProjects()
   }
+
+  await store.dispatch('PROJECT_PATH', projectPath)
+  await store.dispatch('CONNECT_DB')
+  // if(saveError)
+  router.push('/home')
 }
 
 // => 取得專案列表

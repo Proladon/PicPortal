@@ -1,7 +1,10 @@
 <template>
   <footer class="status-bar">
+    <button class="open-project-btn" @click="$router.push('/projects')">
+      {{ mainFolder.name || 'Open Project' }}
+    </button>
     <button class="main-folder-btn" @click="choseMainFolder">
-      {{ mainFolder.name || 'Chose Folder' }}
+      {{ mainFolder.name || 'Choose Folder' }}
     </button>
   </footer>
 </template>

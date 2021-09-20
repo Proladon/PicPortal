@@ -4,6 +4,7 @@ interface ElectronApi {
   readonly browserDialog: Object<Function>
   readonly fastGlob: Object<Function>
   readonly fileSystem: Object<Function>
+  readonly database: Object<Function>
 }
 
 declare interface Window {
