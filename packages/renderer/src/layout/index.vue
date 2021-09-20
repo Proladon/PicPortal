@@ -1,26 +1,21 @@
 <template>
   <div class="layout">
-    <header class="text-teal-400">Picnel.io 3</header>
+    <!-- <header class="text-teal-400">Picnel.io 3</header> -->
+    <TitleBar />
 
     <section class="main-wrapper">
       <Navbar />
-      <keep-alive>
-        <router-view class="main-view" />
-      </keep-alive>
+      <router-view class="main-view" />
     </section>
 
     <StatusBar />
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup>
+import TitleBar from './components/TitleBar.vue'
 import Navbar from './components/NavBar.vue'
 import StatusBar from './components/StatusBar.vue'
-export default defineComponent({
-  name: 'Layout',
-  components: { Navbar, StatusBar },
-})
 </script>
 
 <style lang="postcss" scoped>

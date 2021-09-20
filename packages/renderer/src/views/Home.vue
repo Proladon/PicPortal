@@ -1,13 +1,21 @@
 <template>
   <div class="home">
-    <keep-alive>
-      <Viewer />
-    </keep-alive>
+    <splitpanes>
+      <pane>
+        <TreeView />
+      </pane>
+      <pane>
+        <Viewer />
+      </pane>
+    </splitpanes>
   </div>
 </template>
 
 <script setup lang="ts">
 import Viewer from '/@/components/Viewer/index.vue'
+import TreeView from '/@/components/TreeView/index.vue'
+import { Splitpanes, Pane } from 'splitpanes'
+import 'splitpanes/dist/splitpanes.css'
 </script>
 
 <style scoped lang="postcss">
