@@ -1,4 +1,5 @@
 <template>
+  <div class="text-white">viewer</div>
   <div class="virtual-scroll-viewer" id="virtual-scroll-viewer">
     <div class="list-container" v-if="pngs.length">
       <VirtualList :data="pngs" :itemSize="300" :poolBuffer="5" dataKey="path">
@@ -24,7 +25,7 @@ import { computed, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
 import { chunk, map } from 'lodash'
-import { watch } from '@vue/runtime-core'
+import { onMounted, watch } from '@vue/runtime-core'
 
 // --- Data ---
 const { fastGlob } = useElectron()
@@ -35,21 +36,27 @@ const selected = computed(() => store.state.viewer.selected)
 const pngs = ref<unknown>([])
 // --- Watch ---
 watch(mainFolder, async () => {
+  await getAllFiles()
+})
+
+const getAllFiles = async () => {
   await store.dispatch('GET_FOLDER_ALL_FILES')
   const files = map(folderFiles.value, (path) => ({ path: path }))
   console.log('files', files)
   const filesChunkList = chunk(files, 4)
-  console.log('chunk', filesChunkList)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
-  console.log('newData', newData)
   pngs.value = newData
-})
+}
 
 // --- Methods ---
 const selectItem = (data: unknown) => {
   console.log('in')
   store.commit('UPDATE_SELECTED', data)
 }
+
+onMounted(async () => {
+  await getAllFiles()
+})
 </script>
 
 <style lang="postcss" scoped>

@@ -56,7 +56,8 @@ export default defineComponent({
   @apply h-statusbar bg-gray-800;
 }
 
-.main-folder-btn {
+.main-folder-btn,
+.open-project-btn {
   @apply h-full px-5 outline-none;
   @apply text-border hover:bg-border hover:text-gray-800;
   transition: ease-in-out 0.3s;
