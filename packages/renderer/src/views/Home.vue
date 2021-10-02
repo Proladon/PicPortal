@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <splitpanes>
-      <pane>
+      <pane size="20">
         <TreeView />
       </pane>
       <pane>

@@ -1,27 +1,33 @@
 <template>
   <main class="projects">
     <div class="project-list">
-      <p @click="test">15156353</p>
-      <div
-        class="project"
-        v-for="(p, index) in projectsList"
+      <n-tooltip
+        trigger="hover"
+        v-for="(projectPath, index) in projectsList"
         :key="index"
-        @click="openProject(p)"
       >
-        <p>{{ p }}</p>
-      </div>
+        <template #trigger>
+          <div class="project" @click="openProject(projectPath)">
+            <p>{{ getProjectName(projectPath) }}</p>
+          </div>
+        </template>
+        <p>{{ projectPath }}</p>
+      </n-tooltip>
     </div>
-    <button class="new-project-btn" @click="newProject">新增專案</button>
+    <section class="btn-container">
+      <button class="new-project-btn" @click="newProject">新增專案</button>
+      <button class="new-project-btn" @click="importProject">開啟專案</button>
+    </section>
   </main>
 </template>
 
 <script lang="ts" setup>
+import { NTooltip } from 'naive-ui'
 import { onMounted, ref } from '@vue/runtime-core'
-import { saveProjectDialog } from '/@/utils/browserDialog'
+import { saveProjectDialog, importProjectDialog } from '/@/utils/browserDialog'
 import { useElectron } from '../use/electron'
-const { fileSystem, userStore, database } = useElectron()
-import { findIndex } from 'lodash'
-import { Low, JSONFile } from 'lowdb'
+const { fileSystem, userStore } = useElectron()
+import { findIndex, find } from 'lodash'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
@@ -30,13 +36,25 @@ const router = useRouter()
 const projectsList = ref([])
 
 // --- Methods ---
+const getProjectName = (projectPath: string) => {
+  const pathChunk = projectPath.split('\\')
+  const name = pathChunk[pathChunk.length - 1]
+  return name.split('.')[0]
+}
 
 // => 創建DB檔
 const createDB = async (filePath: string) => {
+  const pathChunk = filePath.split('\\')
+  const dbName = pathChunk[pathChunk.length - 1].split('.')[0]
+
   const [, createErr] = await fileSystem.createFile(filePath)
   if (createErr) return console.log(createErr)
 
-  const [, writeErr] = await fileSystem.writeJson(filePath, {})
+  const [, writeErr] = await fileSystem.writeJson(filePath, {
+    project: dbName,
+    mainFolder: '',
+    labels: [],
+  })
   if (writeErr) return console.log(writeErr)
 }
 
@@ -45,11 +63,7 @@ const newProject = async () => {
   const save = await saveProjectDialog()
   if (save.canceled) return
   // TODO 覆蓋專案?
-
-  // const [, error] = await fileSystem.createFile(save.filePath)
-  // if (error) return console.log(error)
   await createDB(save.filePath)
-
   const projects = await getProjects()
   if (!projects) return await userStore.set('projects', [save.filePath])
   projects.push(save.filePath)
@@ -73,11 +87,27 @@ const openProject = async (projectPath: string) => {
   }
 
   await store.dispatch('PROJECT_PATH', projectPath)
-  const [dbRes, dbError] = await store.dispatch('CONNECT_DB')
+  const [db, dbError] = await store.dispatch('CONNECT_DB')
   if (dbError) return alert(dbError)
-  console.log(dbRes)
+  console.log(db)
+  await store.dispatch('SYNC_DB', db)
 
   router.push('/home')
+}
+
+const importProject = async () => {
+  // await userStore.remove('projects')
+  const open = await importProjectDialog()
+  const canceled = open.canceled
+  const filePath = open.filePaths[0]
+
+  if (canceled) return
+  const projects = await getProjects()
+  const exist = find(projects, (project) => project === filePath)
+  if (exist) return
+  projects.push(filePath)
+  await userStore.set('projects', projects)
+  await refreshProjects()
 }
 
 // => 取得專案列表
@@ -99,11 +129,14 @@ onMounted(async () => {
 </script>
 
 <style lang="postcss" scoped>
+.projects {
+  @apply w-full h-full flex flex-col justify-between;
+}
 .project-list {
   @apply flex p-10 gap-5;
 }
 .project {
-  @apply bg-gray-600 p-2 rounded-sm;
+  @apply bg-gray-600 px-20 py-5 rounded-sm;
   @apply cursor-pointer;
 }
 

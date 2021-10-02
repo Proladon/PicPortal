@@ -1,7 +1,7 @@
 <template>
   <footer class="status-bar">
     <button class="open-project-btn" @click="$router.push('/projects')">
-      {{ mainFolder.name || 'Open Project' }}
+      {{ projectName || 'Open Project' }}
     </button>
     <button class="main-folder-btn" @click="choseMainFolder">
       {{ mainFolder.name || 'Choose Folder' }}
@@ -9,45 +9,38 @@
   </footer>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from 'vue'
+<script lang="ts" setup>
+import { computed } from 'vue'
 import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
 
-export default defineComponent({
-  name: 'StatusBar',
-  setup() {
-    const { browserDialog } = useElectron()
-    const store = useStore()
-    const mainFolder = computed(() => store.getters.mainFolder)
+const { browserDialog } = useElectron()
+const store = useStore()
 
-    // Methods
-    const choseMainFolder = async () => {
-      try {
-        const res = await browserDialog.open({
-          properties: ['openDirectory'],
-        })
+// --- Computed ---
+const mainFolder = computed(() => store.getters.mainFolder || {})
+const projectName = computed(() => store.getters.projectName || '')
 
-        if (res.filePaths.length) {
-          const chunk = res.filePaths[0].split('\\')
-          const folder = {
-            name: chunk[chunk.length - 1],
-            path: res.filePaths[0].replaceAll('\\', '/'),
-          }
-          console.log(folder)
-          store.dispatch('MAIN_FOLDER', folder)
-        }
-      } catch (error) {
-        console.log(error)
+// --- Methods---
+const choseMainFolder = async () => {
+  try {
+    const res = await browserDialog.open({
+      properties: ['openDirectory'],
+    })
+
+    if (res.filePaths.length) {
+      const chunk = res.filePaths[0].split('\\')
+      const folder = {
+        name: chunk[chunk.length - 1],
+        path: res.filePaths[0].replaceAll('\\', '/'),
       }
+      console.log(folder)
+      store.dispatch('MAIN_FOLDER', folder)
     }
-
-    return {
-      choseMainFolder,
-      mainFolder,
-    }
-  },
-})
+  } catch (error) {
+    console.log(error)
+  }
+}
 </script>
 
 <style lang="postcss" scoped>
