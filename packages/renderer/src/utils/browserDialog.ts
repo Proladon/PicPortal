@@ -12,3 +12,14 @@ export const saveProjectDialog = async () => {
     ],
   })
 }
+
+export const importProjectDialog = async () => {
+  return await browserDialog.open({
+    filters: [
+      {
+        name: 'Datebase',
+        extensions: ['db'],
+      },
+    ],
+  })
+}
