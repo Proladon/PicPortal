@@ -35,7 +35,7 @@ export default defineComponent({
             path: res.filePaths[0].replaceAll('\\', '/'),
           }
           console.log(folder)
-          store.commit('SET_MAIN_FOLDER', folder)
+          store.dispatch('MAIN_FOLDER', folder)
         }
       } catch (error) {
         console.log(error)

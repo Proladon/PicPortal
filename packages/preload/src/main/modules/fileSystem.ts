@@ -13,9 +13,18 @@ const fileSystem = () => {
     }
   })
 
-  ipc.handle('Check-Exist', async (e, path) => {
+  ipc.handle('Check-Exist', async (e, filePath) => {
     try {
-      const res: any = await fs.pathExists(path)
+      const res: any = await fs.pathExists(filePath)
+      return [res, null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
+  ipc.handle('Write-Json', async (e, filePath, data) => {
+    try {
+      const res: any = await fs.writeJson(filePath, data)
       return [res, null]
     } catch (error) {
       return [null, error]

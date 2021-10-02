@@ -1,28 +1,48 @@
 import { ipcMain } from 'electron'
-import { Low, JSONFile } from 'lowdb'
+import { Low, JSONFile, Memory } from 'lowdb'
 
 const ipc = ipcMain
+let db: Low = new Low(new Memory())
 
 const database = () => {
-  ipc.handle('Database-Connect', async (e, filePath: string) => {
+  ipc.handle('Database-Connect', async (e, dbPath: string) => {
     try {
-      const db: Low = new Low(new JSONFile(filePath))
+      console.log(dbPath)
+      db = new Low(new JSONFile(dbPath))
       await db.read()
-      return db
+      db.data ||= {}
+      return [db.data, null]
     } catch (error) {
-      return error
+      return [null, error]
     }
   })
 
-  ipc.handle('Database-Save', async (e, { db, key, data }) => {
+  ipc.handle('Database-Save', async (e, key, data) => {
     try {
-      const database: Low = new Low(new JSONFile(db))
-      database.data ||= {
-        mainFolder: '',
-      }
-      database.data[key] = data
-      await database.write()
-      return [true, null]
+      db.data[key] = data
+      await db.write()
+      return ['success', null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
+  ipc.handle('Database-Get', async (e, key: string) => {
+    try {
+      console.group('DB Get')
+      console.log(key)
+      console.log(db.data[key])
+      const res = db.data[key]
+      return [res, null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
+  ipc.handle('Database-Find', async (e, callback) => {
+    try {
+      const res = callback(db)
+      return [res, null]
     } catch (error) {
       return [null, error]
     }

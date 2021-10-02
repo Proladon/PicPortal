@@ -1,7 +1,7 @@
 <template>
   <main class="projects">
     <div class="project-list">
-      <p>15156353</p>
+      <p @click="test">15156353</p>
       <div
         class="project"
         v-for="(p, index) in projectsList"
@@ -30,14 +30,25 @@ const router = useRouter()
 const projectsList = ref([])
 
 // --- Methods ---
+
+// => 創建DB檔
+const createDB = async (filePath: string) => {
+  const [, createErr] = await fileSystem.createFile(filePath)
+  if (createErr) return console.log(createErr)
+
+  const [, writeErr] = await fileSystem.writeJson(filePath, {})
+  if (writeErr) return console.log(writeErr)
+}
+
 // => 新增專案
 const newProject = async () => {
   const save = await saveProjectDialog()
   if (save.canceled) return
   // TODO 覆蓋專案?
 
-  const [, error] = await fileSystem.createFile(save.filePath)
-  if (error) return console.log(error)
+  // const [, error] = await fileSystem.createFile(save.filePath)
+  // if (error) return console.log(error)
+  await createDB(save.filePath)
 
   const projects = await getProjects()
   if (!projects) return await userStore.set('projects', [save.filePath])
@@ -62,8 +73,10 @@ const openProject = async (projectPath: string) => {
   }
 
   await store.dispatch('PROJECT_PATH', projectPath)
-  await store.dispatch('CONNECT_DB')
-  // if(saveError)
+  const [dbRes, dbError] = await store.dispatch('CONNECT_DB')
+  if (dbError) return alert(dbError)
+  console.log(dbRes)
+
   router.push('/home')
 }
 

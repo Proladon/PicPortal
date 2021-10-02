@@ -20,12 +20,14 @@ const db: Module<any, any> = {
     CONNECT_DB: async ({ commit, state }) => {
       return await database.connect(state.projectPath)
     },
-    SAVE_TO_DB: async ({ commit, state }, { key, data }) => {
+    SAVE_TO_DB: async ({ commit }, { key, data }) => {
       return await database.save({
-        db: state.projectPath,
         key,
         data,
       })
+    },
+    DB_GET: async ({ commit }, key: string) => {
+      return await database.get(key)
     },
   },
 }
