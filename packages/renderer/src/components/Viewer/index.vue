@@ -1,7 +1,11 @@
 <template>
   <div class="text-white">viewer</div>
-  <div class="virtual-scroll-viewer" id="virtual-scroll-viewer">
-    <div class="list-container" v-if="pngs.length">
+  <div
+    v-if="pngs.length"
+    class="virtual-scroll-viewer"
+    id="virtual-scroll-viewer"
+  >
+    <div class="list-container">
       <VirtualList :data="pngs" :itemSize="300" :poolBuffer="5" dataKey="path">
         <template v-slot="{ item, index }">
           <div class="item-container">

@@ -1,0 +1,22 @@
+.splitpanes__splitter {
+  @apply relative bg-border;
+}
+.splitpanes__splitter:before {
+  @apply absolute left-0 top-0 opacity-0 bg-border bg-opacity-5;
+  content: '';
+  transition: opacity 0.4s;
+  z-index: 1;
+}
+.splitpanes__splitter:hover:before {
+  opacity: 1;
+}
+.splitpanes--vertical > .splitpanes__splitter:before {
+  left: -10px;
+  right: -10px;
+  height: 100%;
+}
+.splitpanes--horizontal > .splitpanes__splitter:before {
+  top: -10px;
+  bottom: -10px;
+  width: 100%;
+}
