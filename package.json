@@ -50,7 +50,8 @@
     "vite": "^2.5.1",
     "vite-plugin-windicss": "^1.2.7",
     "vue-tsc": "^0.2.2",
-    "windicss": "^3.1.7"
+    "windicss": "^3.1.7",
+    "@vicons/ionicons5": "^0.11.0"
   },
   "dependencies": {
     "better-sqlite3": "^7.4.3",
@@ -58,7 +59,7 @@
     "electron-updater": "^4.4.5",
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "lowdb": "^2.1.0",
     "splitpanes": "^3.0.6",
     "vue": "^3.2.2",

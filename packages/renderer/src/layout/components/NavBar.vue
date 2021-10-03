@@ -1,15 +1,32 @@
 <template>
   <div class="navbar">
-    <router-link to="/home"> Home </router-link>
-    <router-link to="/about"> About </router-link>
+    <n-popover trigger="hover" placement="right">
+      <template #trigger>
+        <router-link to="/home" class="nav-btn">
+          <n-icon class="w-full h-full">
+            <AppsSharp class="!w-full !h-full" />
+          </n-icon>
+        </router-link>
+      </template>
+      Viewer
+    </n-popover>
+
+    <n-popover trigger="hover" placement="right">
+      <template #trigger>
+        <router-link to="/about" class="nav-btn">
+          <n-icon class="w-full h-full">
+            <InformationCircle class="!w-full !h-full" />
+          </n-icon>
+        </router-link>
+      </template>
+      About
+    </n-popover>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-export default defineComponent({
-  name: 'Navbar',
-})
+<script lang="ts" setup>
+import { Albums, AppsSharp, InformationCircle } from '@vicons/ionicons5'
+import { NIcon, NPopover } from 'naive-ui'
 </script>
 
 <style lang="postcss" scoped>
@@ -19,6 +36,6 @@ export default defineComponent({
   @apply bg-gray-600;
 }
 .nav-btn {
-  @apply text-gray-300 my-2 w-full;
+  @apply hover:bg-border px-2;
 }
 </style>

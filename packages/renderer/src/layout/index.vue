@@ -1,6 +1,5 @@
 <template>
   <div class="layout">
-    <!-- <header class="text-teal-400">Picnel.io 3</header> -->
     <TitleBar />
 
     <section class="main-wrapper">

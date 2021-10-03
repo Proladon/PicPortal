@@ -1,15 +1,38 @@
 <template>
   <footer class="status-bar">
-    <button class="open-project-btn" @click="$router.push('/projects')">
-      {{ projectName || 'Open Project' }}
-    </button>
-    <button class="main-folder-btn" @click="choseMainFolder">
-      {{ mainFolder.name || 'Choose Folder' }}
-    </button>
+    <n-popover trigger="hover">
+      <template #trigger>
+        <button class="btn open-project-btn" @click="$router.push('/projects')">
+          <n-icon>
+            <cube />
+          </n-icon>
+          <span>{{ projectName || 'Open Project' }}</span>
+        </button>
+      </template>
+      Project
+    </n-popover>
+
+    <n-popover trigger="hover">
+      <template #trigger>
+        <button
+          v-if="projectName"
+          class="btn main-folder-btn"
+          @click="choseMainFolder"
+        >
+          <n-icon>
+            <folder />
+          </n-icon>
+          <span>{{ mainFolder.name || 'Choose Folder' }}</span>
+        </button>
+      </template>
+      Main Folder
+    </n-popover>
   </footer>
 </template>
 
 <script lang="ts" setup>
+import { NIcon, NPopover } from 'naive-ui'
+import { Folder, Cube } from '@vicons/ionicons5'
 import { computed } from 'vue'
 import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
@@ -54,5 +77,9 @@ const choseMainFolder = async () => {
   @apply h-full px-5 outline-none;
   @apply text-border hover:bg-border hover:text-gray-800;
   transition: ease-in-out 0.3s;
+}
+
+.btn {
+  @apply flex items-center gap-[5px];
 }
 </style>

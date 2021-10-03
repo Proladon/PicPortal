@@ -1,7 +1,6 @@
 import { Module } from 'vuex'
 import { useElectron } from '/@/use/electron'
 const { database } = useElectron()
-import { find } from 'lodash'
 
 const app: Module<any, any> = {
   state: {
