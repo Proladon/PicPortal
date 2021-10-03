@@ -8,8 +8,9 @@ const routes = [
     component: Layout,
     children: [
       {
-        path: '/home',
-        component: () => import('../views/Home.vue'),
+        path: '/editor',
+        name: 'Editor',
+        component: () => import('../views/Editor.vue'),
       },
       {
         path: '/about',
@@ -20,6 +21,11 @@ const routes = [
         path: '/projects',
         name: 'Projects',
         component: () => import('../views/Projects.vue'),
+      },
+      {
+        path: '/settings',
+        name: 'Settings',
+        component: () => import('../views/Settings.vue'),
       },
     ],
   },

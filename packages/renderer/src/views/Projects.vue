@@ -93,7 +93,7 @@ const openProject = async (projectPath: string) => {
   console.log(db)
   await store.dispatch('SYNC_DB', db)
 
-  router.push('/home')
+  router.push('/editor')
 }
 
 const importProject = async () => {
