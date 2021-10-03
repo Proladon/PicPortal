@@ -28,7 +28,7 @@ import { VirtualList } from 'vue3-virtual-list'
 import { computed, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
-import { chunk, map } from 'lodash'
+import { chunk, map } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
 
 // --- Data ---

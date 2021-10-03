@@ -5,11 +5,15 @@
       <h2>Developer</h2>
 
       <main class="card">
-        <div class="avatar" :style="`background: url('${avatar}')`"></div>
+        <img class="avatar object-cover" :src="avatar" />
+
         <article class="flex flex-col">
-          <h3>Proladon</h3>
+          <h3 class="text-xl">Proladon</h3>
           <div>
-            <a href="https://github.com/Proladon">Github</a>
+            <a class="flex items-center" href="https://github.com/Proladon">
+              <n-icon size="20" class="mr-2"> <logo-github /></n-icon>
+              <span>Github</span>
+            </a>
           </div>
         </article>
       </main>
@@ -23,15 +27,11 @@
   </div>
 </template>
 
-<script lang="ts">
-import avatar from '../../assets/about/Oreki.png'
+<script lang="ts" setup>
+import avatar from '/@/assets/Oreki.png'
+import { LogoGithub } from '@vicons/ionicons5'
+import { NIcon } from 'naive-ui'
 import { defineComponent } from 'vue'
-export default defineComponent({
-  name: 'About',
-  setup() {
-    return { avatar }
-  }
-})
 </script>
 
 <style scoped lang="postcss">

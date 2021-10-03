@@ -27,7 +27,7 @@ import { onMounted, ref } from '@vue/runtime-core'
 import { saveProjectDialog, importProjectDialog } from '/@/utils/browserDialog'
 import { useElectron } from '../use/electron'
 const { fileSystem, userStore } = useElectron()
-import { findIndex, find } from 'lodash'
+import { findIndex, find } from 'lodash-es'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
