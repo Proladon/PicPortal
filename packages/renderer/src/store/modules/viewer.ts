@@ -7,7 +7,7 @@ import store from '../index'
 const viewer: Module<any, any> = {
   state: {
     folderFiles: [],
-    selected: [],
+    selectedLabels: [],
   },
 
   mutations: {

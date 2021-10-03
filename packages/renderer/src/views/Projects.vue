@@ -54,7 +54,7 @@ const createDB = async (filePath: string) => {
   const [, writeErr] = await fileSystem.writeJson(filePath, {
     project: dbName,
     mainFolder: '',
-    lables: [],
+    labels: [],
   })
   if (writeErr) return console.log(writeErr)
 }

@@ -3504,10 +3504,10 @@ ms@2.1.2:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-naive-ui@^2.19.0:
-  version "2.19.0"
-  resolved "https://registry.yarnpkg.com/naive-ui/-/naive-ui-2.19.0.tgz#cfb1f921b567235da3d07627e91c0dcaf4cd0a6d"
-  integrity sha512-YHZ+vwekmt/PVTv7e93aKE43RPfN7UHvdmSzNWU6tEfKxJ0rEfHAtn58wmqkQv5Btfx/8+1Gpu3MOPEC1ci6tA==
+naive-ui@^2.19.3:
+  version "2.19.3"
+  resolved "https://registry.yarnpkg.com/naive-ui/-/naive-ui-2.19.3.tgz#cf518f4242782bf7d5eb55c5ba6075d42ca1e3e9"
+  integrity sha512-+AFAooKZloHweUUnYogi+jhcvxYc7VbmNQsZTasQmTCQwtNGt5y4ADtja4VGbI70BR3jH/NDhKaHRxh/k3pnRA==
   dependencies:
     "@css-render/plugin-bem" "^0.15.6"
     "@css-render/vue3-ssr" "^0.15.6"
@@ -3521,12 +3521,12 @@ naive-ui@^2.19.0:
     highlight.js "^11.0.1"
     lodash "^4.17.21"
     lodash-es "^4.17.21"
-    seemly "^0.3.1"
+    seemly "^0.3.2"
     treemate "^0.3.8"
     vdirs "^0.1.4"
     vfonts "^0.1.0"
     vooks "^0.2.6"
-    vueuc "^0.4.9"
+    vueuc "^0.4.12"
 
 nanoid@^3.1.23:
   version "3.1.25"
@@ -4321,6 +4321,13 @@ seemly@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/seemly/-/seemly-0.3.1.tgz#bcb439d7e399a7cc546ca86c31d24328cc3944ca"
   integrity sha512-7P4+IJU9SIP6EBl2jjVitbgrHPb0MqWRy4j2iXGOUiDrHpdG3tH/3j5Xpyv1qWAY3IBrCKOkmVXEfwTsT4UzDg==
+  dependencies:
+    "@types/jest" "^26.0.20"
+
+seemly@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/seemly/-/seemly-0.3.2.tgz#f45aacb2a0748bb9da766b5cf805d3b59ac9502c"
+  integrity sha512-xEDcywG5NmDhvHqt1bZlxCnoagfWOLwM5AObg8TiNcZPnTJwusa7eVm+/iRU9LhxLBDS14/yJFSMhhd3+RWUFQ==
   dependencies:
     "@types/jest" "^26.0.20"
 
@@ -5182,10 +5189,10 @@ vuedraggable@^4.1.0:
   dependencies:
     sortablejs "1.14.0"
 
-vueuc@^0.4.9:
-  version "0.4.10"
-  resolved "https://registry.yarnpkg.com/vueuc/-/vueuc-0.4.10.tgz#ae26ba76a0af154f8a139ef3718135a2c6adf676"
-  integrity sha512-d/GITEBOtrkMyhJPB72SNYeO7rYrsTYMlJ+uT7bwuTT1ag15O63vwUesqhY7Vf65FybJRcQwUtGAYShDOqRiJQ==
+vueuc@^0.4.12:
+  version "0.4.12"
+  resolved "https://registry.yarnpkg.com/vueuc/-/vueuc-0.4.12.tgz#6f29ebcf567cf38049a874cb3dce5c418208ad76"
+  integrity sha512-9jvgiYWisxGswD79mfcbTEQwCV/ylAAvNMkSxFl2e7IcuSNPGEL7zCT6bQ9xGGBJBcZSgmZjvQlgwjzXS81QRg==
   dependencies:
     css-render "^0.15.3"
     evtd "^0.2.2"

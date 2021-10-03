@@ -26,6 +26,11 @@ const db: Module<any, any> = {
     DB_GET: async ({ commit }, key: string) => {
       return await database.get(key)
     },
+    SYNC_DB_TO_STATE: async ({ rootState }, key) => {
+      const [getRes, getError] = await database.get(key)
+      if (getError) return alert(getError)
+      rootState.app[key] = getRes
+    },
   },
 }
 

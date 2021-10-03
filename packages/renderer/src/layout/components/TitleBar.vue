@@ -3,9 +3,9 @@
     <section></section>
     <section class="app-name">Picnel.io</section>
     <section class="flex gap-[10px] justify-end">
-      <div class="min"></div>
-      <div class="max"></div>
-      <div class="close"></div>
+      <div class="win-btn min"></div>
+      <div class="win-btn max"></div>
+      <div class="win-btn close"></div>
     </section>
   </header>
 </template>
@@ -27,13 +27,17 @@
   @apply w-[20px] h-[20px] rounded-full cursor-pointer;
 }
 
+.win-btn {
+  @apply border-2 border-solid;
+}
+
 .min {
-  @apply bg-border;
+  @apply border-[#649FA0];
 }
 .max {
-  @apply bg-border;
+  @apply border-[#E2A739];
 }
 .close {
-  @apply bg-border;
+  @apply border-[#D44172];
 }
 </style>
