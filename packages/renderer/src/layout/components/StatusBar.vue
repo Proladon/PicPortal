@@ -27,12 +27,24 @@
       </template>
       Main Folder
     </n-popover>
+
+    <n-popover trigger="hover">
+      <template #trigger>
+        <div class="btn main-folder-btn cursor-default">
+          <n-icon>
+            <DocumentOutline />
+          </n-icon>
+          <span>{{ filesCount }}</span>
+        </div>
+      </template>
+      Files Count
+    </n-popover>
   </footer>
 </template>
 
 <script lang="ts" setup>
 import { NIcon, NPopover } from 'naive-ui'
-import { Folder, Cube } from '@vicons/ionicons5'
+import { Folder, Cube, DocumentOutline } from '@vicons/ionicons5'
 import { computed } from 'vue'
 import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
@@ -43,6 +55,7 @@ const store = useStore()
 // --- Computed ---
 const mainFolder = computed(() => store.getters.mainFolder || {})
 const projectName = computed(() => store.getters.projectName || '')
+const filesCount = computed(() => store.getters.filesCount)
 
 // --- Methods---
 const choseMainFolder = async () => {

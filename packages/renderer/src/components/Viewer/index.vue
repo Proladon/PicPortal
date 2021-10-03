@@ -40,13 +40,12 @@ const selected = computed(() => store.state.viewer.selected)
 const pngs = ref<unknown>([])
 // --- Watch ---
 watch(mainFolder, async () => {
-  await getAllFiles()
+  await chunkFiles()
 })
 
-const getAllFiles = async () => {
+const chunkFiles = async () => {
   await store.dispatch('GET_FOLDER_ALL_FILES')
   const files = map(folderFiles.value, (path) => ({ path: path }))
-  console.log('files', files)
   const filesChunkList = chunk(files, 4)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
   pngs.value = newData
@@ -54,12 +53,11 @@ const getAllFiles = async () => {
 
 // --- Methods ---
 const selectItem = (data: unknown) => {
-  console.log('in')
   store.commit('UPDATE_SELECTED', data)
 }
 
 onMounted(async () => {
-  await getAllFiles()
+  await chunkFiles()
 })
 </script>
 

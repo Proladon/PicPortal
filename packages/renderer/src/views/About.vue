@@ -31,7 +31,18 @@
 import avatar from '/@/assets/Oreki.png'
 import { LogoGithub } from '@vicons/ionicons5'
 import { NIcon } from 'naive-ui'
-import { defineComponent } from 'vue'
+import { animate } from 'motion'
+import { onMounted } from '@vue/runtime-core'
+
+onMounted(() => {
+  animate(
+    '.about',
+    {
+      opacity: [0, 1],
+    },
+    { duration: 0.8 }
+  )
+})
 </script>
 
 <style scoped lang="postcss">

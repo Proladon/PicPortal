@@ -16,6 +16,18 @@ import Viewer from '/@/components/Viewer/index.vue'
 import TreeView from '/@/components/TreeView/index.vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
+import { onMounted } from '@vue/runtime-core'
+import { animate } from 'motion'
+
+onMounted(() => {
+  animate(
+    '.home',
+    {
+      opacity: [0, 1],
+    },
+    { duration: 0.8 }
+  )
+})
 </script>
 
 <style scoped lang="postcss">

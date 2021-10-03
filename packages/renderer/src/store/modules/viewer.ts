@@ -36,7 +36,11 @@ const viewer: Module<any, any> = {
     },
   },
 
-  getters: {},
+  getters: {
+    filesCount: (state) => {
+      return state.folderFiles.length
+    },
+  },
 }
 
 export default viewer

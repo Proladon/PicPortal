@@ -32,6 +32,7 @@
     "@types/lodash": "^4.14.172",
     "@typescript-eslint/eslint-plugin": "^4.29.1",
     "@typescript-eslint/parser": "^4.18.0",
+    "@vicons/ionicons5": "^0.11.0",
     "@vitejs/plugin-vue": "^1.4.0",
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-typescript": "^7.0.0",
@@ -50,8 +51,7 @@
     "vite": "^2.5.1",
     "vite-plugin-windicss": "^1.2.7",
     "vue-tsc": "^0.2.2",
-    "windicss": "^3.1.7",
-    "@vicons/ionicons5": "^0.11.0"
+    "windicss": "^3.1.7"
   },
   "dependencies": {
     "better-sqlite3": "^7.4.3",
@@ -61,6 +61,7 @@
     "fs-extra": "^10.0.0",
     "lodash-es": "^4.17.21",
     "lowdb": "^2.1.0",
+    "motion": "^10.1.4",
     "splitpanes": "^3.0.6",
     "vue": "^3.2.2",
     "vue-router": "^4.0.11",
