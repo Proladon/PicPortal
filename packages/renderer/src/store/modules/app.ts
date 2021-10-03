@@ -9,18 +9,10 @@ const app: Module<any, any> = {
     labels: [],
   },
 
-  mutations: {
-    SET_MAIN_FOLDER: (state, path) => {
-      state.mainFolder = path
-    },
-    UPDATE_LABLES: (state, label) => {
-      state.labels.push(label)
-    },
-  },
+  mutations: {},
 
   actions: {
     MAIN_FOLDER: async ({ commit }, path) => {
-      commit('SET_MAIN_FOLDER', path)
       return await database.save('mainFolder', path)
     },
     SYNC_DB: async ({ commit, state }, dbData) => {
@@ -34,6 +26,9 @@ const app: Module<any, any> = {
     },
     projectName: (state) => {
       return state.project
+    },
+    labels: (state) => {
+      return state.labels
     },
   },
 }

@@ -21,13 +21,15 @@ const db: Module<any, any> = {
       return await database.connect(state.projectPath)
     },
     SAVE_TO_DB: async ({ commit }, { key, data }) => {
-      return await database.save({
-        key,
-        data,
-      })
+      return await database.save(key, data)
     },
     DB_GET: async ({ commit }, key: string) => {
       return await database.get(key)
+    },
+    SYNC_DB_TO_STATE: async ({ rootState }, key) => {
+      const [getRes, getError] = await database.get(key)
+      if (getError) return alert(getError)
+      rootState.app[key] = getRes
     },
   },
 }

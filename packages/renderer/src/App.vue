@@ -2,10 +2,12 @@
   <router-view />
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-export default defineComponent({
-  name: 'App',
+<script lang="ts" setup>
+import { onMounted } from '@vue/runtime-core'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+onMounted(() => {
+  router.push('/editor')
 })
 </script>
 
@@ -21,6 +23,6 @@ body,
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  @apply bg-gray-800 text-white;
+  @apply bg-darkBlue text-white;
 }
 </style>

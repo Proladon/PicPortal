@@ -5,11 +5,12 @@ export default defineConfig({
   theme: {
     extend: {
       colors: {
-        border: '#CCC0B8'
+        border: '#CCC0B8',
+        darkBlue: '#1C1E26',
       },
       height: {
-        statusbar: '30px'
-      }
-    }
-  }
+        statusbar: '30px',
+      },
+    },
+  },
 })

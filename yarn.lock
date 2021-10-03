@@ -2473,6 +2473,11 @@ get-stream@^6.0.0:
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-6.0.1.tgz#a262d8eef67aced57c2852ad6167526a43cbf7b7"
   integrity sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg==
 
+gitart-vue-dialog@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/gitart-vue-dialog/-/gitart-vue-dialog-1.0.3.tgz#216cf3bced44146616aa63a6c9af92babd597843"
+  integrity sha512-fmLKtJcwXIh8SB2kJYN//B9gySpPKpr8avdeTFeHGmJJuZVCnjn7QXiEGqUI9srqnfB7ZAixHaKdiepBRm4Qgg==
+
 github-from-package@0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/github-from-package/-/github-from-package-0.0.0.tgz#97fb5d96bfde8973313f20e8288ef9a167fa64ce"
@@ -3499,10 +3504,10 @@ ms@2.1.2:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-naive-ui@^2.19.0:
-  version "2.19.0"
-  resolved "https://registry.yarnpkg.com/naive-ui/-/naive-ui-2.19.0.tgz#cfb1f921b567235da3d07627e91c0dcaf4cd0a6d"
-  integrity sha512-YHZ+vwekmt/PVTv7e93aKE43RPfN7UHvdmSzNWU6tEfKxJ0rEfHAtn58wmqkQv5Btfx/8+1Gpu3MOPEC1ci6tA==
+naive-ui@^2.19.3:
+  version "2.19.3"
+  resolved "https://registry.yarnpkg.com/naive-ui/-/naive-ui-2.19.3.tgz#cf518f4242782bf7d5eb55c5ba6075d42ca1e3e9"
+  integrity sha512-+AFAooKZloHweUUnYogi+jhcvxYc7VbmNQsZTasQmTCQwtNGt5y4ADtja4VGbI70BR3jH/NDhKaHRxh/k3pnRA==
   dependencies:
     "@css-render/plugin-bem" "^0.15.6"
     "@css-render/vue3-ssr" "^0.15.6"
@@ -3516,12 +3521,12 @@ naive-ui@^2.19.0:
     highlight.js "^11.0.1"
     lodash "^4.17.21"
     lodash-es "^4.17.21"
-    seemly "^0.3.1"
+    seemly "^0.3.2"
     treemate "^0.3.8"
     vdirs "^0.1.4"
     vfonts "^0.1.0"
     vooks "^0.2.6"
-    vueuc "^0.4.9"
+    vueuc "^0.4.12"
 
 nanoid@^3.1.23:
   version "3.1.25"
@@ -4319,6 +4324,13 @@ seemly@^0.3.1:
   dependencies:
     "@types/jest" "^26.0.20"
 
+seemly@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/seemly/-/seemly-0.3.2.tgz#f45aacb2a0748bb9da766b5cf805d3b59ac9502c"
+  integrity sha512-xEDcywG5NmDhvHqt1bZlxCnoagfWOLwM5AObg8TiNcZPnTJwusa7eVm+/iRU9LhxLBDS14/yJFSMhhd3+RWUFQ==
+  dependencies:
+    "@types/jest" "^26.0.20"
+
 semver-compare@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/semver-compare/-/semver-compare-1.0.0.tgz#0dee216a1c941ab37e9efb1788f6afc5ff5537fc"
@@ -4437,6 +4449,11 @@ smart-buffer@^4.0.2:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-4.2.0.tgz#6e1d71fa4f18c05f7d0ff216dd16a481d0e8d9ae"
   integrity sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==
+
+sortablejs@1.14.0:
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/sortablejs/-/sortablejs-1.14.0.tgz#6d2e17ccbdb25f464734df621d4f35d4ab35b3d8"
+  integrity sha512-pBXvQCs5/33fdN1/39pPL0NZF20LeRbLQ5jtnheIPN9JQAaufGjKdWduZn4U7wCtVuzKhmRkI0DFYHYRbB2H1w==
 
 source-map-js@^0.6.2:
   version "0.6.2"
@@ -5165,10 +5182,17 @@ vue@^3.2.2:
     "@vue/runtime-dom" "3.2.2"
     "@vue/shared" "3.2.2"
 
-vueuc@^0.4.9:
-  version "0.4.10"
-  resolved "https://registry.yarnpkg.com/vueuc/-/vueuc-0.4.10.tgz#ae26ba76a0af154f8a139ef3718135a2c6adf676"
-  integrity sha512-d/GITEBOtrkMyhJPB72SNYeO7rYrsTYMlJ+uT7bwuTT1ag15O63vwUesqhY7Vf65FybJRcQwUtGAYShDOqRiJQ==
+vuedraggable@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/vuedraggable/-/vuedraggable-4.1.0.tgz#edece68adb8a4d9e06accff9dfc9040e66852270"
+  integrity sha512-FU5HCWBmsf20GpP3eudURW3WdWTKIbEIQxh9/8GE806hydR9qZqRRxRE3RjqX7PkuLuMQG/A7n3cfj9rCEchww==
+  dependencies:
+    sortablejs "1.14.0"
+
+vueuc@^0.4.12:
+  version "0.4.12"
+  resolved "https://registry.yarnpkg.com/vueuc/-/vueuc-0.4.12.tgz#6f29ebcf567cf38049a874cb3dce5c418208ad76"
+  integrity sha512-9jvgiYWisxGswD79mfcbTEQwCV/ylAAvNMkSxFl2e7IcuSNPGEL7zCT6bQ9xGGBJBcZSgmZjvQlgwjzXS81QRg==
   dependencies:
     css-render "^0.15.3"
     evtd "^0.2.2"

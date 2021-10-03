@@ -4,8 +4,8 @@ import { chrome } from '../../electron-vendors.config.json'
 import { join } from 'path'
 import { builtinModules } from 'module'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
 import { loadAndSetEnv } from '../../scripts/loadAndSetEnv.mjs'
+import vue from '@vitejs/plugin-vue'
 import WindiCSS from 'vite-plugin-windicss'
 
 const PACKAGE_ROOT = __dirname
