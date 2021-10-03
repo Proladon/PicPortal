@@ -6,7 +6,7 @@ const app: Module<any, any> = {
   state: {
     project: null,
     mainFolder: {},
-    labels: [],
+    lables: [],
   },
 
   mutations: {
@@ -14,7 +14,7 @@ const app: Module<any, any> = {
       state.mainFolder = path
     },
     UPDATE_LABLES: (state, label) => {
-      state.labels.push(label)
+      state.lables.push(label)
     },
   },
 
@@ -26,6 +26,9 @@ const app: Module<any, any> = {
     SYNC_DB: async ({ commit, state }, dbData) => {
       Object.assign(state, dbData)
     },
+    SYNC_DB_STATE: async ({ commit, state }, { key, dbData }) => {
+      state[key] = dbData
+    },
   },
 
   getters: {
@@ -34,6 +37,9 @@ const app: Module<any, any> = {
     },
     projectName: (state) => {
       return state.project
+    },
+    lables: (state) => {
+      return state.lables
     },
   },
 }
