@@ -1,28 +1,32 @@
 <template>
   <GDialog v-model="showModal" width="30%">
     <div class="p-5 text-center">
-      <p>Add Lable Group</p>
+      <p>Add Lable</p>
 
       <n-form :model="formData" ref="formRef">
         <n-form-item path="name">
-          <n-input placeholder="Group Name" v-model:value="formData.name" />
+          <n-input placeholder="Label Name" v-model:value="formData.name" />
         </n-form-item>
-        <n-button @click="addLableGroup">Add</n-button>
+        <n-button @click="addLable">Add</n-button>
       </n-form>
     </div>
   </GDialog>
 
-  <n-icon @click="onOpen"><FileTray /></n-icon>
+  <n-icon @click="onOpen"><Add /></n-icon>
 </template>
 
 <script lang="ts" setup>
-import { FileTray } from '@vicons/ionicons5'
+import { Add } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
 import { NButton, NForm, NFormItem, NInput, NIcon } from 'naive-ui'
 import { GDialog } from 'gitart-vue-dialog'
 import { useStore } from 'vuex'
+import { findIndex } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
 
+const props = defineProps({
+  groupId: String,
+})
 const store = useStore()
 const showModal = ref(false)
 const labels = computed(() => store.getters.labels)
@@ -35,14 +39,19 @@ const onOpen = () => {
   showModal.value = true
 }
 
-const addLableGroup = async () => {
+const addLable = async () => {
   if (!formData.name) return
   const labelsRef = labels.value
-  labelsRef.push({
-    group: formData.name,
+
+  const label = {
+    name: formData.name,
     id: await nanoid(10),
-    childs: [],
-  })
+    color: '',
+    link: '',
+  }
+
+  const groupIndex = findIndex(labelsRef, { id: props.groupId })
+  labelsRef[groupIndex].childs.push(label)
 
   const [, saveError] = await store.dispatch('SAVE_TO_DB', {
     key: 'labels',
