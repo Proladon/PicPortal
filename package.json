@@ -63,6 +63,7 @@
     "lodash-es": "^4.17.21",
     "lowdb": "^2.1.0",
     "motion": "^10.1.4",
+    "nanoid": "^3.1.28",
     "splitpanes": "^3.0.6",
     "vue": "^3.2.2",
     "vue-router": "^4.0.11",

@@ -1,18 +1,16 @@
 <template>
   <div class="tree-view">
-    <div
-      class="bg-border flex justify-between items-center px-5 py-1"
-      title="Add Group"
-    >
+    <div class="bg-border flex justify-between items-center px-5 py-1">
       <div class="text-gray-800 text-[16px] flex items-center">
         <n-icon><Pricetags /></n-icon>
         Labels Panel
       </div>
       <AddGroupModal />
+      <n-icon><EnterSharp /></n-icon>
     </div>
 
     <draggable
-      class="px-2 py-2"
+      class="labels-group-list"
       v-model="labels"
       group="people"
       @start="drag = true"
@@ -20,40 +18,7 @@
       item-key="id"
     >
       <template #item="{ element }">
-        <div class="flex flex-col">
-          <div
-            class="
-              text-[16px]
-              rounded-sm
-              px-2
-              py-2
-              text-left
-              flex
-              justify-between
-              items-center
-              cursor-pointer
-              text-border
-              hover:bg-gray-700
-            "
-          >
-            <n-ellipsis>
-              {{ element.group }}
-            </n-ellipsis>
-
-            <div class="flex-shrink-0">
-              <n-icon class="mr-2">
-                <Add />
-              </n-icon>
-
-              <n-icon>
-                <CaretBackOutline />
-              </n-icon>
-            </div>
-          </div>
-          <div class="text-left pl-5" v-for="test in labels" :key="test">
-            <n-checkbox>{{ test.group }}</n-checkbox>
-          </div>
-        </div>
+        <LabelsGroup :groupData="element" />
       </template>
     </draggable>
   </div>
@@ -61,8 +26,9 @@
 
 <script setup>
 import draggable from 'vuedraggable'
+import LabelsGroup from '/@/components/TreeView/LabelsGroup.vue'
 import AddGroupModal from '/@/components/TreeView/Modal/AddGroupModal.vue'
-import { CaretDown, CaretBackOutline, Pricetags, Add } from '@vicons/ionicons5'
+import { Pricetags, EnterSharp } from '@vicons/ionicons5'
 import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
 import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
@@ -91,7 +57,7 @@ onMounted(async () => {
   @apply flex flex-col min-w-[180px];
 }
 
-.lable-group {
-  @apply text-border cursor-move;
+.labels-group-list {
+  @apply flex flex-col gap-5 px-4 py-3;
 }
 </style>
