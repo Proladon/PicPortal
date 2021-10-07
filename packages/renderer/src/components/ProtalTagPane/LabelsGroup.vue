@@ -6,16 +6,19 @@
       </n-ellipsis>
       <div class="controls-icon">
         <AddLabelModal :groupId="groupData.id" />
-        <n-icon v-if="groupData.childs.length" @click="expandLabels">
+        <n-icon size="20" v-if="groupData.childs.length" @click="expandLabels">
           <CaretDown />
         </n-icon>
       </div>
     </section>
 
     <section class="label-item-list" v-if="expand">
-      <span class="label" v-for="label in groupData.childs" :key="label">{{
-        label.name
-      }}</span>
+      <PortalTag
+        v-for="protalTag in groupData.childs"
+        :key="protalTag"
+        :data="protalTag"
+        :groupId="groupData.id"
+      />
     </section>
   </div>
 </template>
@@ -23,9 +26,18 @@
 <script setup>
 import draggable from 'vuedraggable'
 import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
-import { Add, CaretBackOutline, CaretDown } from '@vicons/ionicons5'
+import {
+  Add,
+  CaretBackOutline,
+  CaretDown,
+  PencilSharp,
+} from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
-import AddLabelModal from '/@/components/TreeView/Modal/AddLabelModal.vue'
+import AddLabelModal from '/@/components/ProtalTagPane/Modal/AddLabelModal.vue'
+import { nextTick, onMounted } from '@vue/runtime-core'
+import PortalTag from '/@/components/ProtalTagPane/PortalTag.vue'
+
+// const labelAnime = animate('.label', { y: 100 }, { delay: stagger(0.1) })
 
 const props = defineProps({
   groupData: Object,
@@ -33,7 +45,7 @@ const props = defineProps({
 
 const expand = ref(false)
 
-const expandLabels = () => {
+const expandLabels = async () => {
   if (!props.groupData.childs.length) return
   expand.value = !expand.value
 }
@@ -53,12 +65,7 @@ const expandLabels = () => {
 }
 
 .label-item-list {
-  @apply text-left pl-5 py-2;
+  @apply text-left py-2;
   @apply flex flex-col gap-3;
-}
-
-.label {
-  @apply text-teal-400 px-2 py-1 rounded-md cursor-pointer;
-  @apply border-solid border-[2px] border-teal-400;
 }
 </style>
