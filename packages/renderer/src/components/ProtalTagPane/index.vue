@@ -26,8 +26,8 @@
 
 <script setup>
 import draggable from 'vuedraggable'
-import LabelsGroup from '/@/components/TreeView/LabelsGroup.vue'
-import AddGroupModal from '/@/components/TreeView/Modal/AddGroupModal.vue'
+import LabelsGroup from '/@/components/ProtalTagPane/LabelsGroup.vue'
+import AddGroupModal from '/@/components/ProtalTagPane/Modal/AddGroupModal.vue'
 import { Pricetags, EnterSharp } from '@vicons/ionicons5'
 import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
 import { useStore } from 'vuex'

@@ -1,24 +1,32 @@
 <template>
   <GDialog v-model="showModal" width="30%">
     <div class="p-5 text-center">
-      <p>Add Lable</p>
+      <p>Add Protal</p>
 
       <n-form :model="formData" ref="formRef">
         <n-form-item path="name">
-          <n-input placeholder="Label Name" v-model:value="formData.name" />
+          <n-input placeholder="Protal Name" v-model:value="formData.name" />
         </n-form-item>
-        <n-button @click="addLable">Add</n-button>
+        <n-color-picker v-model:value="formData.color" :show-alpha="false" />
+        <n-button @click="addProtal">Add</n-button>
       </n-form>
     </div>
   </GDialog>
 
-  <n-icon @click="onOpen"><Add /></n-icon>
+  <n-icon size="20" @click="onOpen"><Add /></n-icon>
 </template>
 
 <script lang="ts" setup>
 import { Add } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
-import { NButton, NForm, NFormItem, NInput, NIcon } from 'naive-ui'
+import {
+  NButton,
+  NForm,
+  NFormItem,
+  NInput,
+  NIcon,
+  NColorPicker,
+} from 'naive-ui'
 import { GDialog } from 'gitart-vue-dialog'
 import { useStore } from 'vuex'
 import { findIndex } from 'lodash-es'
@@ -33,20 +41,21 @@ const labels = computed(() => store.getters.labels)
 const formRef = ref(null)
 const formData = reactive({
   name: '',
+  color: '',
 })
 
 const onOpen = () => {
   showModal.value = true
 }
 
-const addLable = async () => {
+const addProtal = async () => {
   if (!formData.name) return
   const labelsRef = labels.value
 
   const label = {
     name: formData.name,
     id: await nanoid(10),
-    color: '',
+    color: formData.color,
     link: '',
   }
 

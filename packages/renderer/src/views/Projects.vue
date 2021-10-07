@@ -30,7 +30,6 @@ const { fileSystem, userStore } = useElectron()
 import { findIndex, find } from 'lodash-es'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { animate } from 'motion'
 
 const store = useStore()
 const router = useRouter()
@@ -125,13 +124,6 @@ const refreshProjects = async () => {
 
 // --- Mounted ---
 onMounted(async () => {
-  animate(
-    '.projects',
-    {
-      opacity: [0, 1],
-    },
-    { duration: 0.8 }
-  )
   await refreshProjects()
 })
 </script>
