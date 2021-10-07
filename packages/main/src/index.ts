@@ -1,8 +1,7 @@
-import { app, BrowserWindow, protocol } from "electron"
-import { join } from "path"
-import { URL } from "url"
+import { app, BrowserWindow, protocol } from 'electron'
+import { join } from 'path'
+import { URL } from 'url'
 import ipcHandler from '../../preload/src/main'
-
 
 ipcHandler()
 const isSingleInstance = app.requestSingleInstanceLock()
@@ -21,10 +20,10 @@ app.disableHardwareAcceleration()
 const env = import.meta.env
 
 // Install "Vue.js devtools"
-if (env.MODE === "development") {
+if (env.MODE === 'development') {
   app
     .whenReady()
-    .then(() => import("electron-devtools-installer"))
+    .then(() => import('electron-devtools-installer'))
     .then(({ default: installExtension, VUEJS3_DEVTOOLS }) =>
       installExtension(VUEJS3_DEVTOOLS, {
         loadExtensionOptions: {
@@ -32,7 +31,7 @@ if (env.MODE === "development") {
         },
       })
     )
-    .catch((e) => console.error("Failed install extension:", e))
+    .catch((e) => console.error('Failed install extension:', e))
 }
 
 let mainWindow: BrowserWindow | null = null
@@ -40,10 +39,13 @@ let mainWindow: BrowserWindow | null = null
 const createWindow = async () => {
   mainWindow = new BrowserWindow({
     show: false, // Use 'ready-to-show' event to show window
+    frame: false,
+    width: 1200,
+    height: 600,
     webPreferences: {
-      preload: join(__dirname, "../../preload/dist/index.cjs"),
-      contextIsolation: env.MODE !== "test", // Spectron tests can't work with contextIsolation: true
-      enableRemoteModule: env.MODE === "test", // Spectron tests can't work with enableRemoteModule: false
+      preload: join(__dirname, '../../preload/dist/index.cjs'),
+      contextIsolation: env.MODE !== 'test', // Spectron tests can't work with contextIsolation: true
+      enableRemoteModule: env.MODE === 'test', // Spectron tests can't work with enableRemoteModule: false
     },
   })
 
@@ -53,11 +55,11 @@ const createWindow = async () => {
    *
    * @see https://github.com/electron/electron/issues/25012
    */
-  mainWindow.on("ready-to-show", () => {
+  mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
 
-    if (env.MODE === "development") {
-      mainWindow?.webContents.openDevTools();
+    if (env.MODE === 'development') {
+      mainWindow?.webContents.openDevTools()
     }
   })
 
@@ -67,17 +69,14 @@ const createWindow = async () => {
    * `file://../renderer/index.html` for production and test
    */
   const pageUrl =
-    env.MODE === "development"
+    env.MODE === 'development'
       ? env.VITE_DEV_SERVER_URL
-      : new URL(
-          "../renderer/dist/index.html",
-          "file://" + __dirname
-        ).toString()
+      : new URL('../renderer/dist/index.html', 'file://' + __dirname).toString()
 
   await mainWindow.loadURL(pageUrl)
 }
 
-app.on("second-instance", () => {
+app.on('second-instance', () => {
   // Someone tried to run a second instance, we should focus our window.
   if (mainWindow) {
     if (mainWindow.isMinimized()) mainWindow.restore()
@@ -85,30 +84,29 @@ app.on("second-instance", () => {
   }
 })
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
-app.on("ready", () => {
+app.on('ready', () => {
   registerLocalResourceProtocol()
 })
 
 app
   .whenReady()
   .then(createWindow)
-  .catch((e) => console.error("Failed create window:", e))
+  .catch((e) => console.error('Failed create window:', e))
 
 // Auto-updates
 if (env.PROD) {
   app
     .whenReady()
-    .then(() => import("electron-updater"))
+    .then(() => import('electron-updater'))
     .then(({ autoUpdater }) => autoUpdater.checkForUpdatesAndNotify())
-    .catch((e) => console.error("Failed check updates:", e))
+    .catch((e) => console.error('Failed check updates:', e))
 }
-
 
 function registerLocalResourceProtocol() {
   protocol.registerFileProtocol('local-resource', (request, callback) => {
@@ -117,9 +115,11 @@ function registerLocalResourceProtocol() {
     const decodedUrl = decodeURI(url) // Needed in case URL contains spaces
     try {
       return callback(decodedUrl)
-    }
-    catch (error) {
-      console.error('ERROR: registerLocalResourceProtocol: Could not get file path:', error)
+    } catch (error) {
+      console.error(
+        'ERROR: registerLocalResourceProtocol: Could not get file path:',
+        error
+      )
     }
   })
 }

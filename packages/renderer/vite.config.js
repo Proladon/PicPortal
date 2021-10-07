@@ -4,8 +4,8 @@ import { chrome } from '../../electron-vendors.config.json'
 import { join } from 'path'
 import { builtinModules } from 'module'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
 import { loadAndSetEnv } from '../../scripts/loadAndSetEnv.mjs'
+import vue from '@vitejs/plugin-vue'
 import WindiCSS from 'vite-plugin-windicss'
 
 const PACKAGE_ROOT = __dirname
@@ -23,15 +23,16 @@ export default defineConfig({
   root: PACKAGE_ROOT,
   resolve: {
     alias: {
-      '/@/': join(PACKAGE_ROOT, 'src') + '/'
-    }
+      '/@/': join(PACKAGE_ROOT, 'src') + '/',
+    },
   },
   plugins: [vue(), WindiCSS()],
+
   base: '',
   server: {
     fsServe: {
-      root: join(PACKAGE_ROOT, '../../')
-    }
+      root: join(PACKAGE_ROOT, '../../'),
+    },
   },
   build: {
     sourcemap: true,
@@ -41,13 +42,13 @@ export default defineConfig({
     terserOptions: {
       ecma: 2020,
       compress: {
-        passes: 2
+        passes: 2,
       },
-      safari10: false
+      safari10: false,
     },
     rollupOptions: {
-      external: [...builtinModules]
+      external: [...builtinModules],
     },
-    emptyOutDir: true
-  }
+    emptyOutDir: true,
+  },
 })

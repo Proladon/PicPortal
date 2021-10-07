@@ -1,25 +1,34 @@
 import { Module } from 'vuex'
+import { useElectron } from '/@/use/electron'
+const { database } = useElectron()
 
 const app: Module<any, any> = {
   state: {
-    mainFolder: '',
+    project: null,
+    mainFolder: {},
+    labels: [],
   },
 
-  mutations: {
-    SET_MAIN_FOLDER: (state, folder: object) => {
-      state.mainFolder = folder
-    },
-  },
+  mutations: {},
 
   actions: {
-    // MAIN_FOLDER: ({commit}, path: String) => {
-    //   commit('SET_MAIN_FOLDER', path)
-    // }
+    MAIN_FOLDER: async ({ commit }, path) => {
+      return await database.save('mainFolder', path)
+    },
+    SYNC_DB: async ({ commit, state }, dbData) => {
+      Object.assign(state, dbData)
+    },
   },
 
   getters: {
     mainFolder: (state) => {
       return state.mainFolder
+    },
+    projectName: (state) => {
+      return state.project
+    },
+    labels: (state) => {
+      return state.labels
     },
   },
 }

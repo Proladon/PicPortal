@@ -7,11 +7,11 @@ import store from '../index'
 const viewer: Module<any, any> = {
   state: {
     folderFiles: [],
-    selected: [],
+    selectedLabels: [],
   },
 
   mutations: {
-    SET_FOLDER_FILES: (state, files: String[]) => {
+    SET_FOLDER_FILES: (state, files: string[]) => {
       state.folderFiles = files
     },
     UPDATE_SELECTED: (state, item) => {
@@ -27,16 +27,20 @@ const viewer: Module<any, any> = {
 
   actions: {
     GET_FOLDER_ALL_FILES: async ({ commit }) => {
-      const res = await fastGlob.glob(
-        store.getters.mainFolder.path + '/**/*.png'
-      )
+      const mainFolder = store.getters.mainFolder.path
+      if (!mainFolder) return
+      const res = await fastGlob.glob(mainFolder + '/**/*.png')
       // const filesChunkList = chunk(res, 3)
       // const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
       commit('SET_FOLDER_FILES', res)
     },
   },
 
-  getters: {},
+  getters: {
+    filesCount: (state) => {
+      return state.folderFiles.length
+    },
+  },
 }
 
 export default viewer

@@ -17,6 +17,6 @@ defineProps({
   /* @apply border-2  border-teal-400 rounded-md; */
 }
 img {
-  @apply w-[150px] h-[150px] object-cover rounded-md;
+  @apply h-[150px] w-[150px] object-cover rounded-md;
 }
 </style>

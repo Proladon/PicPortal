@@ -1,9 +1,10 @@
-
 interface ElectronApi {
-  readonly versions: Readonly<NodeJS.ProcessVersions>,
-  readonly userStore: Object<Function>,
-  readonly browserDialog: Object<Function>,
-  readonly fastGlob: Object<Function>,
+  readonly versions: Readonly<NodeJS.ProcessVersions>
+  readonly userStore: Object<Function>
+  readonly browserDialog: Object<Function>
+  readonly fastGlob: Object<Function>
+  readonly fileSystem: Object<Function>
+  readonly database: Object<Function>
 }
 
 declare interface Window {
