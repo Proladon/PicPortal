@@ -7,7 +7,7 @@ import { onMounted } from '@vue/runtime-core'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 onMounted(() => {
-  router.push('/editor')
+  router.push('/projects')
 })
 </script>
 

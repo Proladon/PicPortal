@@ -4,7 +4,16 @@
 
     <section class="main-wrapper">
       <Navbar />
-      <router-view class="main-view" />
+
+      <!-- <router-view v-slot="{ Component }">
+        <keep-alive include="Editor">
+          <component :is="Component" class="main-view" />
+        </keep-alive>
+      </router-view> -->
+
+      <keep-alive>
+        <router-view class="main-view" />
+      </keep-alive>
     </section>
 
     <StatusBar />

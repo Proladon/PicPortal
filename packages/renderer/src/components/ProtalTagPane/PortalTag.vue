@@ -6,21 +6,36 @@
     :style="`border-color: ${data.color}; color: ${data.color}`"
   >
     <span>{{ data.name }}</span>
-    <n-popover trigger="click" placement="bottom-end">
+    <n-popover
+      :show="showPopOver"
+      trigger="click"
+      placement="bottom-end"
+      @update:show="updatePopOver"
+    >
       <template #trigger>
         <n-icon><PencilSharp /></n-icon>
       </template>
       <div class="protal-tag-option" @click="editProtalTag(groupId, data)">
-        <n-icon><BuildOutline /></n-icon> Edit
+        <n-icon><BuildOutline /></n-icon>
+        <span>Edit</span>
       </div>
       <div class="protal-tag-option" @click="deleteProtalTag(groupId, data)">
-        <n-icon><TrashBinOutline /></n-icon> Delete
+        <n-icon><TrashBinOutline /></n-icon>
+        <span>Delete</span>
       </div>
     </n-popover>
+
+    <ProtalTagModal
+      mode="edit"
+      :protal="selectProtal"
+      v-if="showProtalTagModal"
+      @close="showProtalTagModal = false"
+    />
   </div>
 </template>
 
 <script setup>
+import ProtalTagModal from './Modal/ProtalTagModal.vue'
 import { NIcon, NPopover, NButton } from 'naive-ui'
 import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
@@ -34,6 +49,9 @@ defineProps({
 
 const actived = ref(false)
 const store = useStore()
+const showPopOver = ref(false)
+const showProtalTagModal = ref(false)
+const selectProtal = ref(false)
 const protalsData = computed(() => store.getters.labels)
 
 const activePortal = (e) => {
@@ -55,7 +73,16 @@ const deleteProtalTag = async (groupId, protal) => {
   await store.dispatch('SYNC_DB_TO_STATE', 'labels')
 }
 
-const editProtalTag = async (groupId, protal) => {}
+const editProtalTag = async (groupId, protal) => {
+  selectProtal.value = { groupId, protal }
+  showProtalTagModal.value = true
+  showPopOver.value = false
+}
+
+const updatePopOver = (show) => {
+  console.log(show)
+  showPopOver.value = show
+}
 </script>
 
 <style lang="postcss" scoped>

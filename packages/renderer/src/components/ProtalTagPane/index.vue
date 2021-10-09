@@ -5,10 +5,9 @@
         <n-icon><Pricetags /></n-icon>
         Labels Panel
       </div>
-      <AddGroupModal />
+      <ProtalGroupModal />
       <n-icon><EnterSharp /></n-icon>
     </div>
-
     <draggable
       class="labels-group-list"
       v-model="labels"
@@ -18,7 +17,7 @@
       item-key="id"
     >
       <template #item="{ element }">
-        <LabelsGroup :groupData="element" />
+        <ProtalGroup :groupData="element" />
       </template>
     </draggable>
   </div>
@@ -26,15 +25,19 @@
 
 <script setup>
 import draggable from 'vuedraggable'
-import LabelsGroup from '/@/components/ProtalTagPane/LabelsGroup.vue'
-import AddGroupModal from '/@/components/ProtalTagPane/Modal/AddGroupModal.vue'
+import ProtalGroup from './ProtalGroup.vue'
+import ProtalGroupModal from './Modal/ProtalGroupModal.vue'
 import { Pricetags, EnterSharp } from '@vicons/ionicons5'
 import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
 import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
+
+// --- Data ---
 const store = useStore()
 const drag = ref(false)
+
+// --- Computed ---
 const labels = computed({
   get: () => store.getters.labels,
   set: async (newData) => {
@@ -47,6 +50,7 @@ const labels = computed({
   },
 })
 
+// --- Mounted ---
 onMounted(async () => {
   await store.dispatch('SYNC_DB_TO_STATE', 'labels')
 })

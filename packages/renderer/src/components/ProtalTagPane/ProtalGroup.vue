@@ -5,7 +5,13 @@
         <span @click="expandLabels">{{ groupData.group }}</span>
       </n-ellipsis>
       <div class="controls-icon">
-        <AddLabelModal :groupId="groupData.id" />
+        <n-icon size="20" @click="showProtalTagModal = true"><Add /></n-icon>
+        <ProtalTagModal
+          mode="create"
+          :groupId="groupData.id"
+          v-if="showProtalTagModal"
+          @close="showProtalTagModal = false"
+        />
         <n-icon size="20" v-if="groupData.childs.length" @click="expandLabels">
           <CaretDown />
         </n-icon>
@@ -24,7 +30,6 @@
 </template>
 
 <script setup>
-import draggable from 'vuedraggable'
 import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
 import {
   Add,
@@ -33,18 +38,19 @@ import {
   PencilSharp,
 } from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
-import AddLabelModal from '/@/components/ProtalTagPane/Modal/AddLabelModal.vue'
-import { nextTick, onMounted } from '@vue/runtime-core'
-import PortalTag from '/@/components/ProtalTagPane/PortalTag.vue'
+import { onMounted } from '@vue/runtime-core'
+import PortalTag from './PortalTag.vue'
+import ProtalTagModal from './Modal/ProtalTagModal.vue'
 
-// const labelAnime = animate('.label', { y: 100 }, { delay: stagger(0.1) })
-
+// --- Data ---
 const props = defineProps({
   groupData: Object,
 })
 
+const showProtalTagModal = ref(false)
 const expand = ref(false)
 
+// --- Methods ---
 const expandLabels = async () => {
   if (!props.groupData.childs.length) return
   expand.value = !expand.value

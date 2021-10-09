@@ -133,7 +133,7 @@ onMounted(async () => {
   @apply w-full h-full flex flex-col justify-between;
 }
 .project-list {
-  @apply flex p-10 gap-5;
+  @apply grid p-10 gap-5;
 }
 .project {
   @apply bg-gray-600 px-20 py-5 rounded-sm;

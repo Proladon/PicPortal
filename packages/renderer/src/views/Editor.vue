@@ -16,7 +16,6 @@ import Viewer from '/@/components/Viewer/index.vue'
 import ProtalTagPane from '/@/components/ProtalTagPane/index.vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
-import { onMounted } from '@vue/runtime-core'
 </script>
 
 <style scoped lang="postcss">
