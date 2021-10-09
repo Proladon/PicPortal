@@ -19,7 +19,12 @@ const database = () => {
   ipc.handle('Database-Save', async (e, key, data) => {
     try {
       await db.read()
-      db.data[key] = JSON.parse(data)
+
+      const start = performance.now()
+      const parseData = JSON.parse(data)
+      const end = performance.now()
+      console.log(`parse: ${(end - start) / 1000} 秒`)
+      db.data[key] = parseData
       await db.write()
       return ['success', null]
     } catch (error) {

@@ -10,6 +10,9 @@
       <template #trigger>
         <n-icon><PencilSharp /></n-icon>
       </template>
+      <div class="protal-tag-option" @click="editProtalTag(groupId, data)">
+        <n-icon><BuildOutline /></n-icon> Edit
+      </div>
       <div class="protal-tag-option" @click="deleteProtalTag(groupId, data)">
         <n-icon><TrashBinOutline /></n-icon> Delete
       </div>
@@ -19,10 +22,10 @@
 
 <script setup>
 import { NIcon, NPopover, NButton } from 'naive-ui'
-import { PencilSharp, TrashBinOutline, TrashBinSharp } from '@vicons/ionicons5'
+import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
-import { findIndex, find } from 'lodash-es'
+import { findIndex, find, cloneDeep } from 'lodash-es'
 
 defineProps({
   groupId: String,
@@ -39,17 +42,20 @@ const activePortal = (e) => {
 }
 
 const deleteProtalTag = async (groupId, protal) => {
-  const protals = protalsData.value
+  const protals = cloneDeep(protalsData.value)
   const group = find(protals, { id: groupId })
   console.log('group', group.childs)
   const index = findIndex(group.childs, { id: protal.id })
   group.childs.splice(index, 1)
-  console.log(protals)
+
   await store.dispatch('SAVE_TO_DB', {
     key: 'labels',
-    data: JSON.stringify(protals),
+    data: protals,
   })
+  await store.dispatch('SYNC_DB_TO_STATE', 'labels')
 }
+
+const editProtalTag = async (groupId, protal) => {}
 </script>
 
 <style lang="postcss" scoped>

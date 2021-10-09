@@ -46,7 +46,7 @@ const addLableGroup = async () => {
 
   const [, saveError] = await store.dispatch('SAVE_TO_DB', {
     key: 'labels',
-    data: JSON.stringify(labelsRef),
+    data: labelsRef,
   })
   if (saveError) alert(saveError)
 

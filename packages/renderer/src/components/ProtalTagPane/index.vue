@@ -40,7 +40,7 @@ const labels = computed({
   set: async (newData) => {
     const [, error] = await store.dispatch('SAVE_TO_DB', {
       key: 'labels',
-      data: JSON.stringify(newData),
+      data: newData,
     })
     await store.dispatch('SYNC_DB_TO_STATE', 'labels')
     if (error) alert(error)

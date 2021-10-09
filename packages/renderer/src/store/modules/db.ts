@@ -21,7 +21,11 @@ const db: Module<any, any> = {
       return await database.connect(state.projectPath)
     },
     SAVE_TO_DB: async ({ commit }, { key, data }) => {
-      return await database.save(key, data)
+      const start = performance.now()
+      const stringData = JSON.stringify(data)
+      const end = performance.now()
+      console.log(`stringify: ${(end - start) / 1000} 秒`)
+      return await database.save(key, stringData)
     },
     DB_GET: async ({ commit }, key: string) => {
       return await database.get(key)
