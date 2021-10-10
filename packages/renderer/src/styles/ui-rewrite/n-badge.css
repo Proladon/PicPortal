@@ -1,0 +1,3 @@
+.n-badge .n-badge-sup {
+  @apply text-[var(--primary-bg-1)] bg-[var(--skyblue)];
+}

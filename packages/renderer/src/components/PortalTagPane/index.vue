@@ -3,7 +3,7 @@
     <div class="bg-border flex justify-between items-center px-5 py-1">
       <div class="flex gap-2 text-gray-800 text-[16px] flex items-center">
         <n-icon><Pricetags /></n-icon>
-        <span>Portals Panel</span>
+        <span>Portals</span>
       </div>
       <PortalGroupModal />
       <n-icon size="20" class="cursor-pointer"><EnterSharp /></n-icon>

@@ -1,6 +1,10 @@
 <template>
-  <div class="portal-tag" @click="activePortal" :style="styles">
-    <!-- :style="`border-color: ${data.color}; color: ${data.color}`" -->
+  <div
+    class="portal-tag"
+    @click="activePortal"
+    :style="styles"
+    :title="data.link"
+  >
     <span>{{ data.name }}</span>
     <n-popover
       :show="showPopOver"
@@ -66,12 +70,17 @@ const activePortal = async (e) => {
   actived.value = !actived.value
 
   const portal = props.data
+  const groupId = props.groupId
   const activedPortalsRef = activedPortals.value
-  const exist = findIndex(activedPortalsRef, (item) => item === portal.id)
+  const exist = findIndex(activedPortalsRef, { id: portal.id })
 
   if (actived.value) {
     styles.background = portal.color
-    if (exist < 0) await store.dispatch('PUSH_ACTIVED_PORTALS', portal.id)
+    if (exist < 0)
+      await store.dispatch('PUSH_ACTIVED_PORTALS', {
+        id: portal.id,
+        group: groupId,
+      })
   } else {
     styles.background = ''
     if (exist >= 0) await store.dispatch('SPLICE_ACTIVED_PORTALS', exist)
@@ -92,7 +101,7 @@ const deletePortalTag = async (groupId, portal) => {
   await store.dispatch('SYNC_DB_TO_STATE', 'portals')
 
   const activedPortalsRef = activedPortals.value
-  const exist = findIndex(activedPortalsRef, (item) => item === portal.id)
+  const exist = findIndex(activedPortalsRef, { id: portal.id })
   if (exist >= 0) await store.dispatch('SPLICE_ACTIVED_PORTALS', exist)
 }
 
@@ -112,7 +121,7 @@ onMounted(() => {
   const portal = props.data
   styles.borderColor = portal.color
   const activedPortalsRef = activedPortals.value
-  const exist = findIndex(activedPortalsRef, (item) => item === portal.id)
+  const exist = findIndex(activedPortalsRef, { id: portal.id })
   if (exist >= 0) {
     actived.value = true
     styles.background = portal.color

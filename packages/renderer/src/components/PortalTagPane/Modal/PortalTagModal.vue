@@ -132,7 +132,6 @@ const newPortal = async (exist = null) => {
 const addPortal = async (e): Promise<void> => {
   e.preventDefault()
   await formRef.value.validate(async (errors: any) => {
-    console.log(errors)
     if (errors) return
 
     const portals = portalsData.value
