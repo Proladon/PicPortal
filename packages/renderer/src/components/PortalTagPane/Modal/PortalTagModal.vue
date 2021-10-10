@@ -60,6 +60,7 @@ import { findIndex, find } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
 import { useElectron } from '/@/use/electron'
 import { onMounted } from '@vue/runtime-core'
+import { dataClone } from '/@/utils/data'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -99,14 +100,15 @@ const portalsData = computed(() => store.getters.portals)
 
 // --- Methods ---
 
-const closeModal = (state: boolean): void => {
+const closeModal = (): void => {
   // if (!state) formRef.value.restoreValidation()
   // formData.name = ''
   // formData.color = ''
   // formData.link = ''
   setTimeout(() => {
+    console.log('close')
     emit('close')
-  }, 150)
+  }, 1500)
 }
 
 const browseFolder = async (): Promise<void> => {
@@ -125,6 +127,16 @@ const newPortal = async (exist = null) => {
   }
 }
 
+const updateDBData = async (data: unknown): Promise<void> => {
+  const [, saveError] = await store.dispatch('SAVE_TO_DB', {
+    key: 'portals',
+    data,
+  })
+  if (saveError) alert(saveError)
+
+  await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+}
+
 // => 新增 PortalTag
 const addPortal = async (e): Promise<void> => {
   e.preventDefault()
@@ -135,38 +147,27 @@ const addPortal = async (e): Promise<void> => {
     const portal = await newPortal()
     const groupIndex = findIndex(portals, { id: props.groupId })
     portals[groupIndex].childs.push(portal)
-    const [, saveError] = await store.dispatch('SAVE_TO_DB', {
-      key: 'portals',
-      data: portals,
-    })
-    if (saveError) alert(saveError)
-
-    await store.dispatch('SYNC_DB_TO_STATE', 'portals')
-    emit('close')
+    await updateDBData(portals)
+    showModal.value = false
+    closeModal()
   })
 }
 
 // => 更新 PortalTag
 const updatePortal = async (e) => {
   e.preventDefault()
+  console.log(0)
   await formRef.value.validate(async (errors: any) => {
     if (errors) return
 
-    const portals = portalsData.value
+    const portals = dataClone(portalsData.value)
     const portal = await newPortal(props.portal.portal.id)
     const groupIndex = findIndex(portals, { id: props.portal.groupId })
     const portalIndex = findIndex(portals[groupIndex].childs, {
       id: props.portal.portal.id,
     })
     portals[groupIndex].childs[portalIndex] = portal
-    const [, saveError] = await store.dispatch('SAVE_TO_DB', {
-      key: 'portals',
-      data: portals,
-    })
-    if (saveError) alert(saveError)
-
-    await store.dispatch('SYNC_DB_TO_STATE', 'portals')
-    emit('close')
+    await updateDBData(portals)
   })
 }
 

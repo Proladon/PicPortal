@@ -30,7 +30,10 @@
               <MenuSharp />
             </n-icon>
           </template>
-          <div class="flex items-center gap-2 cursor-pointer">
+          <div
+            @click="openPortalGroupModal"
+            class="flex items-center gap-2 cursor-pointer"
+          >
             <n-icon>
               <PencilSharp />
             </n-icon>
@@ -60,7 +63,12 @@
     </section>
 
     <!-- Modal -->
-    <PortalGroupModal v-if="showPortalGroupModal" />
+    <PortalGroupModal
+      v-if="showPortalGroupModal"
+      :group="groupData"
+      mode="edit"
+      @close="showPortalGroupModal = false"
+    />
 
     <PortalTagModal
       mode="create"
@@ -109,6 +117,11 @@ const groupActivedPortalsCount = computed(() => {
 })
 
 // --- Methods ---
+const openPortalGroupModal = () => {
+  showPortalGroupModal.value = true
+  showPopOver.value = false
+}
+
 const expandGroup = async () => {
   if (!props.groupData.childs.length) return
   expand.value = !expand.value

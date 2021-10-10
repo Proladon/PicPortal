@@ -5,10 +5,7 @@
         <n-icon><Pricetags /></n-icon>
         <span>Portals</span>
       </div>
-      <PortalGroupModal
-        v-if="showPortalGroupModal"
-        @close="showPortalGroupModal = false"
-      />
+
       <n-icon
         size="20"
         class="cursor-pointer"
@@ -30,6 +27,12 @@
         <PortalGroup :groupData="element" />
       </template>
     </draggable>
+
+    <PortalGroupModal
+      v-if="showPortalGroupModal"
+      mode="create"
+      @close="showPortalGroupModal = false"
+    />
   </div>
 </template>
 
