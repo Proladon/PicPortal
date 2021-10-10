@@ -1,9 +1,20 @@
 <template>
   <div class="portal-group">
     <section class="group-header">
-      <n-ellipsis>
-        <span @click="expandGroup">{{ groupData.group }}</span>
-      </n-ellipsis>
+      <div class="flex items-center gap-2">
+        <n-icon
+          size="20"
+          v-if="groupData.childs.length"
+          @click="expandGroup"
+          :class="{ unexpend: !expand }"
+        >
+          <CaretDown />
+        </n-icon>
+        <n-ellipsis>
+          <span @click="expandGroup">{{ groupData.group }}</span>
+        </n-ellipsis>
+      </div>
+
       <div class="controls-icon">
         <n-icon size="20" @click="showPortalTagModal = true"><Add /></n-icon>
         <PortalTagModal
@@ -12,8 +23,8 @@
           v-if="showPortalTagModal"
           @close="showPortalTagModal = false"
         />
-        <n-icon size="20" v-if="groupData.childs.length" @click="expandGroup">
-          <CaretDown />
+        <n-icon size="15">
+          <MenuSharp />
         </n-icon>
       </div>
     </section>
@@ -31,12 +42,7 @@
 
 <script setup>
 import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
-import {
-  Add,
-  CaretBackOutline,
-  CaretDown,
-  PencilSharp,
-} from '@vicons/ionicons5'
+import { Add, CaretBackOutline, CaretDown, MenuSharp } from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import PortalTag from './PortalTag.vue'
@@ -66,12 +72,16 @@ const expandGroup = async () => {
   @apply flex items-center justify-between cursor-pointer;
 
   .controls-icon {
-    @apply flex-shrink-0;
+    @apply flex flex-shrink-0 items-center gap-5;
   }
 }
 
 .portal-tag-list {
-  @apply text-left py-2;
+  @apply text-left py-2 pl-7;
   @apply flex flex-col gap-3;
+}
+
+.unexpend {
+  @apply transform rotate-270;
 }
 </style>

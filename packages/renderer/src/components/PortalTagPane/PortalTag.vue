@@ -1,10 +1,6 @@
 <template>
-  <div
-    class="portal-tag"
-    @click="activePortal"
-    :class="{ 'portal-tag--actived': actived }"
-    :style="`border-color: ${data.color}; color: ${data.color}`"
-  >
+  <div class="portal-tag" @click="activePortal" :style="styles">
+    <!-- :style="`border-color: ${data.color}; color: ${data.color}`" -->
     <span>{{ data.name }}</span>
     <n-popover
       :show="showPopOver"
@@ -38,27 +34,51 @@
 import PortalTagModal from './Modal/PortalTagModal.vue'
 import { NIcon, NPopover, NButton } from 'naive-ui'
 import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
-import { computed, ref } from '@vue/reactivity'
+import { computed, reactive, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
+import { onBeforeUpdate, onMounted } from '@vue/runtime-core'
 import { findIndex, find, cloneDeep } from 'lodash-es'
-
-defineProps({
+// --- Props ---
+const props = defineProps({
   groupId: String,
   data: Object,
 })
 
-const actived = ref(false)
+// --- Data ---
 const store = useStore()
+const actived = ref(false)
 const showPopOver = ref(false)
 const showPortalTagModal = ref(false)
 const selectPortal = ref(false)
-const portalsData = computed(() => store.getters.portals)
+const styles = reactive({
+  borderColor: '',
+  background: '',
+})
 
-const activePortal = (e) => {
+// --- Computed ---
+const portalsData = computed(() => store.getters.portals)
+const activedPortals = computed(() => store.getters.activedPortals)
+
+// --- Methods ---
+// => 啟用protalTag
+const activePortal = async (e) => {
   if (!e.target.classList.length) return
   actived.value = !actived.value
+
+  const portal = props.data
+  const activedPortalsRef = activedPortals.value
+  const exist = findIndex(activedPortalsRef, (item) => item === portal.id)
+
+  if (actived.value) {
+    styles.background = portal.color
+    if (exist < 0) await store.dispatch('PUSH_ACTIVED_PORTALS', portal.id)
+  } else {
+    styles.background = ''
+    if (exist >= 0) await store.dispatch('SPLICE_ACTIVED_PORTALS', exist)
+  }
 }
 
+// => 刪除protalTag
 const deletePortalTag = async (groupId, portal) => {
   const portals = cloneDeep(portalsData.value)
   const group = find(portals, { id: groupId })
@@ -70,28 +90,41 @@ const deletePortalTag = async (groupId, portal) => {
     data: portals,
   })
   await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+
+  const activedPortalsRef = activedPortals.value
+  const exist = findIndex(activedPortalsRef, (item) => item === portal.id)
+  if (exist >= 0) await store.dispatch('SPLICE_ACTIVED_PORTALS', exist)
 }
 
+// => 編輯更新protalTag
 const editPortalTag = async (groupId, portal) => {
   selectPortal.value = { groupId, portal }
   showPortalTagModal.value = true
   showPopOver.value = false
 }
 
+// => 更新popover顯示狀態
 const updatePopOver = (show) => {
   showPopOver.value = show
 }
+// --- Mounted ---
+onMounted(() => {
+  const portal = props.data
+  styles.borderColor = portal.color
+  const activedPortalsRef = activedPortals.value
+  const exist = findIndex(activedPortalsRef, (item) => item === portal.id)
+  if (exist >= 0) {
+    actived.value = true
+    styles.background = portal.color
+  }
+})
 </script>
 
 <style lang="postcss" scoped>
 .portal-tag {
-  @apply text-teal-400 px-2 py-1 rounded-md cursor-pointer;
-  @apply border-solid border-[1px] border-teal-400;
+  @apply px-2 py-1 rounded-md cursor-pointer;
+  @apply border-solid border-[1px];
   @apply flex justify-between items-center;
-}
-
-.portal-tag--actived {
-  @apply bg-gray-400;
 }
 
 .portal-tag-option {

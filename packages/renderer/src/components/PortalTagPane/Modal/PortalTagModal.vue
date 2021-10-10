@@ -119,10 +119,10 @@ const browseFolder = async (): Promise<void> => {
   formData.link = res.filePaths[0]
 }
 
-const newPortal = async () => {
+const newPortal = async (exist = null) => {
   return {
     name: formData.name,
-    id: await nanoid(10),
+    id: exist || (await nanoid(10)),
     color: formData.color,
     link: formData.link,
   }
@@ -157,7 +157,7 @@ const updatePortal = async (e) => {
     if (errors) return
 
     const portals = portalsData.value
-    const portal = await newPortal()
+    const portal = await newPortal(props.portal.portal.id)
     const groupIndex = findIndex(portals, { id: props.portal.groupId })
     const portalIndex = findIndex(portals[groupIndex].childs, {
       id: props.portal.portal.id,

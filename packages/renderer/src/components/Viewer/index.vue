@@ -1,6 +1,5 @@
 <template>
   <section class="viewer">
-    <div class="text-white" @click="test += 1">{{ test }}</div>
     <HandleBar />
     <div
       v-if="pngs.length"
@@ -36,18 +35,14 @@ import ImageItem from '/@/components/Viewer/ImageItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
 import { computed, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
-import { useElectron } from '/@/use/electron'
 import { chunk, map } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
 
 // --- Data ---
-const { fastGlob } = useElectron()
 const store = useStore()
 const mainFolder = computed(() => store.getters.mainFolder)
 const folderFiles = computed(() => store.state.viewer.folderFiles)
-const selected = computed(() => store.state.viewer.selected)
 const ch = ref(0)
-const test = ref(0)
 
 const pngs = ref<unknown>([])
 // --- Watch ---
@@ -55,6 +50,7 @@ watch(mainFolder, async () => {
   await chunkFiles()
 })
 
+// --- Methods ---
 const chunkFiles = async () => {
   await store.dispatch('GET_FOLDER_ALL_FILES')
   const files = map(folderFiles.value, (path) => ({ path: path }))
@@ -63,11 +59,11 @@ const chunkFiles = async () => {
   pngs.value = newData
 }
 
-// --- Methods ---
 const selectItem = (data: unknown) => {
-  store.commit('UPDATE_SELECTED', data)
+  console.log('none')
 }
 
+// --- Mounted ---
 onMounted(async () => {
   ch.value = window.innerHeight
   window.onresize = () => {

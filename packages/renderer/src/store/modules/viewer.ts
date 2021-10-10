@@ -6,6 +6,7 @@ import store from '../index'
 
 const viewer: Module<any, any> = {
   state: {
+    loading: false,
     folderFiles: [],
     selectedLabels: [],
   },
@@ -39,6 +40,9 @@ const viewer: Module<any, any> = {
   getters: {
     filesCount: (state) => {
       return state.folderFiles.length
+    },
+    viewerLoading: (state) => {
+      return state.loading
     },
   },
 }

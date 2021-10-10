@@ -2,6 +2,7 @@ import { createStore } from 'vuex'
 import app from './modules/app'
 import viewer from './modules/viewer'
 import db from './modules/db'
+import portal from './modules/portal'
 
 const store = createStore({
   state: {
@@ -18,6 +19,7 @@ const store = createStore({
     app,
     viewer,
     db,
+    portal,
   },
 })
 

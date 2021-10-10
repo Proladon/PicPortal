@@ -3,7 +3,14 @@
     <n-tag type="info" class="p-4 cursor-pointer">
       <div class="flex items-center">
         <n-icon><BrowsersOutline /></n-icon>
-        <span class="ml-2 text-teal-300">Mode</span>
+        <span class="ml-2 text-gray-300">Mode</span>
+      </div>
+    </n-tag>
+
+    <n-tag type="warning" class="p-4 cursor-pointer">
+      <div class="flex items-center">
+        <n-icon><BrowsersOutline /></n-icon>
+        <span class="ml-2 text-gray-300">Mode</span>
       </div>
     </n-tag>
   </section>
@@ -14,4 +21,8 @@ import { NIcon, NTag } from 'naive-ui'
 import { BrowsersOutline } from '@vicons/ionicons5'
 </script>
 
-<style lang="postcss" scoped></style>
+<style lang="postcss" scoped>
+.viewer-handle-bar {
+  @apply flex gap-2 justify-center items-center;
+}
+</style>
