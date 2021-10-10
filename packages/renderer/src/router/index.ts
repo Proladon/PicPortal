@@ -6,6 +6,7 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Layout,
+    meta: { keepAlive: true },
     children: [
       {
         path: '/editor',

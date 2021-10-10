@@ -1,5 +1,6 @@
 <template>
   <section class="viewer">
+    <div class="text-white" @click="test += 1">{{ test }}</div>
     <HandleBar />
     <div
       v-if="pngs.length"
@@ -46,6 +47,7 @@ const mainFolder = computed(() => store.getters.mainFolder)
 const folderFiles = computed(() => store.state.viewer.folderFiles)
 const selected = computed(() => store.state.viewer.selected)
 const ch = ref(0)
+const test = ref(0)
 
 const pngs = ref<unknown>([])
 // --- Watch ---

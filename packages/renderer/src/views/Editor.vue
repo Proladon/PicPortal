@@ -4,8 +4,8 @@
       <pane>
         <Viewer />
       </pane>
-      <pane size="20">
-        <ProtalTagPane />
+      <pane size="30">
+        <PortalTagPane />
       </pane>
     </splitpanes>
   </div>
@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import Viewer from '/@/components/Viewer/index.vue'
-import ProtalTagPane from '/@/components/ProtalTagPane/index.vue'
+import PortalTagPane from '/@/components/PortalTagPane/index.vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 </script>

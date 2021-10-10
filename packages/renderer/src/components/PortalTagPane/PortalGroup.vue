@@ -1,28 +1,28 @@
 <template>
-  <div class="labels-group">
+  <div class="portal-group">
     <section class="group-header">
       <n-ellipsis>
-        <span @click="expandLabels">{{ groupData.group }}</span>
+        <span @click="expandGroup">{{ groupData.group }}</span>
       </n-ellipsis>
       <div class="controls-icon">
-        <n-icon size="20" @click="showProtalTagModal = true"><Add /></n-icon>
-        <ProtalTagModal
+        <n-icon size="20" @click="showPortalTagModal = true"><Add /></n-icon>
+        <PortalTagModal
           mode="create"
           :groupId="groupData.id"
-          v-if="showProtalTagModal"
-          @close="showProtalTagModal = false"
+          v-if="showPortalTagModal"
+          @close="showPortalTagModal = false"
         />
-        <n-icon size="20" v-if="groupData.childs.length" @click="expandLabels">
+        <n-icon size="20" v-if="groupData.childs.length" @click="expandGroup">
           <CaretDown />
         </n-icon>
       </div>
     </section>
 
-    <section class="label-item-list" v-if="expand">
+    <section class="portal-tag-list" v-if="expand">
       <PortalTag
-        v-for="protalTag in groupData.childs"
-        :key="protalTag"
-        :data="protalTag"
+        v-for="portalTag in groupData.childs"
+        :key="portalTag"
+        :data="portalTag"
         :groupId="groupData.id"
       />
     </section>
@@ -40,25 +40,25 @@ import {
 import { ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import PortalTag from './PortalTag.vue'
-import ProtalTagModal from './Modal/ProtalTagModal.vue'
+import PortalTagModal from './Modal/PortalTagModal.vue'
 
 // --- Data ---
 const props = defineProps({
   groupData: Object,
 })
 
-const showProtalTagModal = ref(false)
+const showPortalTagModal = ref(false)
 const expand = ref(false)
 
 // --- Methods ---
-const expandLabels = async () => {
+const expandGroup = async () => {
   if (!props.groupData.childs.length) return
   expand.value = !expand.value
 }
 </script>
 
 <style lang="postcss" scoped>
-.labels-group {
+.portal-group {
   @apply flex flex-col;
 }
 
@@ -70,7 +70,7 @@ const expandLabels = async () => {
   }
 }
 
-.label-item-list {
+.portal-tag-list {
   @apply text-left py-2;
   @apply flex flex-col gap-3;
 }

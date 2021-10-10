@@ -71,7 +71,11 @@ const choseMainFolder = async () => {
         path: res.filePaths[0].replaceAll('\\', '/'),
       }
       console.log(folder)
-      store.dispatch('MAIN_FOLDER', folder)
+      await store.dispatch('SAVE_TO_DB', {
+        key: 'mainFolder',
+        data: folder,
+      })
+      await store.dispatch('SYNC_DB_TO_STATE', 'mainFolder')
     }
   } catch (error) {
     console.log(error)

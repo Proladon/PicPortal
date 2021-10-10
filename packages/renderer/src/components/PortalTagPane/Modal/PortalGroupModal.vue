@@ -1,13 +1,13 @@
 <template>
   <GDialog v-model="showModal" width="30%">
     <div class="p-5 text-center">
-      <p>Add Lable Group</p>
+      <p>Create Portal Group</p>
 
       <n-form :model="formData" ref="formRef">
         <n-form-item path="name">
           <n-input placeholder="Group Name" v-model:value="formData.name" />
         </n-form-item>
-        <n-button @click="addLableGroup">Add</n-button>
+        <n-button @click="createPortalGroup">Create</n-button>
       </n-form>
     </div>
   </GDialog>
@@ -25,7 +25,7 @@ import { nanoid } from 'nanoid/async'
 
 const store = useStore()
 const showModal = ref(false)
-const labels = computed(() => store.getters.labels)
+const portalsData = computed(() => store.getters.portals)
 const formRef = ref(null)
 const formData = reactive({
   name: '',
@@ -35,22 +35,22 @@ const onOpen = () => {
   showModal.value = true
 }
 
-const addLableGroup = async () => {
+const createPortalGroup = async () => {
   if (!formData.name) return
-  const labelsRef = labels.value
-  labelsRef.push({
+  const portalsRef = portalsData.value
+  portalsRef.push({
     group: formData.name,
     id: await nanoid(10),
     childs: [],
   })
 
   const [, saveError] = await store.dispatch('SAVE_TO_DB', {
-    key: 'labels',
-    data: labelsRef,
+    key: 'portals',
+    data: portalsRef,
   })
   if (saveError) alert(saveError)
 
-  await store.dispatch('SYNC_DB_TO_STATE', 'labels')
+  await store.dispatch('SYNC_DB_TO_STATE', 'portals')
   showModal.value = false
 }
 </script>

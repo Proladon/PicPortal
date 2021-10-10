@@ -35,6 +35,9 @@ const db: Module<any, any> = {
       if (getError) return alert(getError)
       rootState.app[key] = getRes
     },
+    SYNC_DB: async ({ commit, rootState }, dbData) => {
+      Object.assign(rootState.app, dbData)
+    },
   },
 }
 

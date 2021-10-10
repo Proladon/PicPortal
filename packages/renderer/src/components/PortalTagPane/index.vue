@@ -1,23 +1,24 @@
 <template>
   <div class="tree-view">
     <div class="bg-border flex justify-between items-center px-5 py-1">
-      <div class="text-gray-800 text-[16px] flex items-center">
+      <div class="flex gap-2 text-gray-800 text-[16px] flex items-center">
         <n-icon><Pricetags /></n-icon>
-        Labels Panel
+        <span>Portals Panel</span>
       </div>
-      <ProtalGroupModal />
-      <n-icon><EnterSharp /></n-icon>
+      <PortalGroupModal />
+      <n-icon size="20" class="cursor-pointer"><EnterSharp /></n-icon>
+      <n-icon size="20" class="cursor-pointer"><Search /></n-icon>
     </div>
     <draggable
-      class="labels-group-list"
-      v-model="labels"
+      class="portal-group-list"
+      v-model="portals"
       group="people"
       @start="drag = true"
       @end="drag = false"
       item-key="id"
     >
       <template #item="{ element }">
-        <ProtalGroup :groupData="element" />
+        <PortalGroup :groupData="element" />
       </template>
     </draggable>
   </div>
@@ -25,9 +26,9 @@
 
 <script setup>
 import draggable from 'vuedraggable'
-import ProtalGroup from './ProtalGroup.vue'
-import ProtalGroupModal from './Modal/ProtalGroupModal.vue'
-import { Pricetags, EnterSharp } from '@vicons/ionicons5'
+import PortalGroup from './PortalGroup.vue'
+import PortalGroupModal from './Modal/PortalGroupModal.vue'
+import { Pricetags, EnterSharp, Search } from '@vicons/ionicons5'
 import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
 import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
@@ -38,21 +39,21 @@ const store = useStore()
 const drag = ref(false)
 
 // --- Computed ---
-const labels = computed({
-  get: () => store.getters.labels,
+const portals = computed({
+  get: () => store.getters.portals,
   set: async (newData) => {
     const [, error] = await store.dispatch('SAVE_TO_DB', {
-      key: 'labels',
+      key: 'portals',
       data: newData,
     })
-    await store.dispatch('SYNC_DB_TO_STATE', 'labels')
+    await store.dispatch('SYNC_DB_TO_STATE', 'portals')
     if (error) alert(error)
   },
 })
 
 // --- Mounted ---
 onMounted(async () => {
-  await store.dispatch('SYNC_DB_TO_STATE', 'labels')
+  await store.dispatch('SYNC_DB_TO_STATE', 'portals')
 })
 </script>
 
@@ -61,7 +62,7 @@ onMounted(async () => {
   @apply flex flex-col min-w-[180px];
 }
 
-.labels-group-list {
+.portal-group-list {
   @apply flex flex-col gap-5 px-4 py-3;
 }
 </style>

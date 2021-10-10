@@ -6,19 +6,12 @@ const app: Module<any, any> = {
   state: {
     project: null,
     mainFolder: {},
-    labels: [],
+    portals: [],
   },
 
   mutations: {},
 
-  actions: {
-    MAIN_FOLDER: async ({ commit }, path) => {
-      return await database.save('mainFolder', path)
-    },
-    SYNC_DB: async ({ commit, state }, dbData) => {
-      Object.assign(state, dbData)
-    },
-  },
+  actions: {},
 
   getters: {
     mainFolder: (state) => {
@@ -27,8 +20,8 @@ const app: Module<any, any> = {
     projectName: (state) => {
       return state.project
     },
-    labels: (state) => {
-      return state.labels
+    portals: (state) => {
+      return state.portals
     },
   },
 }

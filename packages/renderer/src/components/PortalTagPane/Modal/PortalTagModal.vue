@@ -6,17 +6,17 @@
     @update:modelValue="closeModal"
   >
     <div class="p-5 text-center">
-      <p>Add Protal</p>
+      <p>{{ modalTitle }}</p>
 
       <n-form :model="formData" :rules="formRules" ref="formRef">
         <n-form-item path="name" :show-label="false">
-          <n-input placeholder="Protal Name" v-model:value="formData.name" />
+          <n-input placeholder="Portal Name" v-model:value="formData.name" />
         </n-form-item>
         <n-form-item path="link" :show-label="false">
           <n-input
             type="text"
             v-model:value="formData.link"
-            placeholder="Protal Link"
+            placeholder="Portal Link"
           />
           <n-button @click="browseFolder">
             <n-icon><FolderOpenOutline /></n-icon>
@@ -29,14 +29,14 @@
         v-if="mode === 'create'"
         class="mt-[50px]"
         block
-        @click="addProtal"
+        @click="addPortal"
         >Add</n-button
       >
       <n-button
         v-if="mode === 'edit'"
         class="mt-[50px]"
         block
-        @click="updateProtal"
+        @click="updatePortal"
         >Update</n-button
       >
     </div>
@@ -66,7 +66,7 @@ const props = defineProps({
   groupId: String,
   show: Boolean,
   mode: String,
-  protal: Object,
+  portal: Object,
 })
 const { browserDialog, database } = useElectron()
 const store = useStore()
@@ -84,7 +84,19 @@ const formRules = {
 }
 
 // --- Computed ---
-const protalsData = computed(() => store.getters.labels)
+const modalTitle = computed(() => {
+  let title = ''
+  switch (props.mode) {
+    case 'create':
+      title = 'Add Protal Tag'
+      break
+    case 'edit':
+      title = 'Update Protal Tag'
+      break
+  }
+  return title
+})
+const portalsData = computed(() => store.getters.portals)
 
 // --- Methods ---
 const openModal = (): void => {
@@ -104,85 +116,70 @@ const browseFolder = async (): Promise<void> => {
   const res = await browserDialog.open({
     properties: ['openDirectory'],
   })
-  console.log(res)
-  console.log(res.filePaths[0])
   formData.link = res.filePaths[0]
 }
 
-const addProtal = async (e): Promise<void> => {
-  e.preventDefault()
-  formRef.value.validate((errors: any) => {
-    console.log(errors)
-    if (errors) return
-  })
-
-  if (!formData.name) return
-  const labelsRef = protalsData.value
-
-  const protal = {
+const newPortal = async () => {
+  return {
     name: formData.name,
     id: await nanoid(10),
     color: formData.color,
     link: formData.link,
   }
-
-  const groupIndex = findIndex(labelsRef, { id: props.groupId })
-
-  labelsRef[groupIndex].childs.push(protal)
-
-  const [, saveError] = await store.dispatch('SAVE_TO_DB', {
-    key: 'labels',
-    data: labelsRef,
-  })
-  if (saveError) alert(saveError)
-
-  await store.dispatch('SYNC_DB_TO_STATE', 'labels')
-  emit('close')
 }
 
-const updateProtal = async (e) => {
+// => 新增 PortalTag
+const addPortal = async (e): Promise<void> => {
   e.preventDefault()
-  formRef.value.validate((errors: any) => {
+  await formRef.value.validate(async (errors: any) => {
     console.log(errors)
     if (errors) return
+
+    const portals = portalsData.value
+    const portal = await newPortal()
+    const groupIndex = findIndex(portals, { id: props.groupId })
+    portals[groupIndex].childs.push(portal)
+    const [, saveError] = await store.dispatch('SAVE_TO_DB', {
+      key: 'portals',
+      data: portals,
+    })
+    if (saveError) alert(saveError)
+
+    await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+    emit('close')
   })
+}
 
-  if (!formData.name) return
-  const labelsRef = protalsData.value
+// => 更新 PortalTag
+const updatePortal = async (e) => {
+  e.preventDefault()
+  await formRef.value.validate(async (errors: any) => {
+    if (errors) return
 
-  const protal = {
-    name: formData.name,
-    id: await nanoid(10),
-    color: formData.color,
-    link: formData.link,
-  }
+    const portals = portalsData.value
+    const portal = await newPortal()
+    const groupIndex = findIndex(portals, { id: props.portal.groupId })
+    const portalIndex = findIndex(portals[groupIndex].childs, {
+      id: props.portal.portal.id,
+    })
+    portals[groupIndex].childs[portalIndex] = portal
+    const [, saveError] = await store.dispatch('SAVE_TO_DB', {
+      key: 'portals',
+      data: portals,
+    })
+    if (saveError) alert(saveError)
 
-  const groupIndex = findIndex(labelsRef, { id: props.protal.groupId })
-  console.log(props.protal)
-
-  const protalIndex = findIndex(labelsRef[groupIndex].childs, {
-    id: props.protal.protal.id,
+    await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+    emit('close')
   })
-  console.log(labelsRef[groupIndex][protalIndex])
-  labelsRef[groupIndex].childs[protalIndex] = protal
-  console.log(labelsRef)
-
-  const [, saveError] = await store.dispatch('SAVE_TO_DB', {
-    key: 'labels',
-    data: labelsRef,
-  })
-  if (saveError) alert(saveError)
-
-  await store.dispatch('SYNC_DB_TO_STATE', 'labels')
-  emit('close')
 }
 
 onMounted(() => {
-  if (props.mode === 'edit' && props.protal) {
-    const protal = props.protal
-    formData.name = protal.protal.name
-    formData.color = protal.protal.color
-    formData.link = protal.protal.link
+  if (props.mode === 'edit' && props.portal) {
+    const portal = props.portal
+    formData.name = portal.portal.name
+    formData.color = portal.portal.color
+    formData.link = portal.portal.link
   }
 })
 </script>

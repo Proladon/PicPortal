@@ -15,27 +15,27 @@
       <template #trigger>
         <n-icon><PencilSharp /></n-icon>
       </template>
-      <div class="protal-tag-option" @click="editProtalTag(groupId, data)">
+      <div class="portal-tag-option" @click="editPortalTag(groupId, data)">
         <n-icon><BuildOutline /></n-icon>
         <span>Edit</span>
       </div>
-      <div class="protal-tag-option" @click="deleteProtalTag(groupId, data)">
+      <div class="portal-tag-option" @click="deletePortalTag(groupId, data)">
         <n-icon><TrashBinOutline /></n-icon>
         <span>Delete</span>
       </div>
     </n-popover>
 
-    <ProtalTagModal
+    <PortalTagModal
       mode="edit"
-      :protal="selectProtal"
-      v-if="showProtalTagModal"
-      @close="showProtalTagModal = false"
+      :portal="selectPortal"
+      v-if="showPortalTagModal"
+      @close="showPortalTagModal = false"
     />
   </div>
 </template>
 
 <script setup>
-import ProtalTagModal from './Modal/ProtalTagModal.vue'
+import PortalTagModal from './Modal/PortalTagModal.vue'
 import { NIcon, NPopover, NButton } from 'naive-ui'
 import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
@@ -50,37 +50,35 @@ defineProps({
 const actived = ref(false)
 const store = useStore()
 const showPopOver = ref(false)
-const showProtalTagModal = ref(false)
-const selectProtal = ref(false)
-const protalsData = computed(() => store.getters.labels)
+const showPortalTagModal = ref(false)
+const selectPortal = ref(false)
+const portalsData = computed(() => store.getters.portals)
 
 const activePortal = (e) => {
   if (!e.target.classList.length) return
   actived.value = !actived.value
 }
 
-const deleteProtalTag = async (groupId, protal) => {
-  const protals = cloneDeep(protalsData.value)
-  const group = find(protals, { id: groupId })
-  console.log('group', group.childs)
-  const index = findIndex(group.childs, { id: protal.id })
+const deletePortalTag = async (groupId, portal) => {
+  const portals = cloneDeep(portalsData.value)
+  const group = find(portals, { id: groupId })
+  const index = findIndex(group.childs, { id: portal.id })
   group.childs.splice(index, 1)
 
   await store.dispatch('SAVE_TO_DB', {
-    key: 'labels',
-    data: protals,
+    key: 'portals',
+    data: portals,
   })
-  await store.dispatch('SYNC_DB_TO_STATE', 'labels')
+  await store.dispatch('SYNC_DB_TO_STATE', 'portals')
 }
 
-const editProtalTag = async (groupId, protal) => {
-  selectProtal.value = { groupId, protal }
-  showProtalTagModal.value = true
+const editPortalTag = async (groupId, portal) => {
+  selectPortal.value = { groupId, portal }
+  showPortalTagModal.value = true
   showPopOver.value = false
 }
 
 const updatePopOver = (show) => {
-  console.log(show)
   showPopOver.value = show
 }
 </script>
@@ -96,7 +94,7 @@ const updatePopOver = (show) => {
   @apply bg-gray-400;
 }
 
-.protal-tag-option {
+.portal-tag-option {
   @apply flex items-center gap-2 cursor-pointer;
 }
 </style>

@@ -5,15 +5,16 @@
     <section class="main-wrapper">
       <Navbar />
 
-      <!-- <router-view v-slot="{ Component }">
-        <keep-alive include="Editor">
-          <component :is="Component" class="main-view" />
+      <router-view v-slot="{ Component }">
+        <keep-alive>
+          <component
+            :is="Component"
+            v-if="$route.meta.keepAlive"
+            :key="$route.fullPath"
+            class="main-view"
+          />
         </keep-alive>
-      </router-view> -->
-
-      <keep-alive>
-        <router-view class="main-view" />
-      </keep-alive>
+      </router-view>
     </section>
 
     <StatusBar />
