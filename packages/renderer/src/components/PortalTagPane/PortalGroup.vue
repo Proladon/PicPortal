@@ -156,7 +156,7 @@ const renameGroup = () => {
   @apply flex items-center justify-between cursor-pointer;
 
   .controls-icon {
-    @apply flex flex-shrink-0 items-center gap-5;
+    @apply flex flex-shrink-0 items-center gap-3;
   }
 }
 

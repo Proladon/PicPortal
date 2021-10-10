@@ -5,7 +5,16 @@
         <n-icon><Pricetags /></n-icon>
         <span>Portals</span>
       </div>
-      <PortalGroupModal />
+      <PortalGroupModal
+        v-if="showPortalGroupModal"
+        @close="showPortalGroupModal = false"
+      />
+      <n-icon
+        size="20"
+        class="cursor-pointer"
+        @click="showPortalGroupModal = true"
+        ><Folder
+      /></n-icon>
       <n-icon size="20" class="cursor-pointer"><EnterSharp /></n-icon>
       <n-icon size="20" class="cursor-pointer"><Search /></n-icon>
     </div>
@@ -28,7 +37,7 @@
 import draggable from 'vuedraggable'
 import PortalGroup from './PortalGroup.vue'
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
-import { Pricetags, EnterSharp, Search } from '@vicons/ionicons5'
+import { Pricetags, EnterSharp, Search, Folder } from '@vicons/ionicons5'
 import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
 import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
@@ -37,7 +46,7 @@ import { onMounted } from '@vue/runtime-core'
 // --- Data ---
 const store = useStore()
 const drag = ref(false)
-
+const showPortalGroupModal = ref(false)
 // --- Computed ---
 const portals = computed({
   get: () => store.getters.portals,

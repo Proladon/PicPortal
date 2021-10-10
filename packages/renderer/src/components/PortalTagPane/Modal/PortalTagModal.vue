@@ -64,7 +64,6 @@ import { onMounted } from '@vue/runtime-core'
 const emit = defineEmits(['close'])
 const props = defineProps({
   groupId: String,
-  show: Boolean,
   mode: String,
   portal: Object,
 })
@@ -99,9 +98,7 @@ const modalTitle = computed(() => {
 const portalsData = computed(() => store.getters.portals)
 
 // --- Methods ---
-const openModal = (): void => {
-  showModal.value = true
-}
+
 const closeModal = (state: boolean): void => {
   // if (!state) formRef.value.restoreValidation()
   // formData.name = ''
