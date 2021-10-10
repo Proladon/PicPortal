@@ -5,7 +5,9 @@
     :style="styles"
     :title="data.link"
   >
-    <span>{{ data.name }}</span>
+    <n-ellipsis>
+      <span>{{ data.name }}</span>
+    </n-ellipsis>
     <n-popover
       :show="showPopOver"
       trigger="click"
@@ -36,7 +38,7 @@
 
 <script setup>
 import PortalTagModal from './Modal/PortalTagModal.vue'
-import { NIcon, NPopover, NButton } from 'naive-ui'
+import { NIcon, NPopover, NButton, NEllipsis } from 'naive-ui'
 import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
@@ -57,6 +59,7 @@ const selectPortal = ref(false)
 const styles = reactive({
   borderColor: '',
   background: '',
+  color: '',
 })
 
 // --- Computed ---
@@ -75,7 +78,8 @@ const activePortal = async (e) => {
   const exist = findIndex(activedPortalsRef, { id: portal.id })
 
   if (actived.value) {
-    styles.background = portal.color
+    styles.background = portal.bg
+    styles.color = portal.fg
     if (exist < 0)
       await store.dispatch('PUSH_ACTIVED_PORTALS', {
         id: portal.id,
@@ -83,6 +87,7 @@ const activePortal = async (e) => {
       })
   } else {
     styles.background = ''
+    styles.color = ''
     if (exist >= 0) await store.dispatch('SPLICE_ACTIVED_PORTALS', exist)
   }
 }
@@ -119,12 +124,15 @@ const updatePopOver = (show) => {
 // --- Mounted ---
 onMounted(() => {
   const portal = props.data
-  styles.borderColor = portal.color
+  styles.borderColor = portal.bg
+
   const activedPortalsRef = activedPortals.value
   const exist = findIndex(activedPortalsRef, { id: portal.id })
   if (exist >= 0) {
     actived.value = true
-    styles.background = portal.color
+    styles.borderColor = portal.bg
+    styles.background = portal.bg
+    styles.color = portal.fg
   }
 })
 </script>
@@ -132,7 +140,7 @@ onMounted(() => {
 <style lang="postcss" scoped>
 .portal-tag {
   @apply px-2 py-1 rounded-md cursor-pointer;
-  @apply border-solid border-[1px];
+  @apply border-solid border-[1px] font-medium;
   @apply flex justify-between items-center;
 }
 

@@ -22,7 +22,8 @@
             <n-icon><FolderOpenOutline /></n-icon>
           </n-button>
         </n-form-item>
-        <n-color-picker v-model:value="formData.color" :show-alpha="false" />
+        <n-color-picker v-model:value="formData.bg" :show-alpha="false" />
+        <n-color-picker v-model:value="formData.fg" :show-alpha="false" />
       </n-form>
 
       <n-button
@@ -74,12 +75,14 @@ const showModal = ref<boolean>(true)
 const formRef = ref(null)
 const formData = reactive({
   name: '',
-  color: '',
   link: '',
+  bg: '',
+  fg: '',
 })
 const formRules = {
   name: { required: true },
-  color: { required: false },
+  bg: { required: false },
+  fg: { required: false },
   link: { required: true },
 }
 
@@ -122,7 +125,8 @@ const newPortal = async (exist = null) => {
   return {
     name: formData.name,
     id: exist || (await nanoid(10)),
-    color: formData.color,
+    bg: formData.bg,
+    fg: formData.fg,
     link: formData.link,
   }
 }
@@ -175,7 +179,8 @@ onMounted(() => {
   if (props.mode === 'edit' && props.portal) {
     const portal = props.portal
     formData.name = portal.portal.name
-    formData.color = portal.portal.color
+    formData.bg = portal.portal.bg
+    formData.fg = portal.portal.fg
     formData.link = portal.portal.link
   }
 })

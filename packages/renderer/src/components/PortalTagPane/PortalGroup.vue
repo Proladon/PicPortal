@@ -12,7 +12,9 @@
         </n-icon>
         <n-badge :value="groupActivedPortalsCount" />
         <n-ellipsis>
-          <span @click="expandGroup">{{ groupData.group }}</span>
+          <span class="font-bold" @click="expandGroup">{{
+            groupData.group
+          }}</span>
         </n-ellipsis>
       </div>
 
@@ -30,10 +32,29 @@
               <MenuSharp />
             </n-icon>
           </template>
-          <div
-            @click="openPortalGroupModal"
-            class="flex items-center gap-2 cursor-pointer"
-          >
+
+          <!-- PopOver Content -->
+          <div class="portal-group-popover-item" @click="listView = 'list'">
+            <n-icon>
+              <ListSharp />
+            </n-icon>
+            <span>List View</span>
+          </div>
+          <div class="portal-group-popover-item" @click="listView = 'grid'">
+            <n-icon>
+              <Grid />
+            </n-icon>
+            <span>Grid View</span>
+          </div>
+          <n-divider class="!my-2" />
+          <div class="portal-group-popover-item">
+            <n-icon>
+              <ColorFill />
+            </n-icon>
+            <span>Sync Color</span>
+          </div>
+
+          <div @click="openPortalGroupModal" class="portal-group-popover-item">
             <n-icon>
               <PencilSharp />
             </n-icon>
@@ -42,7 +63,7 @@
 
           <div
             @click="deleteGroup(groupData.id)"
-            class="flex items-center gap-2 cursor-pointer"
+            class="portal-group-popover-item"
           >
             <n-icon>
               <TrashBinOutline />
@@ -53,7 +74,13 @@
       </div>
     </section>
 
-    <section class="portal-tag-list" v-if="expand">
+    <section
+      v-if="expand"
+      :class="{
+        'portal-tag-list': listView === 'list',
+        'portal-tag-grid': listView === 'grid',
+      }"
+    >
       <PortalTag
         v-for="portalTag in groupData.childs"
         :key="portalTag"
@@ -81,13 +108,23 @@
 
 <script setup>
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
-import { NIcon, NEllipsis, NCheckbox, NPopover, NBadge } from 'naive-ui'
+import {
+  NIcon,
+  NEllipsis,
+  NCheckbox,
+  NPopover,
+  NBadge,
+  NDivider,
+} from 'naive-ui'
 import {
   Add,
   CaretDown,
   MenuSharp,
   TrashBinOutline,
   PencilSharp,
+  ColorFill,
+  ListSharp,
+  Grid,
 } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
@@ -102,6 +139,7 @@ const props = defineProps({
   groupData: Object,
 })
 const store = useStore()
+const listView = ref('list')
 const expand = ref(false)
 const showPopOver = ref(false)
 const showPortalTagModal = ref(false)
@@ -162,7 +200,7 @@ const renameGroup = () => {
 
 <style lang="postcss" scoped>
 .portal-group {
-  @apply flex flex-col;
+  @apply flex flex-col text-[var(--primary-font)];
 }
 
 .group-header {
@@ -178,7 +216,15 @@ const renameGroup = () => {
   @apply flex flex-col gap-3;
 }
 
+.portal-tag-grid {
+  @apply grid grid-cols-2 gap-3 pl-7 py-2;
+}
+
 .unexpend {
   @apply transform rotate-270;
+}
+
+.portal-group-popover-item {
+  @apply flex items-center gap-2 cursor-pointer;
 }
 </style>
