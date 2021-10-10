@@ -9,6 +9,10 @@ const database = {
     const res = ipcRenderer.invoke('Database-Save', key, data)
     return res
   },
+  deepSave(keys: string | string[], data: any) {
+    const res = ipcRenderer.invoke('Database-Deep-Save', keys, data)
+    return res
+  },
   get(key: string) {
     const res = ipcRenderer.invoke('Database-Get', key)
     return res

@@ -1,6 +1,8 @@
 import { Module } from 'vuex'
 import { useElectron } from '/@/use/electron'
 const { database } = useElectron()
+import PQueue from 'p-queue'
+const queue = new PQueue({ concurrency: 1 })
 
 const db: Module<any, any> = {
   state: {
@@ -26,6 +28,11 @@ const db: Module<any, any> = {
       const end = performance.now()
       console.log(`stringify: ${(end - start) / 1000} 秒`)
       return await database.save(key, stringData)
+    },
+    DEEP_SAVE_TO_DB: async ({ commit }, { keys, data }) => {
+      const stringData = JSON.stringify(data)
+      const task = async () => await database.deepSave(keys, stringData)
+      await queue.add(task)
     },
     DB_GET: async ({ commit }, key: string) => {
       return await database.get(key)

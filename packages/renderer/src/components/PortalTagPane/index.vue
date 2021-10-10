@@ -15,13 +15,12 @@
       <n-icon size="20" class="cursor-pointer"><EnterSharp /></n-icon>
       <n-icon size="20" class="cursor-pointer"><Search /></n-icon>
     </div>
+
     <draggable
       class="portal-group-list"
       v-model="portals"
-      group="people"
-      @start="drag = true"
-      @end="drag = false"
       item-key="id"
+      :animation="300"
     >
       <template #item="{ element }">
         <PortalGroup :groupData="element" />

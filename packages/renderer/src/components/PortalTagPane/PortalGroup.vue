@@ -74,20 +74,29 @@
       </div>
     </section>
 
-    <section
-      v-if="expand"
-      :class="{
-        'portal-tag-list': listView === 'list',
-        'portal-tag-grid': listView === 'grid',
-      }"
+    <draggable
+      class="portal-group-list"
+      v-model="groupProtals"
+      group="protal"
+      item-key="id"
+      :animation="300"
     >
-      <PortalTag
-        v-for="portalTag in groupData.childs"
-        :key="portalTag"
-        :data="portalTag"
-        :groupId="groupData.id"
-      />
-    </section>
+      <template #item="{ element }">
+        <div
+          v-if="expand"
+          :class="{
+            'portal-tag-list': listView === 'list',
+            'portal-tag-grid': listView === 'grid',
+          }"
+        >
+          <PortalTag
+            :key="element.id"
+            :data="element"
+            :groupId="groupData.id"
+          />
+        </div>
+      </template>
+    </draggable>
 
     <!-- Modal -->
     <PortalGroupModal
@@ -107,6 +116,7 @@
 </template>
 
 <script setup>
+import draggable from 'vuedraggable'
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
 import {
   NIcon,
@@ -139,6 +149,7 @@ const props = defineProps({
   groupData: Object,
 })
 const store = useStore()
+const drag = ref(false)
 const listView = ref('list')
 const expand = ref(false)
 const showPopOver = ref(false)
@@ -154,7 +165,21 @@ const groupActivedPortalsCount = computed(() => {
   return filter(activeds, { group: groupId }).length
 })
 
+const groupProtals = computed({
+  get: () => props.groupData.childs,
+  set: async (newData) => {
+    const portalsRef = portalsData.value
+    const groupIndex = findIndex(portalsRef, { id: props.groupData.id })
+    await store.dispatch('DEEP_SAVE_TO_DB', {
+      keys: `[portals][${groupIndex}][childs]`,
+      data: newData,
+    })
+    await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+  },
+})
+
 // --- Methods ---
+
 const openPortalGroupModal = () => {
   showPortalGroupModal.value = true
   showPopOver.value = false

@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 import { Low, JSONFile, Memory } from 'lowdb'
+import { set, setWith, get } from 'lodash-es'
 
 const ipc = ipcMain
 let db: Low = new Low(new Memory())
@@ -26,6 +27,21 @@ const database = () => {
       console.log(`parse: ${(end - start) / 1000} 秒`)
       db.data[key] = parseData
       await db.write()
+      return ['success', null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
+  ipc.handle('Database-Deep-Save', async (e, keys, data) => {
+    try {
+      const start = performance.now()
+      await db.read()
+      const parseData = JSON.parse(data)
+      setWith(db.data, keys, parseData, Object)
+      await db.write()
+      const end = performance.now()
+      console.log(`deep write: ${(end - start) / 1000} 秒`)
       return ['success', null]
     } catch (error) {
       return [null, error]
