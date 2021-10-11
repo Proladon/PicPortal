@@ -9,6 +9,7 @@
       <span>{{ data.name }}</span>
     </n-ellipsis>
     <n-popover
+      raw
       :show="showPopOver"
       trigger="click"
       placement="bottom-end"
@@ -17,14 +18,16 @@
       <template #trigger>
         <n-icon><PencilSharp /></n-icon>
       </template>
-      <div class="portal-tag-option" @click="editPortalTag(groupId, data)">
-        <n-icon><BuildOutline /></n-icon>
-        <span>Edit</span>
-      </div>
-      <div class="portal-tag-option" @click="deletePortalTag(groupId, data)">
-        <n-icon><TrashBinOutline /></n-icon>
-        <span>Delete</span>
-      </div>
+      <section class="py-2">
+        <div class="portal-tag-option" @click="editPortalTag(groupId, data)">
+          <n-icon><BuildOutline /></n-icon>
+          <span>Edit</span>
+        </div>
+        <div class="portal-tag-option" @click="deletePortalTag(groupId, data)">
+          <n-icon><TrashBinOutline /></n-icon>
+          <span>Delete</span>
+        </div>
+      </section>
     </n-popover>
 
     <PortalTagModal
@@ -145,6 +148,7 @@ onMounted(() => {
 }
 
 .portal-tag-option {
-  @apply flex items-center gap-2 cursor-pointer;
+  @apply flex items-center gap-2 cursor-pointer px-3;
+  @apply hover:bg-[var(--border-1)] hover:text-[var(--primary-bg-1)];
 }
 </style>

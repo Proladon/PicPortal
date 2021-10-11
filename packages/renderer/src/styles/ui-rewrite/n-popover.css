@@ -1,0 +1,7 @@
+.n-popover {
+  @apply !bg-[var(--primary-bg-3)] text-[var(--border-1)];
+}
+
+.n-popover-arrow {
+  @apply !bg-[var(--primary-bg-3)];
+}

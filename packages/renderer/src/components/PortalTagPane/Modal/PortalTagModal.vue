@@ -172,6 +172,8 @@ const updatePortal = async (e) => {
     })
     portals[groupIndex].childs[portalIndex] = portal
     await updateDBData(portals)
+    showModal.value = false
+    closeModal()
   })
 }
 

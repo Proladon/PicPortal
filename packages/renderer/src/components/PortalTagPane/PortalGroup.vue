@@ -22,6 +22,7 @@
         <n-icon size="20" @click="showPortalTagModal = true"><Add /></n-icon>
 
         <n-popover
+          raw
           trigger="click"
           placement="bottom-end"
           :show="showPopOver"
@@ -34,61 +35,69 @@
           </template>
 
           <!-- PopOver Content -->
-          <div class="portal-group-popover-item" @click="listView = 'list'">
-            <n-icon>
-              <ListSharp />
-            </n-icon>
-            <span>List View</span>
-          </div>
-          <div class="portal-group-popover-item" @click="listView = 'grid'">
-            <n-icon>
-              <Grid />
-            </n-icon>
-            <span>Grid View</span>
-          </div>
-          <n-divider class="!my-2" />
-          <div class="portal-group-popover-item">
-            <n-icon>
-              <ColorFill />
-            </n-icon>
-            <span>Sync Color</span>
-          </div>
+          <section class="py-2">
+            <div
+              class="portal-group-popover-item"
+              @click=";(listView = 'list'), (showPopOver = false)"
+            >
+              <n-icon>
+                <ListSharp />
+              </n-icon>
+              <span>List View</span>
+            </div>
+            <div
+              class="portal-group-popover-item"
+              @click=";(listView = 'grid'), (showPopOver = false)"
+            >
+              <n-icon>
+                <Grid />
+              </n-icon>
+              <span>Grid View</span>
+            </div>
+            <n-divider class="!my-2" />
+            <div class="portal-group-popover-item">
+              <n-icon>
+                <ColorFill />
+              </n-icon>
+              <span>Sync Color</span>
+            </div>
 
-          <div @click="openPortalGroupModal" class="portal-group-popover-item">
-            <n-icon>
-              <PencilSharp />
-            </n-icon>
-            <span>Rename</span>
-          </div>
+            <div
+              @click="openPortalGroupModal"
+              class="portal-group-popover-item"
+            >
+              <n-icon>
+                <PencilSharp />
+              </n-icon>
+              <span>Rename</span>
+            </div>
 
-          <div
-            @click="deleteGroup(groupData.id)"
-            class="portal-group-popover-item"
-          >
-            <n-icon>
-              <TrashBinOutline />
-            </n-icon>
-            <span>Delete</span>
-          </div>
+            <div
+              @click="deleteGroup(groupData.id)"
+              class="portal-group-popover-item"
+            >
+              <n-icon>
+                <TrashBinOutline />
+              </n-icon>
+              <span>Delete</span>
+            </div>
+          </section>
         </n-popover>
       </div>
     </section>
 
     <draggable
-      class="portal-group-list"
       v-model="groupProtals"
       group="protal"
       item-key="id"
       :animation="300"
+      :class="{
+        'list-view': listView === 'list',
+        'grid-view': listView === 'grid',
+      }"
     >
       <template #item="{ element }">
-        <div
-          v-if="expand"
-          :class="{
-            'portal-tag-list': listView === 'list',
-            'portal-tag-grid': listView === 'grid',
-          }"
-        >
+        <div v-if="expand">
           <PortalTag
             :key="element.id"
             :data="element"
@@ -236,12 +245,12 @@ const renameGroup = () => {
   }
 }
 
-.portal-tag-list {
+.list-view {
   @apply text-left py-2 pl-7;
   @apply flex flex-col gap-3;
 }
 
-.portal-tag-grid {
+.grid-view {
   @apply grid grid-cols-2 gap-3 pl-7 py-2;
 }
 
@@ -250,6 +259,7 @@ const renameGroup = () => {
 }
 
 .portal-group-popover-item {
-  @apply flex items-center gap-2 cursor-pointer;
+  @apply flex items-center gap-2 cursor-pointer px-3;
+  @apply hover:bg-[var(--border-1)] hover:text-[var(--primary-bg-1)];
 }
 </style>

@@ -23,10 +23,10 @@ const database = () => {
 
       const start = performance.now()
       const parseData = JSON.parse(data)
-      const end = performance.now()
-      console.log(`parse: ${(end - start) / 1000} 秒`)
       db.data[key] = parseData
       await db.write()
+      const end = performance.now()
+      console.log(`write: ${(end - start) / 1000} 秒`)
       return ['success', null]
     } catch (error) {
       return [null, error]

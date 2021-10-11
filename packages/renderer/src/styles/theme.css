@@ -1,7 +1,9 @@
 :root {
   --primary-bg-1: #1c1e26;
   --primary-bg-2: #1f2937;
+  --primary-bg-3: #243142;
   --skyblue: skyblue;
   --border-1: #ccc0b8;
   --primary-font: #ccc0b8;
+  /* --primary-font: ; */
 }

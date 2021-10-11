@@ -7,13 +7,18 @@
       </div>
 
       <n-icon
+        color="var(--primary-bg-1)"
         size="20"
         class="cursor-pointer"
         @click="showPortalGroupModal = true"
         ><Folder
       /></n-icon>
-      <n-icon size="20" class="cursor-pointer"><EnterSharp /></n-icon>
-      <n-icon size="20" class="cursor-pointer"><Search /></n-icon>
+      <n-icon color="var(--primary-bg-1)" size="20" class="cursor-pointer"
+        ><EnterSharp
+      /></n-icon>
+      <n-icon color="var(--primary-bg-1)" size="20" class="cursor-pointer"
+        ><Search
+      /></n-icon>
     </div>
 
     <draggable
