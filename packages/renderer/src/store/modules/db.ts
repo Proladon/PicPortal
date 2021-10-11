@@ -38,7 +38,10 @@ const db: Module<any, any> = {
       return await database.get(key)
     },
     SYNC_DB_TO_STATE: async ({ rootState }, key) => {
+      const start = performance.now()
       const [getRes, getError] = await database.get(key)
+      const end = performance.now()
+      console.log(`read: ${(end - start) / 1000} 秒`)
       if (getError) return alert(getError)
       rootState.app[key] = getRes
     },

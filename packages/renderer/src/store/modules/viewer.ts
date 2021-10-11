@@ -2,7 +2,7 @@ import { Module } from 'vuex'
 import { chunk, indexOf, set } from 'lodash'
 import { useElectron } from '/@/use/electron'
 const { fastGlob } = useElectron()
-import store from '../index'
+import { dataClone } from '/@/utils/data'
 
 const viewer: Module<any, any> = {
   state: {
@@ -27,13 +27,18 @@ const viewer: Module<any, any> = {
   },
 
   actions: {
-    GET_FOLDER_ALL_FILES: async ({ commit }) => {
-      const mainFolder = store.getters.mainFolder.path
+    GET_FOLDER_ALL_FILES: async ({ commit, getters }) => {
+      const mainFolder = getters.mainFolder.path
       if (!mainFolder) return
       const res = await fastGlob.glob(mainFolder + '/**/*.png')
-      // const filesChunkList = chunk(res, 3)
-      // const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
       commit('SET_FOLDER_FILES', res)
+    },
+
+    DOCKING: async ({ dispatch }, { key, data }) => {
+      await dispatch('SAVE_TO_DB', {
+        key,
+        data: dataClone(data),
+      })
     },
   },
 

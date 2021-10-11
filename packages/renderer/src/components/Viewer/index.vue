@@ -16,7 +16,7 @@
           <template v-slot="{ item, index }">
             <div class="item-container">
               <ImageItem
-                @click="selectItem({ item, parent: index, child: childIndex })"
+                @click="selectItem({ item, childIndex })"
                 v-for="(img, childIndex) in item.src"
                 :key="childIndex"
                 :img="img.path"
@@ -37,12 +37,16 @@ import { computed, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
 import { chunk, map } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
-
+import { dataClone } from '/@/utils/data'
 // --- Data ---
 const store = useStore()
+const ch = ref(0)
+
+// --- Computed ---
 const mainFolder = computed(() => store.getters.mainFolder)
 const folderFiles = computed(() => store.state.viewer.folderFiles)
-const ch = ref(0)
+const activedPortals = computed(() => store.getters.activedPortals)
+const docking = computed(() => store.getters.docking)
 
 const pngs = ref<unknown>([])
 // --- Watch ---
@@ -59,8 +63,27 @@ const chunkFiles = async () => {
   pngs.value = newData
 }
 
-const selectItem = (data: unknown) => {
-  console.log('none')
+const selectItem = async (row: unknown) => {
+  if (!activedPortals.value.length) return
+  const rowImgs = row.item.src
+  const index = row.childIndex
+  const target = rowImgs[index].path
+
+  const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)
+  const dockingRef = dataClone(docking.value)
+
+  const dockingData = {
+    target,
+    portals: map(activedPortalsRef, 'id'),
+  }
+
+  dockingRef.push(dockingData)
+
+  await store.dispatch('DOCKING', {
+    key: 'docking',
+    data: dockingRef,
+  })
+  await store.dispatch('SYNC_DB_TO_STATE', 'docking')
 }
 
 // --- Mounted ---

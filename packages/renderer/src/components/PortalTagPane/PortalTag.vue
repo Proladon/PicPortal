@@ -45,7 +45,7 @@ import { NIcon, NPopover, NButton, NEllipsis } from 'naive-ui'
 import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
-import { onBeforeUpdate, onMounted } from '@vue/runtime-core'
+import { onBeforeUpdate, onMounted, watch } from '@vue/runtime-core'
 import { findIndex, find, cloneDeep } from 'lodash-es'
 // --- Props ---
 const props = defineProps({
@@ -81,6 +81,7 @@ const activePortal = async (e) => {
   const exist = findIndex(activedPortalsRef, { id: portal.id })
 
   if (actived.value) {
+    styles.borderColor = portal.bg
     styles.background = portal.bg
     styles.color = portal.fg
     if (exist < 0)
@@ -89,6 +90,7 @@ const activePortal = async (e) => {
         group: groupId,
       })
   } else {
+    styles.borderColor = portal.bg
     styles.background = ''
     styles.color = ''
     if (exist >= 0) await store.dispatch('SPLICE_ACTIVED_PORTALS', exist)
@@ -124,6 +126,21 @@ const editPortalTag = async (groupId, portal) => {
 const updatePopOver = (show) => {
   showPopOver.value = show
 }
+
+watch(props, () => {
+  const portal = props.data
+  styles.borderColor = portal.bg
+
+  const activedPortalsRef = activedPortals.value
+  const exist = findIndex(activedPortalsRef, { id: portal.id })
+  if (exist >= 0) {
+    actived.value = true
+    styles.borderColor = portal.bg
+    styles.background = portal.bg
+    styles.color = portal.fg
+  }
+})
+
 // --- Mounted ---
 onMounted(() => {
   const portal = props.data

@@ -30,6 +30,7 @@ const { fileSystem, userStore } = useElectron()
 import { findIndex, find } from 'lodash-es'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import projectDBModel from '../model/projectDB'
 
 const store = useStore()
 const router = useRouter()
@@ -45,16 +46,13 @@ const getProjectName = (projectPath: string) => {
 // => 創建DB檔
 const createDB = async (filePath: string) => {
   const pathChunk = filePath.split('\\')
-  const dbName = pathChunk[pathChunk.length - 1].split('.')[0]
+  const dbName: string = pathChunk[pathChunk.length - 1].split('.')[0]
 
   const [, createErr] = await fileSystem.createFile(filePath)
   if (createErr) return console.log(createErr)
 
-  const [, writeErr] = await fileSystem.writeJson(filePath, {
-    project: dbName,
-    mainFolder: '',
-    portals: [],
-  })
+  const newProjectDB: ProjectDB = projectDBModel(dbName)
+  const [, writeErr] = await fileSystem.writeJson(filePath, newProjectDB)
   if (writeErr) return console.log(writeErr)
 }
 
