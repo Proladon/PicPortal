@@ -2,3 +2,20 @@
 @import url('./theme.css');
 @import url('./ui-rewrite/n-badge.css');
 @import url('./ui-rewrite/n-popover.css');
+
+/* width */
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+/* ::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+} */

@@ -95,6 +95,7 @@ onMounted(() => {
 <style lang="postcss" scoped>
 .image-item {
   /* @apply border-2  border-teal-400 rounded-md; */
+  @apply justify-self-center;
   @apply relative cursor-pointer border-solid border-2 rounded-md border-transparent;
   @apply hover:border-[var(--skyblue)] hover:shadow-blue-gray-50;
   &:hover {
