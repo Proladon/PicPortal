@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { Low, JSONFile, Memory } from 'lowdb'
-import { set, setWith, get } from 'lodash-es'
+import { set, setWith, slice } from 'lodash-es'
 
 const ipc = ipcMain
 let db: Low = new Low(new Memory())
@@ -42,6 +42,20 @@ const database = () => {
       await db.write()
       const end = performance.now()
       console.log(`deep write: ${(end - start) / 1000} 秒`)
+      return ['success', null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
+  ipc.handle('Database-Slice', async (e, key: string, index: number) => {
+    try {
+      const start = performance.now()
+      await db.read()
+      db.data[key].splice(index, 1)
+      await db.write()
+      const end = performance.now()
+      console.log(`splice: ${(end - start) / 1000} 秒`)
       return ['success', null]
     } catch (error) {
       return [null, error]

@@ -34,6 +34,10 @@ const db: Module<any, any> = {
       const task = async () => await database.deepSave(keys, stringData)
       await queue.add(task)
     },
+    DB_SLICE: async ({ commit }, { key, index }) => {
+      const task = async () => await database.slice(key, index)
+      await queue.add(task)
+    },
     DB_GET: async ({ commit }, key: string) => {
       return await database.get(key)
     },

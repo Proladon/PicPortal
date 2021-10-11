@@ -13,6 +13,10 @@ const database = {
     const res = ipcRenderer.invoke('Database-Deep-Save', keys, data)
     return res
   },
+  slice(key: string, index: number) {
+    const res = ipcRenderer.invoke('Database-Slice', key, index)
+    return res
+  },
   get(key: string) {
     const res = ipcRenderer.invoke('Database-Get', key)
     return res

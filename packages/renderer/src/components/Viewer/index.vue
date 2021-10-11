@@ -16,7 +16,7 @@
           <template v-slot="{ item, index }">
             <div class="item-container">
               <ImageItem
-                @click="selectItem({ item, childIndex })"
+                @click="selectItem($event, { item, childIndex })"
                 v-for="(img, childIndex) in item.src"
                 :key="childIndex"
                 :img="img.path"
@@ -35,7 +35,7 @@ import ImageItem from '/@/components/Viewer/ImageItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
 import { computed, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
-import { chunk, map } from 'lodash-es'
+import { chunk, map, findIndex } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
 import { dataClone } from '/@/utils/data'
 // --- Data ---
@@ -52,6 +52,7 @@ const pngs = ref<unknown>([])
 // --- Watch ---
 watch(mainFolder, async () => {
   await chunkFiles()
+  await store.dispatch('SYNC_DB_TO_STATE', 'docking')
 })
 
 // --- Methods ---
@@ -63,21 +64,27 @@ const chunkFiles = async () => {
   pngs.value = newData
 }
 
-const selectItem = async (row: unknown) => {
+const selectItem = async (e, row: unknown) => {
+  const ignore = ['I', 'path', 'svg']
+  const htmlTarget = e.target.tagName
+  if (ignore.includes(htmlTarget)) return
   if (!activedPortals.value.length) return
+
   const rowImgs = row.item.src
   const index = row.childIndex
   const target = rowImgs[index].path
 
-  const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)
   const dockingRef = dataClone(docking.value)
+  const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)
 
   const dockingData = {
     target,
     portals: map(activedPortalsRef, 'id'),
   }
+  const isExist = findIndex(dockingRef, { target: target })
 
-  dockingRef.push(dockingData)
+  if (isExist >= 0) dockingRef[isExist] = dockingData
+  if (isExist < 0) dockingRef.push(dockingData)
 
   await store.dispatch('DOCKING', {
     key: 'docking',
@@ -93,6 +100,7 @@ onMounted(async () => {
     ch.value = window.innerHeight - 100
   }
   await chunkFiles()
+  await store.dispatch('SYNC_DB_TO_STATE', 'docking')
 })
 </script>
 
