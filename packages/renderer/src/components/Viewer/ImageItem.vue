@@ -70,7 +70,7 @@ const removePortal = async (portal) => {
   }
 }
 
-watch(docking, () => {
+const syncDockingData = () => {
   const exist = find(docking.value, { target: props.img })
   if (!exist) {
     targetPortals.value = []
@@ -80,15 +80,24 @@ watch(docking, () => {
   targetPortals.value = map(exist.portals, (portal) =>
     find(flattenPortals.value, { id: portal })
   )
+}
+
+watch(docking, () => {
+  syncDockingData()
+})
+
+watch(props, () => {
+  syncDockingData()
 })
 
 onMounted(() => {
-  const exist = find(docking.value, { target: props.img })
-  if (!exist) return
-  target.value = exist
-  targetPortals.value = map(exist.portals, (portal) =>
-    find(flattenPortals.value, { id: portal })
-  )
+  syncDockingData()
+  // const exist = find(docking.value, { target: props.img })
+  // if (!exist) return
+  // target.value = exist
+  // targetPortals.value = map(exist.portals, (portal) =>
+  //   find(flattenPortals.value, { id: portal })
+  // )
 })
 </script>
 
