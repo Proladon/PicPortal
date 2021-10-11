@@ -128,14 +128,18 @@ onMounted(async () => {
 
 <style lang="postcss" scoped>
 .projects {
-  @apply w-full h-full flex flex-col justify-between;
+  @apply w-full h-full flex flex-col justify-between pb-10;
 }
 .project-list {
-  @apply grid p-10 gap-5;
+  @apply grid grid-cols-3 p-10 gap-5;
 }
 .project {
   @apply bg-gray-600 px-20 py-5 rounded-sm;
   @apply cursor-pointer;
+}
+
+.btn-container {
+  @apply grid grid-cols-2 gap-5 px-10;
 }
 
 .new-project-btn {

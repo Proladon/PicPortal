@@ -1,8 +1,8 @@
 <template>
   <header class="title-bar" style="-webkit-app-region: drag">
-    <section></section>
-    <section class="app-name">Picnel.io</section>
-    <section class="flex gap-[10px] justify-end">
+    <section class="app-logo"></section>
+    <section class="app-name">PicPortal</section>
+    <section class="flex gap-[20px] justify-end">
       <div class="win-btn min"></div>
       <div class="win-btn max"></div>
       <div class="win-btn close"></div>
@@ -14,21 +14,26 @@
 
 <style lang="postcss" scoped>
 .title-bar {
-  @apply grid grid-cols-3 px-2 py-1;
+  @apply grid grid-cols-3 px-2 py-2;
+}
+
+.app-logo {
+  @apply text-left;
 }
 
 .app-name {
-  @apply text-stroke-cyan-300;
+  @apply text-[var(--primary-font)] font-bold;
 }
 
 .min,
 .max,
 .close {
-  @apply w-[20px] h-[20px] rounded-full cursor-pointer;
+  @apply w-[20px] h-[20px] rounded-full;
 }
 
 .win-btn {
-  @apply border-2 border-solid;
+  @apply border-2 border-solid cursor-pointer;
+  -webkit-app-region: no-drag;
 }
 
 .min {
