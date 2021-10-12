@@ -55,14 +55,14 @@ const column = ref(5)
 const mainFolder = computed(() => store.getters.mainFolder)
 const folderFiles = computed(() => store.state.viewer.folderFiles)
 const activedPortals = computed(() => store.getters.activedPortals)
-const docking = computed(() => store.getters.docking)
+const dockings = computed(() => store.getters.dockings)
 
 const pngs = ref<unknown>([])
 // --- Watch ---
 watch(mainFolder, async () => {
   loading.value = true
   await chunkFiles()
-  await store.dispatch('SYNC_DB_TO_STATE', 'docking')
+  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
   loading.value = false
 })
 
@@ -85,23 +85,23 @@ const selectItem = async (e, row: unknown) => {
   const index = row.childIndex
   const target = rowImgs[index].path
 
-  const dockingRef = dataClone(docking.value)
+  const dockingsRef = dataClone(dockings.value)
   const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)
 
-  const dockingData = {
+  const dockingsData = {
     target,
     portals: map(activedPortalsRef, 'id'),
   }
-  const isExist = findIndex(dockingRef, { target: target })
+  const isExist = findIndex(dockingsRef, { target: target })
 
-  if (isExist >= 0) dockingRef[isExist] = dockingData
-  if (isExist < 0) dockingRef.push(dockingData)
+  if (isExist >= 0) dockingsRef[isExist] = dockingsData
+  if (isExist < 0) dockingsRef.push(dockingsData)
 
   await store.dispatch('DOCKING', {
-    key: 'docking',
-    data: dockingRef,
+    key: 'dockings',
+    data: dockingsRef,
   })
-  await store.dispatch('SYNC_DB_TO_STATE', 'docking')
+  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
 }
 
 // --- Mounted ---
@@ -113,7 +113,7 @@ onMounted(async () => {
     ch.value = window.innerHeight - 100
   }
   await chunkFiles()
-  await store.dispatch('SYNC_DB_TO_STATE', 'docking')
+  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
   loading.value = false
 })
 </script>

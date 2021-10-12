@@ -2,7 +2,7 @@ const projectDBModel = (dbName: string): ProjectDB => ({
   project: dbName,
   mainFolder: '',
   portals: [],
-  docking: [],
+  dockings: [],
 })
 
 export default projectDBModel

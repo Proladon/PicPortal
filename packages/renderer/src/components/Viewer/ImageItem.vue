@@ -39,12 +39,12 @@ const props = defineProps({
 const targetPortals = ref([])
 const target = ref(null)
 const store = useStore()
-const docking = computed(() => store.getters.docking)
+const dockings = computed(() => store.getters.dockings)
 const flattenPortals = computed(() => store.getters.flattenPortals)
 
 const removePortal = async (portal) => {
   const targetIndex = findIndex(
-    docking.value,
+    dockings.value,
     (item) => item.target === props.img
   )
   const portalsRef = dataClone(target.value.portals)
@@ -52,26 +52,26 @@ const removePortal = async (portal) => {
 
   if (!portalsRef.length) {
     await store.dispatch('DB_SLICE', {
-      key: 'docking',
+      key: 'dockings',
       index: targetIndex,
     })
 
-    await store.dispatch('SYNC_DB_TO_STATE', 'docking')
+    await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
     return
   }
 
   if (portalsRef.length) {
     await store.dispatch('DEEP_SAVE_TO_DB', {
-      keys: `[docking][${targetIndex}][portals]`,
+      keys: `[dockings][${targetIndex}][portals]`,
       data: portalsRef,
     })
 
-    await store.dispatch('SYNC_DB_TO_STATE', 'docking')
+    await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
   }
 }
 
-const syncDockingData = () => {
-  const exist = find(docking.value, { target: props.img })
+const syncDockingsData = () => {
+  const exist = find(dockings.value, { target: props.img })
   if (!exist) {
     targetPortals.value = []
     return
@@ -82,22 +82,16 @@ const syncDockingData = () => {
   )
 }
 
-watch(docking, () => {
-  syncDockingData()
+watch(dockings, () => {
+  syncDockingsData()
 })
 
 watch(props, () => {
-  syncDockingData()
+  syncDockingsData()
 })
 
 onMounted(() => {
-  syncDockingData()
-  // const exist = find(docking.value, { target: props.img })
-  // if (!exist) return
-  // target.value = exist
-  // targetPortals.value = map(exist.portals, (portal) =>
-  //   find(flattenPortals.value, { id: portal })
-  // )
+  syncDockingsData()
 })
 </script>
 

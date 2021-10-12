@@ -8,6 +8,7 @@ const app: Module<any, any> = {
     project: null,
     mainFolder: {},
     portals: [],
+    dockings: [],
   },
 
   mutations: {},
@@ -27,8 +28,8 @@ const app: Module<any, any> = {
     flattenPortals: (state) => {
       return chain(state.portals).map('childs').flatten().value()
     },
-    docking: (state) => {
-      return state.docking
+    dockings: (state) => {
+      return state.dockings
     },
   },
 }

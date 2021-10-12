@@ -17,7 +17,7 @@
         <button
           v-if="projectName"
           class="btn main-folder-btn"
-          @click="choseMainFolder"
+          @click="showWarningModal = true"
         >
           <n-icon>
             <folder />
@@ -40,17 +40,28 @@
       Files Count
     </n-popover>
   </footer>
+
+  <WarningModal
+    v-if="showWarningModal"
+    title="Warning"
+    @close="showWarningModal = false"
+    @confirm="choseMainFolder"
+  >
+    <div>Changing Mainfolder will lose all of the current dockings !</div>
+  </WarningModal>
 </template>
 
 <script lang="ts" setup>
+import WarningModal from '/@/components/Modal/WarningModal.vue'
 import { NIcon, NPopover } from 'naive-ui'
 import { Folder, Cube, DocumentOutline } from '@vicons/ionicons5'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
 
 const { browserDialog } = useElectron()
 const store = useStore()
+const showWarningModal = ref(false)
 
 // --- Computed ---
 const mainFolder = computed(() => store.getters.mainFolder || {})
@@ -70,12 +81,17 @@ const choseMainFolder = async () => {
         name: chunk[chunk.length - 1],
         path: res.filePaths[0].replaceAll('\\', '/'),
       }
-      console.log(folder)
       await store.dispatch('SAVE_TO_DB', {
         key: 'mainFolder',
         data: folder,
       })
       await store.dispatch('SYNC_DB_TO_STATE', 'mainFolder')
+
+      await store.dispatch('SAVE_TO_DB', {
+        key: 'dockings',
+        data: [],
+      })
+      await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
     }
   } catch (error) {
     console.log(error)

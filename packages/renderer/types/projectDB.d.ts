@@ -21,5 +21,5 @@ interface ProjectDB {
   project: string
   mainFolder: string
   portals: PortalGroup[]
-  docking: Docking[]
+  dockings: Docking[]
 }
