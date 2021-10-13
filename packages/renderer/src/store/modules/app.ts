@@ -1,7 +1,7 @@
 import { Module } from 'vuex'
 import { useElectron } from '/@/use/electron'
 const { database } = useElectron()
-import { chain } from 'lodash-es'
+import { map, flatten } from 'lodash-es'
 
 const app: Module<any, any> = {
   state: {
@@ -26,7 +26,9 @@ const app: Module<any, any> = {
       return state.portals
     },
     flattenPortals: (state) => {
-      return chain(state.portals).map('childs').flatten().value()
+      const childs = map(state.portals, 'childs')
+      const flattenChilds = flatten(childs)
+      return flattenChilds
     },
     dockings: (state) => {
       return state.dockings
