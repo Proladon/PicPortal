@@ -4,6 +4,7 @@ import browserDialog from './render/modules/browserDialog'
 import fastGlob from './render/modules/fastGlob'
 import fileSystem from './render/modules/fileSystem'
 import database from './render/modules/database'
+import appWindow from './render/modules/app'
 
 const apiKey = 'electron'
 /**
@@ -16,6 +17,7 @@ const api: ElectronApi = {
   fastGlob,
   fileSystem,
   database,
+  appWindow,
 }
 
 if (import.meta.env.MODE !== 'test') {

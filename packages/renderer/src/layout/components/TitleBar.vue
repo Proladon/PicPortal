@@ -3,14 +3,29 @@
     <section class="app-logo"></section>
     <section class="app-name">PicPortal</section>
     <section class="flex gap-[20px] justify-end">
-      <div class="win-btn min"></div>
-      <div class="win-btn max"></div>
-      <div class="win-btn close"></div>
+      <div class="win-btn min" @click="minWin"></div>
+      <div class="win-btn max" @click="maxWin"></div>
+      <div class="win-btn close" @click="closeWin"></div>
     </section>
   </header>
 </template>
 
-<script setup></script>
+<script setup>
+import { useElectron } from '/@/use/electron'
+const { appWindow } = useElectron()
+
+const closeWin = async () => {
+  await appWindow.close()
+}
+
+const minWin = async () => {
+  await appWindow.minimum()
+}
+
+const maxWin = async () => {
+  await appWindow.maximum()
+}
+</script>
 
 <style lang="postcss" scoped>
 .title-bar {

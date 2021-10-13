@@ -29,9 +29,6 @@ import { useStore } from 'vuex'
 import { NTag } from 'naive-ui'
 import { find, map, findIndex, pull, filter } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
-import prettLlogger from '/@/utils/logger'
-import { Logger } from '../../../types/logger'
-const logger: Logger = prettLlogger
 
 const props = defineProps({
   img: {
@@ -47,17 +44,12 @@ const flattenPortals = computed(() => store.getters.flattenPortals)
 
 // => 移除圖片上的 portal
 const removePortal = async (portal) => {
-  logger.danger('portal', portal)
-  logger.action('remove potals triggerd')
-
   const targetIndex = findIndex(
     dockings.value,
     (item) => item.target === props.img
   )
   const portalsRef = dataClone(target.value.portals)
-  logger.noLabel('portal.id', portal.id)
   pull(portalsRef, portal.id)
-  logger.todo(portalsRef)
 
   if (!portalsRef.length) {
     await store.dispatch('DB_SLICE', {
@@ -89,8 +81,6 @@ const syncDockingsData = () => {
   }
   target.value = exist
 
-  logger.noLabel('exist.portals', exist.portals)
-
   targetPortals.value = map(exist.portals, (portal) =>
     find(flattenPortals.value, { id: portal })
   )
@@ -105,7 +95,6 @@ watch(props, () => {
 })
 
 onMounted(() => {
-  logger.action('exist.portals', flattenPortals.value)
   syncDockingsData()
 })
 </script>

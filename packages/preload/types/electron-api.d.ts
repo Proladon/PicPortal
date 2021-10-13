@@ -5,6 +5,7 @@ interface ElectronApi {
   readonly fastGlob: Object<Function>
   readonly fileSystem: Object<Function>
   readonly database: Object<Function>
+  readonly appWindow: Object<Function>
 }
 
 declare interface Window {
