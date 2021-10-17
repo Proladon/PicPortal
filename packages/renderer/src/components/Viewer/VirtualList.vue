@@ -1,5 +1,5 @@
 <template>
-  <section class="viewer">
+  <section class="virtual-view">
     <n-spin :show="loading">
       <div v-if="loading" :style="`height: ${ch}px`" class="w-full"></div>
       <div

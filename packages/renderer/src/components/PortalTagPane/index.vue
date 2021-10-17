@@ -1,9 +1,5 @@
 <template>
   <div class="tree-view">
-    <section class="bg-[var(--primary-bg-2)] flex flex-col w-[80px] h-full">
-      dfas
-    </section>
-
     <section class="flex flex-col min-w-[180px] w-full h-full">
       <div class="bg-border flex justify-between items-center px-5 py-1">
         <div class="flex gap-2 text-[16px] flex items-center">

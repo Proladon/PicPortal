@@ -8,3 +8,9 @@
 <script lang="ts" setup>
 import HandleBar from '/@/components/Viewer/Handlebar.vue'
 </script>
+
+<style lang="postcss" scoped>
+.viewer {
+  @apply h-full;
+}
+</style>
