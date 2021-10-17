@@ -4,17 +4,7 @@
 
     <section class="main-wrapper">
       <Navbar />
-
-      <router-view v-slot="{ Component }">
-        <keep-alive>
-          <component
-            :is="Component"
-            v-if="$route.meta.keepAlive"
-            :key="$route.fullPath"
-            class="main-view"
-          />
-        </keep-alive>
-      </router-view>
+      <router-view />
     </section>
 
     <StatusBar />

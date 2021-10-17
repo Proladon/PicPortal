@@ -15,7 +15,10 @@
             dataKey="path"
           >
             <template v-slot="{ item, index }">
-              <div class="item-container">
+              <div
+                class="item-container"
+                :style="`grid-template-columns: repeat(${column}, 1fr);`"
+              >
                 <VirtualGridItem
                   @click="selectItem($event, { item, childIndex })"
                   v-for="(img, childIndex) in item.src"
@@ -46,7 +49,7 @@ import { NSpin } from 'naive-ui'
 const store = useStore()
 const ch = ref(0)
 const loading = ref(false)
-const column = ref(1)
+const column = ref(5)
 // --- Computed ---
 const mainFolder = computed(() => store.getters.mainFolder)
 const folderFiles = computed(() => store.state.viewer.folderFiles)

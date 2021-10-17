@@ -1,6 +1,10 @@
 <template>
   <section class="viewer-handle-bar">
-    <n-tag type="info" class="p-4 cursor-pointer">
+    <n-tag
+      type="info"
+      class="p-4 cursor-pointer"
+      @click="showModeChangeModal = true"
+    >
       <div class="handle-item">
         <n-icon><BrowsersOutline /></n-icon>
         <span class="ml-2 text-gray-300">Multiple</span>
@@ -14,11 +18,20 @@
       </div>
     </n-tag>
   </section>
+
+  <ModeChangeModal
+    v-if="showModeChangeModal"
+    @close="showModeChangeModal = false"
+  />
 </template>
 
-<script setup>
+<script lang="ts" setup>
+import ModeChangeModal from './Modal/ModeChangeModal.vue'
 import { NIcon, NTag } from 'naive-ui'
 import { BrowsersOutline } from '@vicons/ionicons5'
+import { ref } from '@vue/reactivity'
+
+const showModeChangeModal = ref(false)
 </script>
 
 <style lang="postcss" scoped>

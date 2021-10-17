@@ -17,10 +17,8 @@
             <template v-slot="{ item, index }">
               <div class="item-container">
                 <VirtualListItem
-                  @click="selectItem($event, { item, childIndex })"
-                  v-for="(img, childIndex) in item.src"
-                  :key="childIndex"
-                  :img="img.path"
+                  :img="item.path"
+                  @click="selectItem($event, item)"
                 />
               </div>
             </template>
@@ -66,9 +64,7 @@ watch(mainFolder, async () => {
 const chunkFiles = async () => {
   await store.dispatch('GET_FOLDER_ALL_FILES')
   const files = map(folderFiles.value, (path) => ({ path: path }))
-  const filesChunkList = chunk(files, column.value)
-  const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
-  pngs.value = newData
+  pngs.value = files
 }
 
 const selectItem = async (e, row: unknown) => {
@@ -77,9 +73,7 @@ const selectItem = async (e, row: unknown) => {
   if (ignore.includes(htmlTarget)) return
   if (!activedPortals.value.length) return
 
-  const rowImgs = row.item.src
-  const index = row.childIndex
-  const target = rowImgs[index].path
+  const target = row.path
 
   const dockingsRef = dataClone(dockings.value)
   const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)

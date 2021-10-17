@@ -3,7 +3,7 @@
     <n-popover trigger="hover" placement="right">
       <template #trigger>
         <router-link
-          to="/editor"
+          to="/editor/viewer/virtual-list"
           class="nav-btn"
           :class="{ 'nav--actived': $route.name === 'Editor' }"
         >
