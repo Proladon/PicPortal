@@ -2,7 +2,7 @@
   <div class="home">
     <splitpanes>
       <pane>
-        <Viewer />
+        <router-view></router-view>
       </pane>
       <pane size="30">
         <PortalTagPane />
@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import Viewer from '/@/components/Viewer/index.vue'
+import Viewer from '../components/Viewer/Viewer.vue'
 import PortalTagPane from '/@/components/PortalTagPane/index.vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'

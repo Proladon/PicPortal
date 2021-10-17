@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Layout from '../layout/index.vue'
+import viewerRoutes from './modules/viewer'
 
 const routes = [
   {
@@ -12,6 +13,7 @@ const routes = [
         path: '/editor',
         name: 'Editor',
         component: () => import('../views/Editor.vue'),
+        children: [...viewerRoutes],
       },
       {
         path: '/about',

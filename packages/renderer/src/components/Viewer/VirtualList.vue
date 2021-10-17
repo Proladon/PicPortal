@@ -1,6 +1,5 @@
 <template>
   <section class="viewer">
-    <HandleBar />
     <n-spin :show="loading">
       <div v-if="loading" :style="`height: ${ch}px`" class="w-full"></div>
       <div
@@ -16,11 +15,8 @@
             dataKey="path"
           >
             <template v-slot="{ item, index }">
-              <div
-                class="item-container"
-                :style="`grid-template-columns: repeat(${column}, 1fr);`"
-              >
-                <ImageItem
+              <div class="item-container">
+                <VirtualListItem
                   @click="selectItem($event, { item, childIndex })"
                   v-for="(img, childIndex) in item.src"
                   :key="childIndex"
@@ -37,7 +33,7 @@
 
 <script lang="ts" setup>
 import HandleBar from '/@/components/Viewer/Handlebar.vue'
-import ImageItem from '/@/components/Viewer/ImageItem.vue'
+import VirtualListItem from '/@/components/Viewer/Item/VirtualListItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
 import { computed, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
@@ -50,7 +46,7 @@ import { NSpin } from 'naive-ui'
 const store = useStore()
 const ch = ref(0)
 const loading = ref(false)
-const column = ref(5)
+const column = ref(1)
 // --- Computed ---
 const mainFolder = computed(() => store.getters.mainFolder)
 const folderFiles = computed(() => store.state.viewer.folderFiles)
