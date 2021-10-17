@@ -2,6 +2,7 @@
 @import url('./theme.css');
 @import url('./ui-rewrite/n-badge.css');
 @import url('./ui-rewrite/n-popover.css');
+@import url('./ui-rewrite/n-pagination.css');
 
 /* width */
 ::-webkit-scrollbar {

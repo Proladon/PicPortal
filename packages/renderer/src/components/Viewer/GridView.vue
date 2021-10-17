@@ -15,7 +15,11 @@
     </div>
 
     <div class="pagination-container">
-      <n-pagination v-model:page="page" :page-count="pngs.length" />
+      <n-pagination
+        v-model:page="page"
+        :page-count="pngs.length"
+        show-quick-jumper
+      />
     </div>
   </section>
 </template>

@@ -72,7 +72,7 @@ const changeView = (view: string): void => {
 }
 .mode-btn {
   @apply cursor-pointer flex items-center justify-start gap-3 whitespace-nowrap;
-  @apply border-border border-solid border-1 p-2 rounded-md;
+  @apply border-border border-solid border-1 p-10 rounded-md;
   @apply hover:bg-[var(--skyblue)];
 }
 </style>
