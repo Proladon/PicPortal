@@ -1,7 +1,7 @@
 import { Module } from 'vuex'
 import { chunk, indexOf, set } from 'lodash'
 import { useElectron } from '/@/use/electron'
-const { fastGlob } = useElectron()
+const { fastGlob, fileSystem } = useElectron()
 import { dataClone } from '/@/utils/data'
 
 const viewer: Module<any, any> = {
@@ -39,6 +39,17 @@ const viewer: Module<any, any> = {
         key,
         data: dataClone(data),
       })
+    },
+
+    WRAPING: async ({ commit }, { mode, filePath, destPath }) => {
+      if (mode === 'copy') {
+        const [, err] = await fileSystem.copyFile(filePath, destPath)
+        if (err) console.log(err)
+      }
+      if (mode === 'move') {
+        const [, err] = await fileSystem.moveFile(filePath, destPath)
+        if (err) console.log(err)
+      }
     },
   },
 

@@ -13,6 +13,24 @@ const fileSystem = () => {
     }
   })
 
+  ipc.handle('Copy-File', async (e, filePath: string, destPath: string) => {
+    try {
+      const res: any = await fs.copy(filePath, destPath)
+      return [res, null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
+  ipc.handle('Move-File', async (e, filePath: string, destPath: string) => {
+    try {
+      const res: any = await fs.move(filePath, destPath)
+      return [res, null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
   ipc.handle('Check-Exist', async (e, filePath) => {
     try {
       const res: any = await fs.pathExists(filePath)

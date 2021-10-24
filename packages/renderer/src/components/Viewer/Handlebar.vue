@@ -17,6 +17,13 @@
         <span class="ml-2 text-gray-300">Portals > Pics</span>
       </div>
     </n-tag>
+
+    <n-tag type="warning" class="p-4 cursor-pointer" @click="wraping">
+      <div class="handle-item">
+        <n-icon><RocketSharp /></n-icon>
+        <span class="ml-2 text-gray-300">START !</span>
+      </div>
+    </n-tag>
   </section>
 
   <ModeChangeModal
@@ -28,10 +35,39 @@
 <script lang="ts" setup>
 import ModeChangeModal from './Modal/ModeChangeModal.vue'
 import { NIcon, NTag } from 'naive-ui'
-import { BrowsersOutline } from '@vicons/ionicons5'
-import { ref } from '@vue/reactivity'
+import { BrowsersOutline, RocketSharp } from '@vicons/ionicons5'
+import { computed, ref } from '@vue/reactivity'
+import { useStore } from 'vuex'
+import { map, forEach, find } from 'lodash-es'
+import { dataClone } from '/@/utils/data'
+import { getFileName } from '/@/utils/data'
 
 const showModeChangeModal = ref(false)
+const store = useStore()
+const dockings = computed(() => store.getters.dockings)
+const flattenPortals = computed(() => store.getters.flattenPortals)
+
+const wraping = async () => {
+  const dockingsData = dataClone(dockings.value)
+
+  forEach(dockingsData, (dock) => {
+    const src = dock.target
+    let count = 0
+    forEach(dock.portals, async (portal) => {
+      count += 1
+      const targetFolder = find(
+        flattenPortals.value,
+        (item) => item.id === portal
+      ).link
+
+      await store.dispatch('WRAPING', {
+        mode: count === dock.portals.length ? 'move' : 'copy',
+        filePath: src,
+        destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src),
+      })
+    })
+  })
+}
 </script>
 
 <style lang="postcss" scoped>
