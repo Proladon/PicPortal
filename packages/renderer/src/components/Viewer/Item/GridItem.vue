@@ -87,13 +87,10 @@ const syncDockingsData = () => {
 }
 
 watch(dockings, () => {
-  console.log('dockings change')
   syncDockingsData()
-  console.log(targetPortals.value)
 })
 
 watch(props, () => {
-  console.log('props change')
   syncDockingsData()
 })
 

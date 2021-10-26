@@ -90,7 +90,7 @@ const openProject = async (projectPath: string) => {
   console.log(db)
   await store.dispatch('SYNC_DB', db)
 
-  router.push('/editor/viewer/virtual-list')
+  router.push('/editor/viewer/grid-view')
 }
 
 const importProject = async () => {

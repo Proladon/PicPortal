@@ -3,6 +3,8 @@ import { chunk, indexOf, set } from 'lodash'
 import { useElectron } from '/@/use/electron'
 const { fastGlob, fileSystem } = useElectron()
 import { dataClone } from '/@/utils/data'
+import PQueue from 'p-queue'
+const wrapingQueue = new PQueue({ concurrency: 1 })
 
 const viewer: Module<any, any> = {
   state: {
@@ -41,14 +43,33 @@ const viewer: Module<any, any> = {
       })
     },
 
-    WRAPING: async ({ commit }, { mode, filePath, destPath }) => {
+    WRAPING: async (
+      { commit, dispatch },
+      { mode, filePath, destPath, dockIndex }
+    ) => {
       if (mode === 'copy') {
-        const [, err] = await fileSystem.copyFile(filePath, destPath)
-        if (err) console.log(err)
+        const task = async () => {
+          const [, err] = await fileSystem.copyFile(filePath, destPath)
+          if (err) console.log(err)
+          await dispatch('DB_SLICE', {
+            key: 'dockings',
+            index: dockIndex,
+          })
+          await dispatch('SYNC_DB_TO_STATE', 'dockings')
+        }
+        wrapingQueue.add(task)
       }
       if (mode === 'move') {
-        const [, err] = await fileSystem.moveFile(filePath, destPath)
-        if (err) console.log(err)
+        const task = async () => {
+          const [, err] = await fileSystem.moveFile(filePath, destPath)
+          if (err) console.log(err)
+          await dispatch('DB_SLICE', {
+            key: 'dockings',
+            index: dockIndex,
+          })
+          await dispatch('SYNC_DB_TO_STATE', 'dockings')
+        }
+        wrapingQueue.add(task)
       }
     },
   },
