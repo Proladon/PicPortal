@@ -21,7 +21,8 @@
     <n-tag type="warning" class="p-4 cursor-pointer" @click="wraping">
       <div class="handle-item">
         <n-icon><RocketSharp /></n-icon>
-        <span class="ml-2 text-gray-300">START !</span>
+        <span v-if="!wrapingStatus" class="ml-2 text-gray-300">START !</span>
+        <span v-if="wrapingStatus" class="ml-2 text-gray-300">WRAPING ...</span>
       </div>
     </n-tag>
   </section>
@@ -44,12 +45,16 @@ import { getFileName } from '/@/utils/data'
 
 const showModeChangeModal = ref(false)
 const store = useStore()
+// --- Computed ---
 const dockings = computed(() => store.getters.dockings)
 const flattenPortals = computed(() => store.getters.flattenPortals)
+const wrapingStatus = computed(() => store.state.viewer.wraping)
 
+// --- Methods ---
 const wraping = async () => {
+  if (wrapingStatus.value) return
   const dockingsData = dataClone(dockings.value)
-
+  const waitRemove = []
   forEach(dockingsData, async (dock) => {
     const src = dock.target
     const dockIndex = findIndex(dockings.value, { target: dock.target })
@@ -68,7 +73,11 @@ const wraping = async () => {
         dockIndex,
       })
     })
+    waitRemove.push(src)
   })
+  store.commit('UPDATE_PULL_LIST', waitRemove)
+  store.commit('PURGE_FILES', waitRemove)
+  await store.dispatch('START_WRAPING')
 }
 </script>
 

@@ -1,5 +1,6 @@
 import { Module } from 'vuex'
 import { useElectron } from '/@/use/electron'
+import { map } from 'lodash-es'
 const { database } = useElectron()
 import PQueue from 'p-queue'
 const queue = new PQueue({ concurrency: 1 })
@@ -40,6 +41,12 @@ const db: Module<any, any> = {
     },
     DB_GET: async ({ commit }, key: string) => {
       return await database.get(key)
+    },
+    DB_PULL_DOCKINGS: async ({ commit }, pullList: string[]) => {
+      const stringData = JSON.stringify(
+        map(pullList, (item) => ({ target: item }))
+      )
+      return await database.pullDockings(stringData)
     },
     SYNC_DB_TO_STATE: async ({ rootState }, key) => {
       const start = performance.now()

@@ -39,6 +39,15 @@
       </template>
       Files Count
     </n-popover>
+
+    <n-progress
+      :processing="wrapingStatus"
+      type="line"
+      status="success"
+      :percentage="(curWrap / totalWrap) * 100"
+    >
+      <span>{{ curWrap }} / {{ totalWrap }}</span>
+    </n-progress>
   </footer>
 
   <WarningModal
@@ -53,7 +62,7 @@
 
 <script lang="ts" setup>
 import WarningModal from '/@/components/Modal/WarningModal.vue'
-import { NIcon, NPopover } from 'naive-ui'
+import { NIcon, NPopover, NProgress } from 'naive-ui'
 import { Folder, Cube, DocumentOutline } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
 import { useStore } from 'vuex'
@@ -67,6 +76,9 @@ const showWarningModal = ref(false)
 const mainFolder = computed(() => store.getters.mainFolder || {})
 const projectName = computed(() => store.getters.projectName || '')
 const filesCount = computed(() => store.getters.filesCount)
+const totalWrap = computed(() => store.state.viewer.totalWrap)
+const curWrap = computed(() => store.state.viewer.curWrap)
+const wrapingStatus = computed(() => store.state.viewer.wraping)
 
 // --- Methods---
 const choseMainFolder = async () => {

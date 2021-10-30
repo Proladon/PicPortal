@@ -46,14 +46,24 @@ const mainFolder = computed(() => store.getters.mainFolder)
 const folderFiles = computed(() => store.state.viewer.folderFiles)
 const activedPortals = computed(() => store.getters.activedPortals)
 const dockings = computed(() => store.getters.dockings)
-
+const filesCount = computed(() => store.getters.filesCount)
 const pngs = ref<unknown>([])
+const wrapingStatus = computed(() => store.state.viewer.wraping)
 // --- Watch ---
 watch(mainFolder, async () => {
   loading.value = true
   await chunkFiles()
   await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
   loading.value = false
+})
+watch(filesCount, async () => {
+  console.log('wrapingStatus', wrapingStatus.value)
+  if (wrapingStatus.value) return
+  await chunkFiles()
+})
+watch(wrapingStatus, async () => {
+  if (wrapingStatus.value) return
+  await chunkFiles()
 })
 
 // --- Methods ---

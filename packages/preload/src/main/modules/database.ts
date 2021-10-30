@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { Low, JSONFile, Memory } from 'lowdb'
-import { set, setWith, slice } from 'lodash-es'
+import { set, setWith, pullAllBy, differenceBy } from 'lodash-es'
 
 const ipc = ipcMain
 let db: Low = new Low(new Memory())
@@ -52,12 +52,29 @@ const database = () => {
     try {
       const start = performance.now()
       await db.read()
+      console.log(`splice data length ${db.data[key].length}`)
       db.data[key].splice(index, 1)
       await db.write()
       const end = performance.now()
-      console.log(`splice: ${(end - start) / 1000} 秒`)
+      // console.log(`splice: ${(end - start) / 1000} 秒`)
+      console.log(`splice ${index}`)
       return ['success', null]
     } catch (error) {
+      console.log(`splice error`)
+      return [null, error]
+    }
+  })
+
+  ipc.handle('Database-Pull-Dockings', async (e, pullList) => {
+    try {
+      await db.read()
+      const parseData = JSON.parse(pullList)
+      const res = differenceBy(db.data['dockings'], parseData, 'target')
+      db.data['dockings'] = res
+      await db.write()
+      return ['success', null]
+    } catch (error) {
+      console.log(`splice error`)
       return [null, error]
     }
   })
