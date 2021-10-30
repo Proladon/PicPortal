@@ -18,7 +18,12 @@
       </div>
     </n-tag>
 
-    <n-tag type="warning" class="p-4 cursor-pointer" @click="wraping">
+    <n-tag
+      type="warning"
+      class="p-4 cursor-pointer"
+      @click="wraping"
+      :disabled="wrapingStatus || !dockings.length"
+    >
       <div class="handle-item">
         <n-icon><RocketSharp /></n-icon>
         <span v-if="!wrapingStatus" class="ml-2 text-gray-300">START !</span>
@@ -52,6 +57,7 @@ const wrapingStatus = computed(() => store.state.viewer.wraping)
 
 // --- Methods ---
 const wraping = async () => {
+  if (!dockings.value.length) return
   if (wrapingStatus.value) return
   const dockingsData = dataClone(dockings.value)
   const waitRemove = []

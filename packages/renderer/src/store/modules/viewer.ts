@@ -9,25 +9,15 @@ const wrapingQueue = new PQueue({ concurrency: 1, autoStart: false })
 
 let count = 0
 wrapingQueue.on('active', () => {
-  console.log(
-    `Working on item #${++count}.  Size: ${wrapingQueue.size}  Pending: ${
-      wrapingQueue.pending
-    }`
-  )
-
   store.commit('UPDATE_WRAPING', count)
 })
 
 wrapingQueue.on('idle', async () => {
   count = 0
-  // await store.dispatch('DB_SLICE', {
-  //   key: 'dockings',
-  //   index: dockIndex,
-  // })
-  console.log('done !!!')
   await store.dispatch('DB_PULL_DOCKINGS', store.state.viewer.pullList)
   store.commit('UPDATE_WRAPING_STATE', false)
   await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+  wrapingQueue.pause()
 })
 
 const viewer: Module<any, any> = {
@@ -47,10 +37,8 @@ const viewer: Module<any, any> = {
     },
     UPDATE_SELECTED: (state, item) => {
       const index = indexOf(state.selected, item)
-      console.log(index, item)
       if (index !== -1) state.selected.splice(index, 1)
       if (index === -1) {
-        console.log('here')
         state.selected.push(item)
       }
     },
@@ -59,9 +47,7 @@ const viewer: Module<any, any> = {
     },
     PURGE_FILES: (state, purgeList) => {
       const newFileList = difference(state.folderFiles, purgeList)
-      console.log(state.folderFiles.length, newFileList.length)
       state.folderFiles = newFileList
-      console.log(state.folderFiles.length)
     },
     UPDATE_WRAPING: (state, num) => {
       state.curWrap = num
@@ -116,7 +102,6 @@ const viewer: Module<any, any> = {
 
   getters: {
     filesCount: (state) => {
-      console.log('filesCount', state.folderFiles.length)
       return state.folderFiles.length
     },
     viewerLoading: (state) => {
