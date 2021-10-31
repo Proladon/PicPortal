@@ -4,6 +4,10 @@
 @import url('./ui-rewrite/n-popover.css');
 @import url('./ui-rewrite/n-pagination.css');
 
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;700&display=swap');
+* {
+  font-family: 'Open Sans', Avenir, Helvetica, Arial, sans-serif;
+}
 /* width */
 ::-webkit-scrollbar {
   width: 0px;

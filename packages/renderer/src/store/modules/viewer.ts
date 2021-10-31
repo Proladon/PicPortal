@@ -9,6 +9,7 @@ const wrapingQueue = new PQueue({ concurrency: 1, autoStart: false })
 
 let count = 0
 wrapingQueue.on('active', () => {
+  count += 1
   store.commit('UPDATE_WRAPING', count)
 })
 
@@ -71,7 +72,7 @@ const viewer: Module<any, any> = {
     GET_FOLDER_ALL_FILES: async ({ commit, getters }) => {
       const mainFolder = getters.mainFolder.path
       if (!mainFolder) return
-      const res = await fastGlob.glob(mainFolder + '/**/*.png')
+      const res = await fastGlob.glob(mainFolder + '/**/*.{png,jpg,jpeg}')
       commit('SET_FOLDER_FILES', res)
     },
 
@@ -82,7 +83,7 @@ const viewer: Module<any, any> = {
       })
     },
 
-    WRAPING: async ({ dispatch }, { mode, filePath, destPath, dockIndex }) => {
+    WRAPING: async ({ dispatch }, { mode, filePath, destPath }) => {
       if (mode === 'copy') {
         const task = async () => {
           const [, err] = await fileSystem.copyFile(filePath, destPath)

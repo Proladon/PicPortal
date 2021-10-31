@@ -39,7 +39,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import PortalTagModal from './Modal/PortalTagModal.vue'
 import { NIcon, NPopover, NButton, NEllipsis } from 'naive-ui'
 import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
@@ -141,6 +141,15 @@ watch(props, () => {
   }
 })
 
+watch(activedPortals, () => {
+  if (activedPortals.value.length) return
+  const portal = props.data
+  actived.value = false
+  styles.borderColor = portal.bg
+  styles.background = ''
+  styles.color = ''
+})
+
 // --- Mounted ---
 onMounted(() => {
   const portal = props.data
@@ -162,6 +171,7 @@ onMounted(() => {
   @apply px-2 py-1 rounded-md cursor-pointer;
   @apply border-solid border-[1px] font-medium;
   @apply flex justify-between items-center;
+  transition: 0.4s;
 }
 
 .portal-tag-option {

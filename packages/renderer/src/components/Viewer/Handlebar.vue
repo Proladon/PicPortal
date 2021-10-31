@@ -63,7 +63,6 @@ const wraping = async () => {
   const waitRemove = []
   forEach(dockingsData, async (dock) => {
     const src = dock.target
-    const dockIndex = findIndex(dockings.value, { target: dock.target })
     let count = 0
     forEach(dock.portals, async (portal) => {
       count += 1
@@ -76,7 +75,6 @@ const wraping = async () => {
         mode: count === dock.portals.length ? 'move' : 'copy',
         filePath: src,
         destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src),
-        dockIndex,
       })
     })
     waitRemove.push(src)

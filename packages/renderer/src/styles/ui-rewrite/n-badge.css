@@ -1,3 +1,7 @@
-.n-badge .n-badge-sup {
+/* .n-badge .n-badge-sup {
   @apply text-[var(--primary-bg-1)] bg-[var(--skyblue)] font-bold;
+} */
+
+.n-badge .n-badge-sup {
+  @apply font-bold;
 }

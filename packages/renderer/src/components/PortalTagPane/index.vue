@@ -22,7 +22,9 @@
         /></n-icon>
       </div>
 
-      <draggable
+      <ControlsPane />
+
+      <Draggable
         class="portal-group-list"
         v-model="portals"
         item-key="id"
@@ -31,7 +33,7 @@
         <template #item="{ element }">
           <PortalGroup :groupData="element" />
         </template>
-      </draggable>
+      </Draggable>
 
       <PortalGroupModal
         v-if="showPortalGroupModal"
@@ -42,10 +44,11 @@
   </div>
 </template>
 
-<script setup>
-import draggable from 'vuedraggable'
+<script setup lang="ts">
+import Draggable from 'vuedraggable'
 import PortalGroup from './PortalGroup.vue'
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
+import ControlsPane from '/@/components/PortalTagPane/ControlsPane.vue'
 import { Pricetags, EnterSharp, Search, Folder } from '@vicons/ionicons5'
 import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
 import { useStore } from 'vuex'

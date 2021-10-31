@@ -1,7 +1,7 @@
 <template>
   <section class="viewer">
     <HandleBar />
-    <router-view></router-view>
+    <router-view class="flex-1"></router-view>
   </section>
 </template>
 

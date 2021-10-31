@@ -12,6 +12,9 @@ const portal: Module<any, any> = {
     SPLICE_ACTIVED_PORTALS: (state, index) => {
       state.activedPortals.splice(index, 1)
     },
+    RESET_ACTIVED_PORTALS: (state) => {
+      state.activedPortals = []
+    },
   },
 
   actions: {
@@ -20,6 +23,9 @@ const portal: Module<any, any> = {
     },
     SPLICE_ACTIVED_PORTALS: async ({ commit }, index) => {
       commit('SPLICE_ACTIVED_PORTALS', index)
+    },
+    RESET_ACTIVED_PORTALS: async ({ commit }) => {
+      commit('RESET_ACTIVED_PORTALS')
     },
   },
 

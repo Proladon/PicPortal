@@ -10,7 +10,7 @@
         >
           <CaretDown />
         </n-icon>
-        <n-badge :value="groupActivedPortalsCount" />
+        <n-badge color="var(--skyblue)" dot v-if="groupActivedPortalsCount" />
         <n-ellipsis>
           <span class="font-bold" @click="expandGroup">{{
             groupData.group
