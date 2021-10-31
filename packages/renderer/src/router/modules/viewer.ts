@@ -2,7 +2,7 @@ const viewerRoutes = [
   {
     path: '/editor/viewer',
     name: 'Viewer',
-    component: () => import('/@/components/Viewer/Viewer.vue'),
+    component: () => import('../../components/Viewer/ViewerWrapper.vue'),
     meta: { keepAlive: true },
     children: [
       {

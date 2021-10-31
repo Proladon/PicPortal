@@ -3,7 +3,7 @@
     <section class="viewer-container">
       <viewer
         :options="viewerOptions"
-        :images="img"
+        :images="[img]"
         class="viewer"
         ref="viewer"
       >

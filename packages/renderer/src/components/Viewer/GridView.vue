@@ -25,90 +25,48 @@
 </template>
 
 <script lang="ts" setup>
-import HandleBar from '/@/components/Viewer/Handlebar.vue'
 import GridItem from '/@/components/Viewer/Item/GridItem.vue'
-import { VirtualList } from 'vue3-virtual-list'
 import { computed, ref } from '@vue/reactivity'
-import { useStore } from 'vuex'
-import { chunk, map, findIndex } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
-import { dataClone } from '/@/utils/data'
-import { NSpin, NPagination } from 'naive-ui'
+import { NPagination } from 'naive-ui'
+import useViewer from '/@/use/useViewer'
+import { chunk, map } from 'lodash-es'
 
 // --- Data ---
-const store = useStore()
-const loading = ref(false)
 const imgSize = ref(150)
-const perPage = ref(10)
-const page = ref(1)
-// --- Computed ---
-const mainFolder = computed(() => store.getters.mainFolder)
-const folderFiles = computed(() => store.state.viewer.folderFiles)
-const activedPortals = computed(() => store.getters.activedPortals)
-const dockings = computed(() => store.getters.dockings)
-const filesCount = computed(() => store.getters.filesCount)
-const pngs = ref<unknown>([])
-const wrapingStatus = computed(() => store.state.viewer.wraping)
-// --- Watch ---
-watch(mainFolder, async () => {
-  loading.value = true
-  await chunkFiles()
-  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
-  loading.value = false
-})
-watch(filesCount, async () => {
-  console.log('wrapingStatus', wrapingStatus.value)
-  if (wrapingStatus.value) return
-  await chunkFiles()
-})
-watch(wrapingStatus, async () => {
-  if (wrapingStatus.value) return
-  await chunkFiles()
-})
 
 // --- Methods ---
 const chunkFiles = async () => {
+  loading.value = true
   await store.dispatch('GET_FOLDER_ALL_FILES')
   const files = map(folderFiles.value, (path) => ({ path: path }))
   const filesChunkList = chunk(files, perPage.value)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
   pngs.value = newData
+  loading.value = false
 }
 
-const selectItem = async (e, row: unknown) => {
-  const ignore = ['I', 'path', 'svg']
-  const htmlTarget = e.target.tagName
-  if (ignore.includes(htmlTarget)) return
-  if (!activedPortals.value.length) return
+const {
+  store,
+  loading,
+  pngs,
+  page,
+  perPage,
+  folderFiles,
+  mainFolder,
+  selectItem,
+} = useViewer(10, chunkFiles)
 
-  const target = row.path
-
-  const dockingsRef = dataClone(dockings.value)
-  const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)
-
-  const dockingsData = {
-    target,
-    portals: map(activedPortalsRef, 'id'),
-  }
-  const isExist = findIndex(dockingsRef, { target: target })
-
-  if (isExist >= 0) dockingsRef[isExist] = dockingsData
-  if (isExist < 0) dockingsRef.push(dockingsData)
-
-  await store.dispatch('DOCKING', {
-    key: 'dockings',
-    data: dockingsRef,
-  })
+// --- Watch ---
+watch(mainFolder, async () => {
   await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
-}
+  await chunkFiles()
+})
 
 // --- Mounted ---
 onMounted(async () => {
-  loading.value = true
-
-  await chunkFiles()
   await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
-  loading.value = false
+  await chunkFiles()
 })
 </script>
 

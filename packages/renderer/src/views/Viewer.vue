@@ -12,7 +12,6 @@
 </template>
 
 <script setup lang="ts">
-import Viewer from '../components/Viewer/Viewer.vue'
 import PortalTagPane from '/@/components/PortalTagPane/index.vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'

@@ -35,73 +35,39 @@
 </template>
 
 <script lang="ts" setup>
-import HandleBar from '/@/components/Viewer/Handlebar.vue'
 import VirtualGridItem from '/@/components/Viewer/Item/VirtualGridItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
-import { computed, ref } from '@vue/reactivity'
-import { useStore } from 'vuex'
-import { chunk, map, findIndex } from 'lodash-es'
+import { ref } from '@vue/reactivity'
+import { chunk, map } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
-import { dataClone } from '/@/utils/data'
 import { NSpin } from 'naive-ui'
+import useViewer from '/@/use/useViewer'
 
 // --- Data ---
-const store = useStore()
 const ch = ref(0)
-const loading = ref(false)
 const column = ref(5)
-// --- Computed ---
-const mainFolder = computed(() => store.getters.mainFolder)
-const folderFiles = computed(() => store.state.viewer.folderFiles)
-const activedPortals = computed(() => store.getters.activedPortals)
-const dockings = computed(() => store.getters.dockings)
-
-const pngs = ref<unknown>([])
-// --- Watch ---
-watch(mainFolder, async () => {
-  loading.value = true
-  await chunkFiles()
-  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
-  loading.value = false
-})
-
 // --- Methods ---
 const chunkFiles = async () => {
+  loading.value = true
   await store.dispatch('GET_FOLDER_ALL_FILES')
   const files = map(folderFiles.value, (path) => ({ path: path }))
   const filesChunkList = chunk(files, column.value)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
   pngs.value = newData
+  loading.value = false
 }
 
-const selectItem = async (e, row: unknown) => {
-  const ignore = ['I', 'path', 'svg']
-  const htmlTarget = e.target.tagName
-  if (ignore.includes(htmlTarget)) return
-  if (!activedPortals.value.length) return
+const { store, loading, pngs, folderFiles, mainFolder, selectItem } = useViewer(
+  0,
+  chunkFiles,
+  true
+)
 
-  const rowImgs = row.item.src
-  const index = row.childIndex
-  const target = rowImgs[index].path
-
-  const dockingsRef = dataClone(dockings.value)
-  const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)
-
-  const dockingsData = {
-    target,
-    portals: map(activedPortalsRef, 'id'),
-  }
-  const isExist = findIndex(dockingsRef, { target: target })
-
-  if (isExist >= 0) dockingsRef[isExist] = dockingsData
-  if (isExist < 0) dockingsRef.push(dockingsData)
-
-  await store.dispatch('DOCKING', {
-    key: 'dockings',
-    data: dockingsRef,
-  })
+// --- Watch ---
+watch(mainFolder, async () => {
   await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
-}
+  await chunkFiles()
+})
 
 // --- Mounted ---
 onMounted(async () => {

@@ -12,7 +12,7 @@ const routes = [
       {
         path: '/editor',
         name: 'Editor',
-        component: () => import('../views/Editor.vue'),
+        component: () => import('../views/Viewer.vue'),
         children: [...viewerRoutes],
       },
       {

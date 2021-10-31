@@ -1,98 +1,63 @@
 <template>
   <section class="virtual-view">
-    <n-spin :show="loading">
-      <div v-if="loading" :style="`height: ${ch}px`" class="w-full"></div>
-      <div
-        v-if="pngs.length && !loading"
-        class="virtual-scroll-viewer"
-        id="virtual-scroll-viewer"
-      >
-        <div class="list-container" :style="`height: ${ch}px`">
-          <VirtualList
-            :data="pngs"
-            :itemSize="190"
-            :poolBuffer="5"
-            dataKey="path"
-          >
-            <template v-slot="{ item, index }">
-              <div class="item-container">
-                <VirtualListItem
-                  :img="item.path"
-                  @click="selectItem($event, item)"
-                />
-              </div>
-            </template>
-          </VirtualList>
-        </div>
+    <!-- <div v-if="loading" :style="`height: ${ch}px`" class="w-full"></div> -->
+    <div
+      v-if="pngs.length && !loading"
+      class="virtual-scroll-viewer"
+      id="virtual-scroll-viewer"
+    >
+      <div class="list-container" :style="`height: ${ch}px`">
+        <VirtualList
+          :data="pngs"
+          :itemSize="190"
+          :poolBuffer="5"
+          dataKey="path"
+        >
+          <template v-slot="{ item, index }">
+            <div class="item-container">
+              <VirtualListItem
+                :img="item.path"
+                @click="selectItem($event, item)"
+              />
+            </div>
+          </template>
+        </VirtualList>
       </div>
-    </n-spin>
+    </div>
   </section>
 </template>
 
 <script lang="ts" setup>
-import HandleBar from '/@/components/Viewer/Handlebar.vue'
 import VirtualListItem from '/@/components/Viewer/Item/VirtualListItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
-import { computed, ref } from '@vue/reactivity'
-import { useStore } from 'vuex'
-import { chunk, map, findIndex } from 'lodash-es'
+import { ref } from '@vue/reactivity'
+import { map } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
-import { dataClone } from '/@/utils/data'
-import { NSpin } from 'naive-ui'
+import useViewer from '/@/use/useViewer'
 
 // --- Data ---
-const store = useStore()
 const ch = ref(0)
-const loading = ref(false)
 const column = ref(1)
-// --- Computed ---
-const mainFolder = computed(() => store.getters.mainFolder)
-const folderFiles = computed(() => store.state.viewer.folderFiles)
-const activedPortals = computed(() => store.getters.activedPortals)
-const dockings = computed(() => store.getters.dockings)
-
-const pngs = ref<unknown>([])
-// --- Watch ---
-watch(mainFolder, async () => {
-  loading.value = true
-  await chunkFiles()
-  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
-  loading.value = false
-})
 
 // --- Methods ---
 const chunkFiles = async () => {
+  loading.value = true
   await store.dispatch('GET_FOLDER_ALL_FILES')
   const files = map(folderFiles.value, (path) => ({ path: path }))
   pngs.value = files
+  loading.value = false
 }
 
-const selectItem = async (e, row: unknown) => {
-  const ignore = ['I', 'path', 'svg']
-  const htmlTarget = e.target.tagName
-  if (ignore.includes(htmlTarget)) return
-  if (!activedPortals.value.length) return
+const { store, loading, pngs, folderFiles, mainFolder, selectItem } = useViewer(
+  0,
+  chunkFiles
+)
 
-  const target = row.path
-
-  const dockingsRef = dataClone(dockings.value)
-  const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)
-
-  const dockingsData = {
-    target,
-    portals: map(activedPortalsRef, 'id'),
-  }
-  const isExist = findIndex(dockingsRef, { target: target })
-
-  if (isExist >= 0) dockingsRef[isExist] = dockingsData
-  if (isExist < 0) dockingsRef.push(dockingsData)
-
-  await store.dispatch('DOCKING', {
-    key: 'dockings',
-    data: dockingsRef,
-  })
+// --- Watch ---
+watch(mainFolder, async () => {
   await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
-}
+  await chunkFiles()
+})
 
 // --- Mounted ---
 onMounted(async () => {
@@ -102,8 +67,8 @@ onMounted(async () => {
   window.onresize = () => {
     ch.value = window.innerHeight - 100
   }
-  await chunkFiles()
   await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+  await chunkFiles()
   loading.value = false
 })
 </script>
