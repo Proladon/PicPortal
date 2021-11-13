@@ -1,8 +1,12 @@
 <template>
   <header class="title-bar" style="-webkit-app-region: drag">
-    <section class="app-logo"></section>
+    <section class="app-logo">
+      <n-icon size="30">
+        <LogoGithub />
+      </n-icon>
+    </section>
     <section class="app-name">PicPortal</section>
-    <section class="flex gap-[20px] justify-end">
+    <section class="win-btn-container">
       <div class="win-btn min" @click="minWin"></div>
       <div class="win-btn max" @click="maxWin"></div>
       <div class="win-btn close" @click="closeWin"></div>
@@ -10,7 +14,9 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { NIcon } from 'naive-ui'
+import { LogoGithub } from '@vicons/ionicons5'
 import { useElectron } from '/@/use/electron'
 const { appWindow } = useElectron()
 
@@ -29,11 +35,11 @@ const maxWin = async () => {
 
 <style lang="postcss" scoped>
 .title-bar {
-  @apply grid grid-cols-3 px-2 py-2;
+  @apply grid grid-cols-3   items-center;
 }
 
 .app-logo {
-  @apply text-left;
+  @apply text-left bg-border w-[50px] grid place-content-center py-2;
 }
 
 .app-name {
@@ -46,6 +52,9 @@ const maxWin = async () => {
   @apply w-[20px] h-[20px] rounded-full;
 }
 
+.win-btn-container {
+  @apply flex gap-[20px] justify-end px-[15px];
+}
 .win-btn {
   @apply border-2 border-solid cursor-pointer;
   -webkit-app-region: no-drag;

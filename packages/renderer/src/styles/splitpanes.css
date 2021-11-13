@@ -1,22 +1,22 @@
 .splitpanes__splitter {
-  @apply relative bg-border;
+  @apply relative;
 }
 .splitpanes__splitter:before {
-  @apply absolute left-0 top-0 opacity-0 bg-border bg-opacity-5;
+  @apply absolute left-0 top-0 opacity-0;
   content: '';
   transition: opacity 0.4s;
   z-index: 1;
 }
 .splitpanes__splitter:hover:before {
-  opacity: 1;
+  @apply opacity-100 bg-teal-400;
 }
 .splitpanes--vertical > .splitpanes__splitter:before {
-  left: -10px;
-  right: -10px;
+  left: -5px;
+  right: -5px;
   height: 100%;
 }
 .splitpanes--horizontal > .splitpanes__splitter:before {
-  top: -10px;
-  bottom: -10px;
+  top: -5px;
+  bottom: -5px;
   width: 100%;
 }

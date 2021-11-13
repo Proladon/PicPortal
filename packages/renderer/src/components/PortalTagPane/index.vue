@@ -1,25 +1,26 @@
 <template>
   <div class="tree-view">
     <section class="flex flex-col min-w-[180px] w-full h-full">
-      <div class="bg-border flex justify-between items-center px-5 py-1">
-        <div class="flex gap-2 text-[16px] flex items-center">
-          <n-icon><Pricetags /></n-icon>
-          <span class="text-gray-800">Portals</span>
-        </div>
-
+      <div
+        class="flex justify-between items-center py-2 mb-5 px-[15px] rounded-md"
+      >
         <n-icon
-          color="var(--primary-bg-1)"
+          size="20"
+          :class="[
+            { transform: viewerSide === 'left' },
+            { 'rotate-180': viewerSide === 'left' },
+          ]"
+          class="cursor-pointer"
+          @click="cahngeViewerSide"
+          ><EnterSharp
+        /></n-icon>
+        <n-icon
           size="20"
           class="cursor-pointer"
           @click="showPortalGroupModal = true"
           ><Folder
         /></n-icon>
-        <n-icon color="var(--primary-bg-1)" size="20" class="cursor-pointer"
-          ><EnterSharp
-        /></n-icon>
-        <n-icon color="var(--primary-bg-1)" size="20" class="cursor-pointer"
-          ><Search
-        /></n-icon>
+        <n-icon size="20" class="cursor-pointer"><Search /></n-icon>
       </div>
 
       <ControlsPane />
@@ -60,6 +61,7 @@ const store = useStore()
 const drag = ref(false)
 const showPortalGroupModal = ref(false)
 // --- Computed ---
+const viewerSide = computed(() => store.state.viewer.viewerSide)
 const portals = computed({
   get: () => store.getters.portals,
   set: async (newData) => {
@@ -72,6 +74,12 @@ const portals = computed({
   },
 })
 
+const cahngeViewerSide = () => {
+  console.log(viewerSide.value)
+  if (viewerSide.value === 'right') store.commit('SET_VIEWER_SIDE', 'left')
+  else if (viewerSide.value === 'left') store.commit('SET_VIEWER_SIDE', 'right')
+}
+
 // --- Mounted ---
 onMounted(async () => {
   await store.dispatch('SYNC_DB_TO_STATE', 'portals')
@@ -80,10 +88,10 @@ onMounted(async () => {
 
 <style lang="postcss" scoped>
 .tree-view {
-  @apply flex;
+  @apply flex pt-[10px] min-w-[250px] px-[20px];
 }
 
 .portal-group-list {
-  @apply flex flex-col gap-5 px-4 py-3;
+  @apply flex flex-col gap-5 py-3 px-[15px];
 }
 </style>

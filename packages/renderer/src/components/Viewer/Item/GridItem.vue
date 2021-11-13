@@ -14,11 +14,11 @@
           v-for="portal in targetPortals"
           :key="portal.id"
         >
-          {{ portal.name }}
+          <span class="el">{{ portal.name }}</span>
         </n-tag>
       </div>
     </div>
-    <img :src="`local-resource://${img}`" loading="lazy" />
+    <img class="!w-full" :src="`local-resource://${img}`" loading="lazy" />
   </div>
 </template>
 
@@ -26,7 +26,7 @@
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-import { NTag } from 'naive-ui'
+import { NTag, NEllipsis } from 'naive-ui'
 import { find, map, findIndex, pull, filter } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 
@@ -102,7 +102,7 @@ onMounted(() => {
 <style lang="postcss" scoped>
 .image-item {
   /* @apply border-2  border-teal-400 rounded-md; */
-  @apply justify-self-center;
+  @apply justify-self-center w-full h-full;
   @apply relative cursor-pointer border-solid border-2 rounded-md border-transparent;
   @apply hover:border-[var(--skyblue)] hover:shadow-blue-gray-50;
   &:hover {
@@ -122,5 +122,11 @@ img {
 
 .portal-tag-list {
   @apply grid grid-cols-2 gap-2 opacity-70 w-full;
+}
+
+.el {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>

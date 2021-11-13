@@ -55,7 +55,7 @@ const {
   folderFiles,
   mainFolder,
   selectItem,
-} = useViewer(10, chunkFiles)
+} = useViewer(20, chunkFiles)
 
 // --- Watch ---
 watch(mainFolder, async () => {
@@ -70,25 +70,25 @@ onMounted(async () => {
 })
 </script>
 
-<style lang="postcss">
-.vue3-virtual-list-item-container {
+<!-- <style lang="postcss">
+:deep(.vue3-virtual-list-item-container ){
   @apply grid;
 }
-</style>
+</style> -->
 
 <style lang="postcss" scoped>
+:deep(.vue3-virtual-list-item-container) {
+  @apply grid;
+}
 .grid-view {
   @apply relative overflow-y-auto h-full flex flex-col justify-between;
 }
 .list-container {
-  @apply w-full grid gap-5 p-[15px];
-}
-.item-container {
-  @apply grid gap-10 items-center px-[15px];
+  @apply w-full grid gap-5 pb-[30px];
 }
 
 .pagination-container {
-  @apply sticky bottom-[30px] left-0 right-0 py-2 px-[15px];
-  @apply bg-[var(--primary-bg-1)] grid place-content-center;
+  @apply sticky bottom-0 left-0 right-0 py-2 px-[15px];
+  @apply bg-primary-bg grid place-content-center;
 }
 </style>

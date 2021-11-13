@@ -2,15 +2,7 @@
   <div class="portal-group">
     <section class="group-header">
       <div class="flex items-center gap-2">
-        <n-icon
-          size="20"
-          v-if="groupData.childs.length"
-          @click="expandGroup"
-          :class="{ unexpend: !expand }"
-        >
-          <CaretDown />
-        </n-icon>
-        <n-badge color="var(--skyblue)" dot v-if="groupActivedPortalsCount" />
+        <n-badge color="#91B4C0" dot v-if="groupActivedPortalsCount" />
         <n-ellipsis>
           <span class="font-bold" @click="expandGroup">{{
             groupData.group
@@ -83,6 +75,15 @@
             </div>
           </section>
         </n-popover>
+
+        <n-icon
+          size="20"
+          v-if="groupData.childs.length"
+          @click="expandGroup"
+          :class="{ unexpend: !expand }"
+        >
+          <CaretDown />
+        </n-icon>
       </div>
     </section>
 
@@ -238,7 +239,7 @@ const renameGroup = () => {
 }
 
 .group-header {
-  @apply flex items-center justify-between cursor-pointer;
+  @apply flex items-center justify-between cursor-pointer pb-[10px];
 
   .controls-icon {
     @apply flex flex-shrink-0 items-center gap-3;
@@ -260,6 +261,6 @@ const renameGroup = () => {
 
 .portal-group-popover-item {
   @apply flex items-center gap-2 cursor-pointer px-3;
-  @apply hover:bg-[var(--border-1)] hover:text-[var(--primary-bg-1)];
+  @apply hover:bg-[var(--border-1)] hover:text-primary-bg;
 }
 </style>

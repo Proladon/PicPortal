@@ -23,6 +23,6 @@ body,
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  @apply bg-darkBlue text-white;
+  @apply bg-primary-bg text-white;
 }
 </style>

@@ -1,18 +1,26 @@
 <template>
   <div class="controls-pane">
-    <div class="activated-count">
-      <NBadge
-        :color="portalsCountBadgeBg"
-        show-zero
-        :value="activatedPortalsCount"
-      ></NBadge>
-      Activated
+    <div class="flex gap-5 flex-wrap">
+      <div class="activated-count">
+        <NBadge
+          :color="portalsCountBadgeBg"
+          show-zero
+          :value="activatedPortalsCount"
+        ></NBadge>
+        Activated
+      </div>
+      <div class="flex gap-2">
+        <NButton class="controls-btn" block @click="resetAvtivatedPortals"
+          >Clear</NButton
+        >
+        <NButton class="controls-btn" block>Apped</NButton>
+        <NButton class="controls-btn" block>Over</NButton>
+      </div>
     </div>
-    <div class="controls-btn" @click="resetAvtivatedPortals">Clear</div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { computed } from '@vue/reactivity'
 import { NButton, NBadge } from 'naive-ui'
 import { useStore } from 'vuex'
@@ -24,7 +32,7 @@ const activatedPortalsCount = computed(
 )
 
 const portalsCountBadgeBg = computed(() => {
-  if (activatedPortalsCount.value) return 'var(--skyblue)'
+  if (activatedPortalsCount.value) return '#91B4C0'
   return 'gray'
 })
 
@@ -36,7 +44,7 @@ const resetAvtivatedPortals = async () => {
 <style lang="postcss" scoped>
 .controls-pane {
   /* @apply border-border border-1 m-5 rounded-md p-2; */
-  @apply m-5 flex gap-5 items-center;
+  @apply px-[15px] mb-5 flex gap-5 justify-center flex-col;
 }
 
 .activated-count {
@@ -45,8 +53,12 @@ const resetAvtivatedPortals = async () => {
 
 .controls-btn {
   @apply px-[10px] py-[3px];
-  @apply cursor-pointer border-2 border-border text-border  rounded-md font-medium;
-  @apply hover:bg-[skyblue] hover:text-[var(--primary-bg-1)];
+  @apply cursor-pointer bg-secondary-bg text-border  rounded-md font-medium;
+  @apply hover:bg-[#91B4C0] hover:text-primary-bg;
   transition: 0.3s;
+}
+
+:deep(.n-badge-sup) {
+  @apply px-3;
 }
 </style>

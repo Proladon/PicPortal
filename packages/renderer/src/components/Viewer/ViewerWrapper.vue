@@ -1,5 +1,5 @@
 <template>
-  <section class="viewer">
+  <section class="viewer-wrapper">
     <HandleBar />
     <router-view class="flex-1"></router-view>
   </section>
@@ -10,7 +10,7 @@ import HandleBar from '/@/components/Viewer/Handlebar.vue'
 </script>
 
 <style lang="postcss" scoped>
-.viewer {
-  @apply h-full;
+.viewer-wrapper {
+  @apply h-full px-[15px] flex flex-col;
 }
 </style>

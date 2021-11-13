@@ -30,9 +30,14 @@ const viewer: Module<any, any> = {
     totalWrap: 0,
     curWrap: 0,
     pullList: [],
+    viewerSide: 'left',
   },
 
   mutations: {
+    SET_VIEWER_SIDE: (state, side: string) => {
+      console.log(side)
+      state.viewerSide = side
+    },
     SET_FOLDER_FILES: (state, files: string[]) => {
       state.folderFiles = files
     },
