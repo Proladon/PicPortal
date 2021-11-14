@@ -20,7 +20,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from '@vue/reactivity'
 import { NButton, NBadge } from 'naive-ui'
 import { useStore } from 'vuex'

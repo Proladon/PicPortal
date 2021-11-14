@@ -1,53 +1,62 @@
 <template>
   <footer class="status-bar">
-    <n-popover trigger="hover">
-      <template #trigger>
-        <button class="btn open-project-btn" @click="$router.push('/projects')">
-          <n-icon>
-            <cube />
-          </n-icon>
-          <span>{{ projectName || 'Open Project' }}</span>
-        </button>
-      </template>
-      Project
-    </n-popover>
+    <div class="flex items-center justify-center">
+      <n-popover trigger="hover">
+        <template #trigger>
+          <button
+            class="btn open-project-btn"
+            @click="$router.push('/projects')"
+          >
+            <n-icon>
+              <cube />
+            </n-icon>
+            <span>{{ projectName || 'Open Project' }}</span>
+          </button>
+        </template>
+        Project
+      </n-popover>
 
-    <n-popover trigger="hover">
-      <template #trigger>
-        <button
-          v-if="projectName"
-          class="btn main-folder-btn"
-          @click="showWarningModal = true"
-        >
-          <n-icon>
-            <folder />
-          </n-icon>
-          <span>{{ mainFolder.name || 'Choose Folder' }}</span>
-        </button>
-      </template>
-      Main Folder
-    </n-popover>
+      <n-popover trigger="hover">
+        <template #trigger>
+          <button
+            v-if="projectName"
+            class="btn main-folder-btn"
+            @click="showWarningModal = true"
+          >
+            <n-icon>
+              <folder />
+            </n-icon>
+            <span>{{ mainFolder.name || 'Choose Folder' }}</span>
+          </button>
+        </template>
+        Main Folder
+      </n-popover>
 
-    <n-popover trigger="hover">
-      <template #trigger>
-        <div class="btn main-folder-btn cursor-default">
-          <n-icon>
-            <DocumentOutline />
-          </n-icon>
-          <span>{{ filesCount }}</span>
-        </div>
-      </template>
-      Files Count
-    </n-popover>
+      <n-popover trigger="hover">
+        <template #trigger>
+          <div class="btn main-folder-btn cursor-default">
+            <n-icon>
+              <DocumentOutline />
+            </n-icon>
+            <span>{{ filesCount }}</span>
+          </div>
+        </template>
+        Files Count
+      </n-popover>
+    </div>
 
-    <n-progress
-      :processing="wrapingStatus"
-      type="line"
-      status="success"
-      :percentage="(curWrap / totalWrap) * 100"
-    >
-      <span>{{ curWrap }} / {{ totalWrap }}</span>
-    </n-progress>
+    <div class="w-[250px] flex gap-5 px-5 items-center justify-center">
+      <n-progress
+        :processing="wrapingStatus"
+        type="line"
+        status="success"
+        :percentage="(curWrap / totalWrap) * 100"
+      >
+        <span>{{ curWrap }} / {{ totalWrap }}</span>
+      </n-progress>
+
+      <span class="text-rose-300">{{ errWrap }}</span>
+    </div>
   </footer>
 
   <WarningModal
@@ -78,6 +87,7 @@ const projectName = computed(() => store.getters.projectName || '')
 const filesCount = computed(() => store.getters.filesCount)
 const totalWrap = computed(() => store.state.viewer.totalWrap)
 const curWrap = computed(() => store.state.viewer.curWrap)
+const errWrap = computed(() => store.state.viewer.errWrap)
 const wrapingStatus = computed(() => store.state.viewer.wraping)
 
 // --- Methods---
@@ -113,7 +123,7 @@ const choseMainFolder = async () => {
 
 <style lang="postcss" scoped>
 .status-bar {
-  @apply flex items-center;
+  @apply flex items-center justify-between;
   @apply h-statusbar bg-gray-800;
 }
 

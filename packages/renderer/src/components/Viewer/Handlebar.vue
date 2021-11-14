@@ -7,14 +7,7 @@
     >
       <div class="handle-item">
         <n-icon><BrowsersOutline /></n-icon>
-        <span class="ml-2 text-gray-300">Multiple</span>
-      </div>
-    </n-tag>
-
-    <n-tag type="warning" class="p-4 cursor-pointer">
-      <div class="handle-item">
-        <n-icon><BrowsersOutline /></n-icon>
-        <span class="ml-2 text-gray-300">Portals > Pics</span>
+        <span class="ml-2 text-gray-300">{{ $route.name }}</span>
       </div>
     </n-tag>
 

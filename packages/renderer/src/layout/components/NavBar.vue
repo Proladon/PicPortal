@@ -3,7 +3,7 @@
     <n-popover trigger="hover" placement="right">
       <template #trigger>
         <router-link
-          to="/editor/viewer/virtual-list"
+          :to="{ name: lastViewer }"
           class="nav-btn"
           :class="{ 'nav--actived': $route.name === 'Editor' }"
         >
@@ -66,6 +66,12 @@ import {
   SettingsSharp,
 } from '@vicons/ionicons5'
 import { NIcon, NPopover } from 'naive-ui'
+import { useStore } from 'vuex'
+import { computed } from '@vue/reactivity'
+
+const lastViewer = computed(() => store.state.viewer.lastViewer)
+
+const store = useStore()
 </script>
 
 <style lang="postcss" scoped>

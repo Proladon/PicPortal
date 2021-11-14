@@ -39,6 +39,7 @@ import { GDialog } from 'gitart-vue-dialog'
 import { useRouter } from 'vue-router'
 import { NIcon, NButton } from 'naive-ui'
 import { AppsSharp, ListSharp, ImageOutline } from '@vicons/ionicons5'
+import { useStore } from 'vuex'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -48,6 +49,7 @@ const props = defineProps({
 
 const showModal = ref(true)
 const router = useRouter()
+const store = useStore()
 
 const closeModal = (): void => {
   showModal.value = false
@@ -58,6 +60,7 @@ const closeModal = (): void => {
 
 const changeView = (view: string): void => {
   router.push({ name: view })
+  store.commit('SET_LAST_VIEWER', view)
   closeModal()
 }
 </script>

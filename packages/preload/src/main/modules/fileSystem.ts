@@ -25,6 +25,7 @@ const fileSystem = () => {
   ipc.handle('Move-File', async (e, filePath: string, destPath: string) => {
     try {
       const res: any = await fs.move(filePath, destPath)
+      console.log('move', res)
       return [res, null]
     } catch (error) {
       return [null, error]

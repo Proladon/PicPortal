@@ -2,31 +2,35 @@
   <div class="image-item">
     <div class="portals" v-if="targetPortals.length">
       <div class="portal-tag-list">
-        <n-tag
-          class="tag"
-          closable
-          @close="removePortal(portal)"
-          :color="{
-            color: portal.bg,
-            textColor: portal.fg,
-            borderColor: portal.bg,
-          }"
-          v-for="portal in targetPortals"
-          :key="portal.id"
-        >
-          <span class="el">{{ portal.name }}</span>
-        </n-tag>
+        <NPopover v-for="portal in targetPortals" :key="portal.id">
+          <template #trigger>
+            <n-tag
+              class="tag"
+              :title="portal.name"
+              closable
+              @close="removePortal(portal)"
+              :color="{
+                color: portal.bg,
+                textColor: portal.fg,
+                borderColor: portal.bg,
+              }"
+            >
+              {{ portal.name }}
+            </n-tag>
+          </template>
+          <span>{{ portal.name }}</span>
+        </NPopover>
       </div>
     </div>
     <img class="!w-full" :src="`local-resource://${img}`" loading="lazy" />
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-import { NTag, NEllipsis } from 'naive-ui'
+import { NTag, NPopover } from 'naive-ui'
 import { find, map, findIndex, pull, filter } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 
@@ -36,7 +40,7 @@ const props = defineProps({
   },
 })
 
-const targetPortals = ref<any>([])
+const targetPortals = ref([])
 const target = ref(null)
 const store = useStore()
 const dockings = computed(() => store.getters.dockings)
@@ -125,6 +129,12 @@ img {
 }
 
 .el {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+:deep(.n-tag span) {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

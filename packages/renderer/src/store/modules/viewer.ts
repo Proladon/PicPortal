@@ -3,12 +3,11 @@ import { chunk, indexOf, difference, map } from 'lodash'
 import { useElectron } from '/@/use/electron'
 const { fastGlob, fileSystem } = useElectron()
 import { dataClone } from '/@/utils/data'
-import PQueue from 'p-queue'
+import { wrapingQueue } from '/@/queue'
 import store from '/@/store'
-const wrapingQueue = new PQueue({ concurrency: 1, autoStart: false })
 
 let count = 0
-wrapingQueue.on('active', () => {
+wrapingQueue.on('completed', () => {
   count += 1
   store.commit('UPDATE_WRAPING', count)
 })
@@ -17,25 +16,36 @@ wrapingQueue.on('idle', async () => {
   count = 0
   await store.dispatch('DB_PULL_DOCKINGS', store.state.viewer.pullList)
   store.commit('UPDATE_WRAPING_STATE', false)
+
   await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
   wrapingQueue.pause()
+})
+
+wrapingQueue.on('error', (error) => {
+  console.error('queue error', error)
+  const count = store.state.viewer.errWrap
+  store.commit('UPDATE_ERROR_WRAPING', count + 1)
 })
 
 const viewer: Module<any, any> = {
   state: {
     loading: false,
+    lastViewer: 'GridView',
     folderFiles: [],
     selectedLabels: [],
     wraping: false,
     totalWrap: 0,
     curWrap: 0,
+    errWrap: 0,
     pullList: [],
     viewerSide: 'left',
   },
 
   mutations: {
+    SET_LAST_VIEWER: (state, view: string) => {
+      state.lastViewer = view
+    },
     SET_VIEWER_SIDE: (state, side: string) => {
-      console.log(side)
       state.viewerSide = side
     },
     SET_FOLDER_FILES: (state, files: string[]) => {
@@ -58,6 +68,9 @@ const viewer: Module<any, any> = {
     UPDATE_WRAPING: (state, num) => {
       state.curWrap = num
     },
+    UPDATE_ERROR_WRAPING: (state, num) => {
+      state.errWrap = num
+    },
     UPDATE_WRAPING_STATE: (state, status) => {
       state.wraping = status
     },
@@ -68,12 +81,16 @@ const viewer: Module<any, any> = {
   },
 
   actions: {
+    //=> 開始傳送任務
     START_WRAPING: ({ state, commit }) => {
       commit('RESET_WRAPING')
+      state.errWrap = 0
       state.totalWrap = wrapingQueue.size
       state.wraping = true
       wrapingQueue.start()
     },
+
+    //=> 取得主資料夾內所有合法檔案
     GET_FOLDER_ALL_FILES: async ({ commit, getters }) => {
       const mainFolder = getters.mainFolder.path
       if (!mainFolder) return
@@ -81,6 +98,7 @@ const viewer: Module<any, any> = {
       commit('SET_FOLDER_FILES', res)
     },
 
+    //=> 添加圖片傳送門
     DOCKING: async ({ dispatch }, { key, data }) => {
       await dispatch('SAVE_TO_DB', {
         key,
@@ -88,18 +106,25 @@ const viewer: Module<any, any> = {
       })
     },
 
+    //=> 添加傳送任務到隊列
     WRAPING: async ({ dispatch }, { mode, filePath, destPath }) => {
       if (mode === 'copy') {
         const task = async () => {
           const [, err] = await fileSystem.copyFile(filePath, destPath)
-          if (err) console.log(err)
+          if (err) {
+            console.log('copy', err)
+            return Promise.reject(new Error(err))
+          }
         }
         wrapingQueue.add(task)
       }
       if (mode === 'move') {
         const task = async () => {
           const [, err] = await fileSystem.moveFile(filePath, destPath)
-          if (err) console.log(err)
+          if (err) {
+            console.log('move', err)
+            return Promise.reject(new Error(err))
+          }
         }
         wrapingQueue.add(task)
       }
