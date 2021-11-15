@@ -25,16 +25,18 @@
 
       <ControlsPane />
 
-      <Draggable
-        class="portal-group-list"
-        v-model="portals"
-        item-key="id"
-        :animation="300"
-      >
-        <template #item="{ element }">
-          <PortalGroup :groupData="element" />
-        </template>
-      </Draggable>
+      <div class="overflow-y-auto">
+        <Draggable
+          class="portal-group-list"
+          v-model="portals"
+          item-key="id"
+          :animation="300"
+        >
+          <template #item="{ element }">
+            <PortalGroup :groupData="element" />
+          </template>
+        </Draggable>
+      </div>
 
       <PortalGroupModal
         v-if="showPortalGroupModal"
@@ -88,7 +90,7 @@ onMounted(async () => {
 
 <style lang="postcss" scoped>
 .tree-view {
-  @apply flex pt-[10px] min-w-[250px] px-[20px];
+  @apply flex pt-[10px] min-w-[250px] px-[20px] h-full;
 }
 
 .portal-group-list {

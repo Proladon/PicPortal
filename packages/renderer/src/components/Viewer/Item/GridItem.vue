@@ -22,6 +22,19 @@
         </NPopover>
       </div>
     </div>
+
+    <NIcon
+      class="magnifier"
+      size="20"
+      @click="
+        $viewerApi({
+          options: { navbar: false },
+          images: [`local-resource://${img}`],
+        })
+      "
+    >
+      <ExpandOutline
+    /></NIcon>
     <img class="!w-full" :src="`local-resource://${img}`" loading="lazy" />
   </div>
 </template>
@@ -30,7 +43,8 @@
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-import { NTag, NPopover } from 'naive-ui'
+import { NTag, NPopover, NIcon } from 'naive-ui'
+import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull, filter } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 
@@ -39,6 +53,8 @@ const props = defineProps({
     type: String,
   },
 })
+
+const viewerOptions = {}
 
 const targetPortals = ref([])
 const target = ref(null)
@@ -122,6 +138,10 @@ img {
 .portals {
   @apply absolute top-0 left-0 w-full h-full py-2 px-3;
   @apply bg-opacity-50 bg-gray-800;
+}
+
+.magnifier {
+  @apply absolute bottom-0 right-0;
 }
 
 .portal-tag-list {
