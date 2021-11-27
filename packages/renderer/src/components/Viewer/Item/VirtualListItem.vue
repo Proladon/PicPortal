@@ -6,6 +6,18 @@
       alt=""
       srcset=""
     />
+    <NIcon
+      class="magnifier"
+      size="20"
+      @click="
+        $viewerApi({
+          options: { navbar: false },
+          images: [`local-resource://${img}`],
+        })
+      "
+    >
+      <ExpandOutline
+    /></NIcon>
     <div class="flex-1">
       <div class="portals" v-if="targetPortals.length">
         <div class="portal-tag-list">
@@ -33,7 +45,8 @@
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-import { NTag } from 'naive-ui'
+import { NTag, NIcon } from 'naive-ui'
+import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull, filter } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 
@@ -123,5 +136,9 @@ onMounted(() => {
 
 .portal-tag-list {
   @apply flex gap-2 opacity-70 w-full;
+}
+
+.magnifier {
+  @apply absolute bottom-0 right-0;
 }
 </style>

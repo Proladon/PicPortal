@@ -13,8 +13,15 @@
         <NButton class="controls-btn" block @click="resetAvtivatedPortals"
           >Clear</NButton
         >
-        <NButton class="controls-btn" block>Apped</NButton>
-        <NButton class="controls-btn" block>Over</NButton>
+        <NButton class="controls-btn" block @click="changeDockingMode('append')"
+          >Append</NButton
+        >
+        <NButton
+          class="controls-btn"
+          block
+          @click="changeDockingMode('Override')"
+          >Override</NButton
+        >
       </div>
     </div>
   </div>
@@ -38,6 +45,10 @@ const portalsCountBadgeBg = computed(() => {
 
 const resetAvtivatedPortals = async () => {
   await store.dispatch('RESET_ACTIVED_PORTALS')
+}
+
+const changeDockingMode = (mode: string) => {
+  store.commit('SET_DOCKING_MODE', mode)
 }
 </script>
 

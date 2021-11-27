@@ -2,7 +2,7 @@ import { watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
 import { dataClone } from '/@/utils/data'
-import { map, findIndex, chunk } from 'lodash-es'
+import { map, findIndex, chunk, uniq } from 'lodash-es'
 
 const useViewer = (
   perPageDefault: number,
@@ -21,6 +21,7 @@ const useViewer = (
   const activedPortals = computed(() => store.getters.activedPortals)
   const wrapingStatus = computed(() => store.state.viewer.wraping)
   const filesCount = computed(() => store.getters.filesCount)
+  const dockingProtalMode = computed(() => store.state.portal.dockingProtalMode)
 
   watch(filesCount, async () => {
     if (wrapingStatus.value) return
@@ -33,8 +34,8 @@ const useViewer = (
     await chunkFiles()
   })
 
-  // give docking tags
-  const selectItem = async (e, row: unknown): Promise<void> => {
+  // docking protals
+  const selectItem = async (e, row: any): Promise<void> => {
     const ignore = ['I', 'path', 'svg']
     const htmlTarget = e.target.tagName
     if (ignore.includes(htmlTarget)) return
@@ -51,14 +52,27 @@ const useViewer = (
     const dockingsRef = dataClone(dockings.value)
     const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)
 
-    const dockingsData = {
-      target,
-      portals: map(activedPortalsRef, 'id'),
-    }
     const isExist = findIndex(dockingsRef, { target: target })
 
-    if (isExist >= 0) dockingsRef[isExist] = dockingsData
-    if (isExist < 0) dockingsRef.push(dockingsData)
+    if (isExist >= 0) {
+      if (dockingProtalMode.value === 'append') {
+        dockingsRef[isExist].portals.push(...map(activedPortalsRef, 'id'))
+        dockingsRef[isExist].portals = uniq(dockingsRef[isExist].portals)
+      } else {
+        const dockingsData = {
+          target,
+          portals: map(activedPortalsRef, 'id'),
+        }
+        dockingsRef[isExist] = dockingsData
+      }
+    }
+    if (isExist < 0) {
+      const dockingsData = {
+        target,
+        portals: map(activedPortalsRef, 'id'),
+      }
+      dockingsRef.push(dockingsData)
+    }
 
     await store.dispatch('DOCKING', {
       key: 'dockings',
