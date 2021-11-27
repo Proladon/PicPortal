@@ -39,13 +39,13 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
 import { NTag, NPopover, NIcon } from 'naive-ui'
 import { ExpandOutline } from '@vicons/ionicons5'
-import { find, map, findIndex, pull, filter } from 'lodash-es'
+import { find, map, findIndex, pull, filter, compact } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 
 const props = defineProps({
@@ -101,8 +101,8 @@ const syncDockingsData = () => {
   }
   target.value = exist
 
-  targetPortals.value = map(exist.portals, (portal) =>
-    find(flattenPortals.value, { id: portal })
+  targetPortals.value = compact(
+    map(exist.portals, (portal) => find(flattenPortals.value, { id: portal }))
   )
 }
 

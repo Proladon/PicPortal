@@ -55,10 +55,10 @@ const useViewer = (
     const isExist = findIndex(dockingsRef, { target: target })
 
     if (isExist >= 0) {
-      if (dockingProtalMode.value === 'append') {
+      if (dockingProtalMode.value.toLowerCase() === 'append') {
         dockingsRef[isExist].portals.push(...map(activedPortalsRef, 'id'))
         dockingsRef[isExist].portals = uniq(dockingsRef[isExist].portals)
-      } else {
+      } else if (dockingProtalMode.value.toLowerCase() === 'override') {
         const dockingsData = {
           target,
           portals: map(activedPortalsRef, 'id'),

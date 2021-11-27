@@ -3,7 +3,7 @@ import { Module } from 'vuex'
 const portal: Module<any, any> = {
   state: {
     activedPortals: [],
-    dockingProtalMode: 'over',
+    dockingProtalMode: 'append',
   },
 
   mutations: {

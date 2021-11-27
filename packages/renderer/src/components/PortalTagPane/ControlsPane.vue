@@ -13,7 +13,20 @@
         <NButton class="controls-btn" block @click="resetAvtivatedPortals"
           >Clear</NButton
         >
-        <NButton class="controls-btn" block @click="changeDockingMode('append')"
+
+        <n-radio-group
+          v-model:value="dockingMode"
+          :on-update:value="changeDockingMode"
+        >
+          <n-radio-button
+            v-for="mode in ['Append', 'Override']"
+            :key="mode"
+            :value="mode"
+          >
+            {{ mode }}
+          </n-radio-button>
+        </n-radio-group>
+        <!-- <NButton class="controls-btn" block @click="changeDockingMode('append')"
           >Append</NButton
         >
         <NButton
@@ -21,18 +34,19 @@
           block
           @click="changeDockingMode('Override')"
           >Override</NButton
-        >
+        > -->
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from '@vue/reactivity'
-import { NButton, NBadge } from 'naive-ui'
+import { computed, ref } from '@vue/reactivity'
+import { NButton, NBadge, NRadioGroup, NRadioButton } from 'naive-ui'
 import { useStore } from 'vuex'
 
 const store = useStore()
+const dockingMode = ref('Append')
 
 const activatedPortalsCount = computed(
   () => store.getters.activedPortals.length
@@ -49,6 +63,7 @@ const resetAvtivatedPortals = async () => {
 
 const changeDockingMode = (mode: string) => {
   store.commit('SET_DOCKING_MODE', mode)
+  dockingMode.value = mode
 }
 </script>
 
