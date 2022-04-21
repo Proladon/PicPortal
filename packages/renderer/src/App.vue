@@ -1,13 +1,13 @@
 <template>
-  <n-config-provider :theme="darkTheme" class="h-full">
+  <Provider>
     <router-view />
-  </n-config-provider>
+  </Provider>
 </template>
 
 <script lang="ts" setup>
 import { onMounted } from '@vue/runtime-core'
 import { useRouter } from 'vue-router'
-import { NConfigProvider, darkTheme } from 'naive-ui'
+import Provider from '/@/components/Provider.vue'
 const router = useRouter()
 onMounted(() => {
   router.push('/projects')

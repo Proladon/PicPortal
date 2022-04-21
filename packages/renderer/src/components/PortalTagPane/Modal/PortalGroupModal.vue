@@ -1,11 +1,6 @@
 <template>
-  <GDialog
-    v-model="showModal"
-    width="30%"
-    max-width="300px"
-    @update:modelValue="closeModal"
-  >
-    <div class="p-5 text-center">
+  <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
+    <div class="p-5 text-center bg-primary-bg">
       <p>{{ modalTitle }}</p>
 
       <n-form :model="formData" :rules="formRules" ref="formRef">
@@ -20,12 +15,12 @@
         >
       </n-form>
     </div>
-  </GDialog>
+  </n-modal>
 </template>
 
 <script lang="ts" setup>
 import { computed, reactive, ref } from '@vue/reactivity'
-import { NButton, NForm, NFormItem, NInput } from 'naive-ui'
+import { NModal, NButton, NForm, NFormItem, NInput } from 'naive-ui/es'
 import { GDialog } from 'gitart-vue-dialog'
 import { useStore } from 'vuex'
 import { nanoid } from 'nanoid/async'
@@ -37,18 +32,18 @@ import { dataClone } from '/@/utils/data'
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  group: Object,
+  group: Object
 })
 
 const store = useStore()
-const showModal = ref(true)
+const showModal = ref(false)
 
 const formRef = ref(null)
 const formData = reactive({
-  name: '',
+  name: ''
 })
 const formRules = {
-  name: { required: true },
+  name: { required: true }
 }
 
 // --- Computed ---
@@ -60,11 +55,19 @@ const modalTitle = computed(() => {
 })
 
 // --- Methods ---
+const updateModalShow = (show: boolean) => {
+  if (!show) {
+    setTimeout(() => {
+      emit('close')
+    }, 1500)
+  }
+  showModal.value = show
+}
 const newGroup = async (exist = null) => {
   return {
     group: formData.name,
     id: exist ? exist.id : await nanoid(10),
-    childs: exist ? exist.childs : [],
+    childs: exist ? exist.childs : []
   }
 }
 const updatePortalGroup = async (): Promise<void> => {
@@ -79,7 +82,7 @@ const updatePortalGroup = async (): Promise<void> => {
 
     const [, saveError] = await store.dispatch('SAVE_TO_DB', {
       key: 'portals',
-      data: portalsRef,
+      data: portalsRef
     })
     if (saveError) alert(saveError)
 
@@ -97,7 +100,7 @@ const createPortalGroup = async (): Promise<void> => {
 
   const [, saveError] = await store.dispatch('SAVE_TO_DB', {
     key: 'portals',
-    data: portalsRef,
+    data: portalsRef
   })
   if (saveError) alert(saveError)
 
@@ -114,6 +117,7 @@ const closeModal = (): void => {
 
 // --- Mounted ---
 onMounted((): void => {
+  showModal.value = true
   if (props.mode !== 'edit') return
   formData.name = props.group.group
 })
