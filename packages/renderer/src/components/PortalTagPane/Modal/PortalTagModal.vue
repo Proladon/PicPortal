@@ -1,11 +1,6 @@
 <template>
-  <GDialog
-    v-model="showModal"
-    width="30%"
-    max-width="300px"
-    @update:modelValue="closeModal"
-  >
-    <div class="p-5 text-center">
+  <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
+    <div class="p-5 text-center bg-primary-bg">
       <p>{{ modalTitle }}</p>
 
       <n-form :model="formData" :rules="formRules" ref="formRef">
@@ -41,11 +36,11 @@
         >Update</n-button
       >
     </div>
-  </GDialog>
+  </n-modal>
 </template>
 
 <script lang="ts" setup>
-import { Add, FolderOpenOutline } from '@vicons/ionicons5'
+import { FolderOpenOutline } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
 import {
   NButton,
@@ -54,10 +49,10 @@ import {
   NInput,
   NIcon,
   NColorPicker,
+  NModal
 } from 'naive-ui'
-import { GDialog } from 'gitart-vue-dialog'
 import { useStore } from 'vuex'
-import { findIndex, find } from 'lodash-es'
+import { findIndex } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
 import { useElectron } from '/@/use/electron'
 import { onMounted } from '@vue/runtime-core'
@@ -67,23 +62,23 @@ const emit = defineEmits(['close'])
 const props = defineProps({
   groupId: String,
   mode: String,
-  portal: Object,
+  portal: Object
 })
-const { browserDialog, database } = useElectron()
+const { browserDialog } = useElectron()
 const store = useStore()
-const showModal = ref<boolean>(true)
+const showModal = ref<boolean>(false)
 const formRef = ref(null)
 const formData = reactive({
   name: '',
   link: '',
   bg: '',
-  fg: '',
+  fg: ''
 })
 const formRules = {
   name: { required: true },
   bg: { required: false },
   fg: { required: false },
-  link: { required: true },
+  link: { required: true }
 }
 
 // --- Computed ---
@@ -102,7 +97,14 @@ const modalTitle = computed(() => {
 const portalsData = computed(() => store.getters.portals)
 
 // --- Methods ---
-
+const updateModalShow = (show: boolean) => {
+  if (!show) {
+    setTimeout(() => {
+      emit('close')
+    }, 1500)
+  }
+  showModal.value = show
+}
 const closeModal = (): void => {
   // if (!state) formRef.value.restoreValidation()
   // formData.name = ''
@@ -116,7 +118,7 @@ const closeModal = (): void => {
 
 const browseFolder = async (): Promise<void> => {
   const res = await browserDialog.open({
-    properties: ['openDirectory'],
+    properties: ['openDirectory']
   })
   formData.link = res.filePaths[0]
 }
@@ -127,14 +129,14 @@ const newPortal = async (exist = null) => {
     id: exist || (await nanoid(10)),
     bg: formData.bg,
     fg: formData.fg,
-    link: formData.link,
+    link: formData.link
   }
 }
 
 const updateDBData = async (data: unknown): Promise<void> => {
   const [, saveError] = await store.dispatch('SAVE_TO_DB', {
     key: 'portals',
-    data,
+    data
   })
   if (saveError) alert(saveError)
 
@@ -168,7 +170,7 @@ const updatePortal = async (e) => {
     const portal = await newPortal(props.portal.portal.id)
     const groupIndex = findIndex(portals, { id: props.portal.groupId })
     const portalIndex = findIndex(portals[groupIndex].childs, {
-      id: props.portal.portal.id,
+      id: props.portal.portal.id
     })
     portals[groupIndex].childs[portalIndex] = portal
     await updateDBData(portals)
@@ -178,6 +180,7 @@ const updatePortal = async (e) => {
 }
 
 onMounted(() => {
+  showModal.value = true
   if (props.mode === 'edit' && props.portal) {
     const portal = props.portal
     formData.name = portal.portal.name

@@ -19,7 +19,7 @@
       <n-popover trigger="hover">
         <template #trigger>
           <button
-            v-if="projectName"
+            v-show="projectName"
             class="btn main-folder-btn"
             @click="showWarningModal = true"
           >
@@ -94,24 +94,24 @@ const wrapingStatus = computed(() => store.state.viewer.wraping)
 const choseMainFolder = async () => {
   try {
     const res = await browserDialog.open({
-      properties: ['openDirectory'],
+      properties: ['openDirectory']
     })
 
     if (res.filePaths.length) {
       const chunk = res.filePaths[0].split('\\')
       const folder = {
         name: chunk[chunk.length - 1],
-        path: res.filePaths[0].replaceAll('\\', '/'),
+        path: res.filePaths[0].replaceAll('\\', '/')
       }
       await store.dispatch('SAVE_TO_DB', {
         key: 'mainFolder',
-        data: folder,
+        data: folder
       })
       await store.dispatch('SYNC_DB_TO_STATE', 'mainFolder')
 
       await store.dispatch('SAVE_TO_DB', {
         key: 'dockings',
-        data: [],
+        data: []
       })
       await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
     }
