@@ -94,7 +94,7 @@
       :animation="300"
       :class="{
         'list-view': listView === 'list',
-        'grid-view': listView === 'grid',
+        'grid-view': listView === 'grid'
       }"
     >
       <template #item="{ element }">
@@ -134,7 +134,7 @@ import {
   NCheckbox,
   NPopover,
   NBadge,
-  NDivider,
+  NDivider
 } from 'naive-ui'
 import {
   Add,
@@ -144,10 +144,9 @@ import {
   PencilSharp,
   ColorFill,
   ListSharp,
-  Grid,
+  Grid
 } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
-import { onMounted } from '@vue/runtime-core'
 import PortalTag from './PortalTag.vue'
 import PortalTagModal from './Modal/PortalTagModal.vue'
 import { useStore } from 'vuex'
@@ -156,7 +155,7 @@ import { dataClone } from '/@/utils/data'
 
 // --- Data ---
 const props = defineProps({
-  groupData: Object,
+  groupData: Object
 })
 const store = useStore()
 const drag = ref(false)
@@ -182,10 +181,10 @@ const groupProtals = computed({
     const groupIndex = findIndex(portalsRef, { id: props.groupData.id })
     await store.dispatch('DEEP_SAVE_TO_DB', {
       keys: `[portals][${groupIndex}][childs]`,
-      data: newData,
+      data: newData
     })
     await store.dispatch('SYNC_DB_TO_STATE', 'portals')
-  },
+  }
 })
 
 // --- Methods ---
@@ -207,7 +206,7 @@ const deleteGroup = async (groupId) => {
   protals.splice(grounIndex, 1)
   await store.dispatch('SAVE_TO_DB', {
     key: 'portals',
-    data: protals,
+    data: protals
   })
   await store.dispatch('SYNC_DB_TO_STATE', 'portals')
 
@@ -218,7 +217,7 @@ const deleteGroup = async (groupId) => {
   // TODO background task
   for (let t = 0; t < needDelete.length; t++) {
     const index = findIndex(activedPortals.value, {
-      group: needDelete[t].group,
+      group: needDelete[t].group
     })
     await store.dispatch('SPLICE_ACTIVED_PORTALS', index)
   }
@@ -236,6 +235,10 @@ const renameGroup = () => {
 <style lang="postcss" scoped>
 .portal-group {
   @apply flex flex-col text-[var(--primary-font)];
+}
+
+.portal-group:hover {
+  @apply border-1 border-solid border-gray-100;
 }
 
 .group-header {

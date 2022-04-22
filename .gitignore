@@ -4,6 +4,8 @@ dist
 *.local
 thumbs.db
 types/env.d.ts
+yarn.lock
+package.lock.json
 
 .eslintcache
 

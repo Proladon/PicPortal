@@ -29,7 +29,7 @@
         </n-button>
       </div>
 
-      <ControlsPane />
+      <ControlsBlock />
 
       <div class="overflow-y-auto">
         <Draggable
@@ -55,9 +55,9 @@
 
 <script setup lang="ts">
 import Draggable from 'vuedraggable'
-import PortalGroup from './PortalGroup.vue'
-import PortalGroupModal from './Modal/PortalGroupModal.vue'
-import ControlsPane from '/@/components/PortalTagPane/ControlsPane.vue'
+import PortalGroup from './components/PortalGroup.vue'
+import PortalGroupModal from './components/Modal/PortalGroupModal.vue'
+import ControlsBlock from './components/ControlsBlock.vue'
 import { Pricetags, EnterSharp, Search, Folder } from '@vicons/ionicons5'
 import { NIcon, NEllipsis, NCheckbox, NButton } from 'naive-ui/es'
 import { useStore } from 'vuex'

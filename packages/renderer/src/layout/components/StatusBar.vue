@@ -70,7 +70,7 @@
 </template>
 
 <script lang="ts" setup>
-import WarningModal from '/@/components/Modal/WarningModal.vue'
+import WarningModal from './WarningModal.vue'
 import { NIcon, NPopover, NProgress } from 'naive-ui'
 import { Folder, Cube, DocumentOutline } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'

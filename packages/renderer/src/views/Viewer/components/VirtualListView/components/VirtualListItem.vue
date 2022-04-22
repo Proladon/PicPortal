@@ -10,9 +10,9 @@
       class="magnifier"
       size="20"
       @click="
-        $viewerApi({
+        viewerApi({
           options: { navbar: false },
-          images: [`local-resource://${img}`],
+          images: [`local-resource://${img}`]
         })
       "
     >
@@ -28,7 +28,7 @@
             :color="{
               color: portal.bg,
               textColor: portal.fg,
-              borderColor: portal.bg,
+              borderColor: portal.bg
             }"
             v-for="portal in targetPortals"
             :key="portal.id"
@@ -49,11 +49,12 @@ import { NTag, NIcon } from 'naive-ui'
 import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull, filter } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
+import { api as viewerApi } from 'v-viewer'
 
 const props = defineProps({
   img: {
-    type: String,
-  },
+    type: String
+  }
 })
 
 const targetPortals = ref<any>([])
@@ -74,7 +75,7 @@ const removePortal = async (portal) => {
   if (!portalsRef.length) {
     await store.dispatch('DB_SLICE', {
       key: 'dockings',
-      index: targetIndex,
+      index: targetIndex
     })
 
     await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
@@ -84,7 +85,7 @@ const removePortal = async (portal) => {
   if (portalsRef.length) {
     await store.dispatch('DEEP_SAVE_TO_DB', {
       keys: `[dockings][${targetIndex}][portals]`,
-      data: portalsRef,
+      data: portalsRef
     })
 
     await store.dispatch('SYNC_DB_TO_STATE', 'dockings')

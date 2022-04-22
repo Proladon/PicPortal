@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import PortalTagPane from '/@/components/PortalTagPane/index.vue'
+import PortalTagPane from './components/PortalTagPane/index.vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { useStore } from 'vuex'
