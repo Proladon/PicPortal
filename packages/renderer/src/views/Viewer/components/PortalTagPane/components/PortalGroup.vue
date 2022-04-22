@@ -1,17 +1,17 @@
 <template>
   <div class="portal-group">
     <section class="group-header">
-      <div class="flex items-center gap-2">
+      <div class="flex flex-1 items-center gap-2" @click="expandGroup">
         <n-badge color="#91B4C0" dot v-if="groupActivedPortalsCount" />
         <n-ellipsis>
-          <span class="font-bold" @click="expandGroup">{{
-            groupData.group
-          }}</span>
+          <span class="font-bold">{{ groupData.group }}</span>
         </n-ellipsis>
       </div>
 
       <div class="controls-icon">
-        <n-icon size="20" @click="showPortalTagModal = true"><Add /></n-icon>
+        <n-button text>
+          <n-icon size="20" @click="showPortalTagModal = true"><Add /></n-icon>
+        </n-button>
 
         <n-popover
           raw
@@ -21,9 +21,11 @@
           @update:show="updatePopOver"
         >
           <template #trigger>
-            <n-icon size="15">
-              <MenuSharp />
-            </n-icon>
+            <n-button text>
+              <n-icon size="15">
+                <MenuSharp />
+              </n-icon>
+            </n-button>
           </template>
 
           <!-- PopOver Content -->
@@ -76,14 +78,16 @@
           </section>
         </n-popover>
 
-        <n-icon
-          size="20"
-          v-if="groupData.childs.length"
-          @click="expandGroup"
-          :class="{ unexpend: !expand }"
-        >
-          <CaretDown />
-        </n-icon>
+        <n-button text :type="expand ? 'primary' : ''">
+          <n-icon
+            size="20"
+            v-if="groupData.childs.length"
+            @click="expandGroup"
+            :class="{ unexpend: !expand }"
+          >
+            <CaretDown />
+          </n-icon>
+        </n-button>
       </div>
     </section>
 
@@ -128,7 +132,7 @@
 <script setup>
 import draggable from 'vuedraggable'
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
-import { NIcon, NEllipsis, NPopover, NBadge, NDivider } from 'naive-ui'
+import { NButton, NIcon, NEllipsis, NPopover, NBadge, NDivider } from 'naive-ui'
 import {
   Add,
   CaretDown,
@@ -187,7 +191,7 @@ const openPortalGroupModal = () => {
 }
 
 const expandGroup = async () => {
-  if (!props.groupData.childs.length) return
+  // if (!props.groupData.childs.length) return
   expand.value = !expand.value
 }
 
@@ -227,17 +231,14 @@ const renameGroup = () => {
 <style lang="postcss" scoped>
 .portal-group {
   @apply flex flex-col text-[var(--primary-font)];
-}
-
-.portal-group:hover {
-  @apply border-1 border-solid border-gray-100;
+  @apply border border-1 border-transparent;
 }
 
 .group-header {
-  @apply flex items-center justify-between cursor-pointer pb-[10px];
+  @apply flex items-center justify-between cursor-pointer;
 
   .controls-icon {
-    @apply flex flex-shrink-0 items-center gap-3;
+    @apply flex flex-shrink-0 items-center gap-1;
   }
 }
 

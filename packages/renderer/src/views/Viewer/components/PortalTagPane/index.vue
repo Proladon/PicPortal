@@ -100,6 +100,6 @@ onMounted(async () => {
 }
 
 .portal-group-list {
-  @apply flex flex-col gap-5 py-3 px-[15px];
+  @apply flex flex-col py-3 px-[15px];
 }
 </style>

@@ -6,7 +6,7 @@
     :title="data.link"
   >
     <n-ellipsis>
-      <span>{{ data.name }}</span>
+      <span class="portal-name">{{ data.name }}</span>
     </n-ellipsis>
     <n-popover
       raw
@@ -16,7 +16,9 @@
       @update:show="updatePopOver"
     >
       <template #trigger>
-        <n-icon><PencilSharp /></n-icon>
+        <n-button text class="portal-tag-edit" @click.stop>
+          <n-icon class="portal-tag-edit"><PencilSharp /></n-icon>
+        </n-button>
       </template>
       <section class="py-2">
         <div class="portal-tag-option" @click="editPortalTag(groupId, data)">
@@ -45,12 +47,12 @@ import { NIcon, NPopover, NButton, NEllipsis } from 'naive-ui'
 import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
-import { onBeforeUpdate, onMounted, watch } from '@vue/runtime-core'
+import { onMounted, watch } from '@vue/runtime-core'
 import { findIndex, find, cloneDeep } from 'lodash-es'
 // --- Props ---
 const props = defineProps({
   groupId: String,
-  data: Object,
+  data: Object
 })
 
 // --- Data ---
@@ -62,7 +64,7 @@ const selectPortal = ref(false)
 const styles = reactive({
   borderColor: '',
   background: '',
-  color: '',
+  color: ''
 })
 
 // --- Computed ---
@@ -72,7 +74,6 @@ const activedPortals = computed(() => store.getters.activedPortals)
 // --- Methods ---
 // => 啟用protalTag
 const activePortal = async (e) => {
-  if (!e.target.classList.length) return
   actived.value = !actived.value
 
   const portal = props.data
@@ -87,7 +88,7 @@ const activePortal = async (e) => {
     if (exist < 0)
       await store.dispatch('PUSH_ACTIVED_PORTALS', {
         id: portal.id,
-        group: groupId,
+        group: groupId
       })
   } else {
     styles.borderColor = portal.bg
@@ -106,7 +107,7 @@ const deletePortalTag = async (groupId, portal) => {
 
   await store.dispatch('SAVE_TO_DB', {
     key: 'portals',
-    data: portals,
+    data: portals
   })
   await store.dispatch('SYNC_DB_TO_STATE', 'portals')
 

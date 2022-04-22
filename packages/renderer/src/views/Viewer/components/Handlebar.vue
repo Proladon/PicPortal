@@ -80,7 +80,7 @@ const wraping = async () => {
 
 <style lang="postcss" scoped>
 .viewer-handle-bar {
-  @apply flex gap-2 justify-center items-center  bg-secondary-bg p-3 rounded-md mb-5;
+  @apply flex gap-2 justify-center items-center p-3 rounded-md;
 }
 
 .handle-item {

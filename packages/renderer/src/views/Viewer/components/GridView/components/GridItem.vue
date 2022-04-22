@@ -23,9 +23,9 @@
       </div>
     </div>
 
-    <NIcon
+    <n-button
+      text
       class="magnifier"
-      size="20"
       @click="
         viewerApi({
           options: { navbar: false },
@@ -33,8 +33,8 @@
         })
       "
     >
-      <ExpandOutline
-    /></NIcon>
+      <NIcon size="20"><ExpandOutline /></NIcon>
+    </n-button>
     <img class="!w-full" :src="`local-resource://${img}`" loading="lazy" />
   </div>
 </template>
@@ -43,7 +43,7 @@
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-import { NTag, NPopover, NIcon } from 'naive-ui'
+import { NButton, NTag, NPopover, NIcon } from 'naive-ui/es'
 import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull, filter, compact } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
