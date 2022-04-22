@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts" setup>
-import HandleBar from '/@/components/Viewer/Handlebar.vue'
+import HandleBar from './Handlebar.vue'
 </script>
 
 <style lang="postcss" scoped>

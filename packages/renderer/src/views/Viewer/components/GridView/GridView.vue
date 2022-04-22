@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import GridItem from '/@/components/Viewer/Item/GridItem.vue'
+import GridItem from './components/GridItem.vue'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { NPagination } from 'naive-ui'
@@ -54,7 +54,7 @@ const {
   perPage,
   folderFiles,
   mainFolder,
-  selectItem,
+  selectItem
 } = useViewer(20, chunkFiles)
 
 // --- Watch ---

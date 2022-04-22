@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import FocusItem from '/@/components/Viewer/Item/FocusItem.vue'
+import FocusItem from './components/FocusItem.vue'
 import { ref } from '@vue/reactivity'
 import { map } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'

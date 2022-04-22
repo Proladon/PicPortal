@@ -4,23 +4,29 @@
       <div
         class="flex justify-between items-center py-2 mb-5 px-[15px] rounded-md"
       >
-        <n-icon
-          size="20"
-          :class="[
-            { transform: viewerSide === 'left' },
-            { 'rotate-180': viewerSide === 'left' },
-          ]"
-          class="cursor-pointer"
-          @click="cahngeViewerSide"
-          ><EnterSharp
-        /></n-icon>
-        <n-icon
-          size="20"
-          class="cursor-pointer"
-          @click="showPortalGroupModal = true"
-          ><Folder
-        /></n-icon>
-        <n-icon size="20" class="cursor-pointer"><Search /></n-icon>
+        <n-button text>
+          <n-icon
+            size="20"
+            :class="[
+              { transform: viewerSide === 'left' },
+              { 'rotate-180': viewerSide === 'left' }
+            ]"
+            class="cursor-pointer"
+            @click="cahngeViewerSide"
+            ><EnterSharp
+          /></n-icon>
+        </n-button>
+        <n-button text>
+          <n-icon
+            size="20"
+            class="cursor-pointer"
+            @click="showPortalGroupModal = true"
+            ><Folder
+          /></n-icon>
+        </n-button>
+        <n-button text>
+          <n-icon size="20" class="cursor-pointer"><Search /></n-icon>
+        </n-button>
       </div>
 
       <ControlsPane />
@@ -53,7 +59,7 @@ import PortalGroup from './PortalGroup.vue'
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
 import ControlsPane from '/@/components/PortalTagPane/ControlsPane.vue'
 import { Pricetags, EnterSharp, Search, Folder } from '@vicons/ionicons5'
-import { NIcon, NEllipsis, NCheckbox } from 'naive-ui'
+import { NIcon, NEllipsis, NCheckbox, NButton } from 'naive-ui/es'
 import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
@@ -69,11 +75,11 @@ const portals = computed({
   set: async (newData) => {
     const [, error] = await store.dispatch('SAVE_TO_DB', {
       key: 'portals',
-      data: newData,
+      data: newData
     })
     await store.dispatch('SYNC_DB_TO_STATE', 'portals')
     if (error) alert(error)
-  },
+  }
 })
 
 const cahngeViewerSide = () => {

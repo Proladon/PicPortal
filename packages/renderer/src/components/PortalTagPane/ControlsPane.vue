@@ -9,11 +9,10 @@
         ></NBadge>
         Activated
       </div>
-      <div class="flex gap-2">
-        <NButton class="controls-btn" block @click="resetAvtivatedPortals"
-          >Clear</NButton
+      <div class="flex flex-wrap gap-2">
+        <NButton class="controls-btn" @click="resetAvtivatedPortals">
+          Clear</NButton
         >
-
         <n-radio-group
           v-model:value="dockingMode"
           :on-update:value="changeDockingMode"
@@ -26,15 +25,6 @@
             {{ mode }}
           </n-radio-button>
         </n-radio-group>
-        <!-- <NButton class="controls-btn" block @click="changeDockingMode('append')"
-          >Append</NButton
-        >
-        <NButton
-          class="controls-btn"
-          block
-          @click="changeDockingMode('Override')"
-          >Override</NButton
-        > -->
       </div>
     </div>
   </div>
@@ -78,9 +68,7 @@ const changeDockingMode = (mode: string) => {
 }
 
 .controls-btn {
-  @apply px-[10px] py-[3px];
-  @apply cursor-pointer bg-secondary-bg text-border  rounded-md font-medium;
-  @apply hover:bg-[#91B4C0] hover:text-primary-bg;
+  @apply cursor-pointer text-border  rounded-md font-medium;
   transition: 0.3s;
 }
 

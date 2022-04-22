@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts" setup>
-import VirtualListItem from '/@/components/Viewer/Item/VirtualListItem.vue'
+import VirtualListItem from './components/VirtualListItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
 import { ref } from '@vue/reactivity'
 import { map } from 'lodash-es'

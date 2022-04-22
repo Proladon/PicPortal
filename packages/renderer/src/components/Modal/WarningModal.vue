@@ -1,31 +1,35 @@
 <template>
-  <GDialog
-    v-model="showModal"
-    width="30%"
-    max-width="300px"
-    @update:modelValue="closeModal"
-  >
-    <div class="p-5 text-center">
+  <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
+    <div class="p-5 text-center bg-primary-bg">
       <p>{{ title }}</p>
       <slot />
       <n-button @click=";[$emit('confirm'), closeModal()]">confirm</n-button>
       <n-button @click=";[$emit('cancel'), closeModal()]">cancel</n-button>
     </div>
-  </GDialog>
+  </n-modal>
 </template>
 
 <script lang="ts" setup>
 import { ref } from '@vue/reactivity'
-import { NButton, NForm, NFormItem, NInput } from 'naive-ui'
+import { NModal, NButton, NForm, NFormItem, NInput } from 'naive-ui/es'
 import { GDialog } from 'gitart-vue-dialog'
 
 // --- Data ---
 const emit = defineEmits(['close', 'confirm', 'cancel'])
 defineProps({
-  title: String,
+  title: String
 })
 
 const showModal = ref(true)
+
+const updateModalShow = (show: boolean) => {
+  if (!show) {
+    setTimeout(() => {
+      emit('close')
+    }, 1500)
+  }
+  showModal.value = show
+}
 
 const closeModal = (): void => {
   showModal.value = false

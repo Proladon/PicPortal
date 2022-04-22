@@ -1,5 +1,5 @@
 <template>
-  <GDialog v-model="showModal" max-width="40%" @update:modelValue="closeModal">
+  <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
     <div class="modal-content">
       <p>Mode Change</p>
       <div class="mode-btn-container">
@@ -30,26 +30,35 @@
         </div>
       </div>
     </div>
-  </GDialog>
+  </n-modal>
 </template>
 
 <script lang="ts" setup>
 import { computed, reactive, ref } from '@vue/reactivity'
-import { GDialog } from 'gitart-vue-dialog'
 import { useRouter } from 'vue-router'
-import { NIcon, NButton } from 'naive-ui'
+import { NModal, NIcon, NButton } from 'naive-ui/es'
 import { AppsSharp, ListSharp, ImageOutline } from '@vicons/ionicons5'
 import { useStore } from 'vuex'
+import { onMounted } from '@vue/runtime-core'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  group: Object,
+  group: Object
 })
 
-const showModal = ref(true)
+const showModal = ref(false)
 const router = useRouter()
 const store = useStore()
+
+const updateModalShow = (show: boolean) => {
+  if (!show) {
+    setTimeout(() => {
+      emit('close')
+    }, 1500)
+  }
+  showModal.value = show
+}
 
 const closeModal = (): void => {
   showModal.value = false
@@ -63,11 +72,15 @@ const changeView = (view: string): void => {
   store.commit('SET_LAST_VIEWER', view)
   closeModal()
 }
+
+onMounted(() => {
+  showModal.value = true
+})
 </script>
 
 <style lang="postcss" scoped>
 .modal-content {
-  @apply p-5 text-center;
+  @apply p-5 text-center bg-primary-bg;
 }
 
 .mode-btn-container {

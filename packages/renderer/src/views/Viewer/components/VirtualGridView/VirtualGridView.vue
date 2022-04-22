@@ -35,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-import VirtualGridItem from '/@/components/Viewer/Item/VirtualGridItem.vue'
+import VirtualGridItem from './components/VirtualGridItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
 import { ref } from '@vue/reactivity'
 import { chunk, map } from 'lodash-es'

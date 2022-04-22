@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-import ModeChangeModal from './Modal/ModeChangeModal.vue'
+import ModeChangeModal from './ModeChangeModal.vue'
 import { NIcon, NTag } from 'naive-ui'
 import { BrowsersOutline, RocketSharp } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
@@ -67,7 +67,7 @@ const wraping = async () => {
       await store.dispatch('WRAPING', {
         mode: count === dock.portals.length ? 'move' : 'copy',
         filePath: src,
-        destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src),
+        destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src)
       })
     })
     waitRemove.push(src)

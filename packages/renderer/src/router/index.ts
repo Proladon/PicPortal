@@ -12,29 +12,29 @@ const routes = [
       {
         path: '/editor',
         name: 'Editor',
-        component: () => import('../views/Viewer.vue'),
-        children: [...viewerRoutes],
+        component: () => import('../views/Viewer/Viewer.vue'),
+        children: [...viewerRoutes]
       },
       {
         path: '/about',
         name: 'About',
-        component: () => import('../views/About.vue'),
+        component: () => import('../views/About.vue')
       },
       {
         path: '/projects',
         name: 'Projects',
-        component: () => import('../views/Projects.vue'),
+        component: () => import('../views/Projects.vue')
       },
       {
         path: '/settings',
         name: 'Settings',
-        component: () => import('../views/Settings.vue'),
-      },
-    ],
-  },
+        component: () => import('../views/Settings.vue')
+      }
+    ]
+  }
 ]
 
 export default createRouter({
   routes,
-  history: createWebHashHistory(),
+  history: createWebHashHistory()
 })
