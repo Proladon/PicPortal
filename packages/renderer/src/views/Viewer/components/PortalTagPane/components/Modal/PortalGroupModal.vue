@@ -50,8 +50,8 @@ const formRules = {
 const portalsData = computed(() => store.getters.portals)
 const modalTitle = computed(() => {
   const mode = props.mode
-  if (mode === 'edit') return 'Update Protal Group'
-  if (mode === 'create') return 'Create Protal Group'
+  if (mode === 'edit') return 'Update Portal Group'
+  if (mode === 'create') return 'Create Portal Group'
 })
 
 // --- Methods ---

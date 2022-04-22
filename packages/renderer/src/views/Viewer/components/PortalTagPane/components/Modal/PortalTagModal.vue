@@ -86,10 +86,10 @@ const modalTitle = computed(() => {
   let title = ''
   switch (props.mode) {
     case 'create':
-      title = 'Add Protal Tag'
+      title = 'Add Portal Tag'
       break
     case 'edit':
-      title = 'Update Protal Tag'
+      title = 'Update Portal Tag'
       break
   }
   return title

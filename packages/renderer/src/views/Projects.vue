@@ -31,6 +31,7 @@ import { findIndex, find } from 'lodash-es'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import projectDBModel from '../model/projectDB'
+import path from 'path'
 
 const store = useStore()
 const router = useRouter()
@@ -38,9 +39,10 @@ const projectsList = ref([])
 
 // --- Methods ---
 const getProjectName = (projectPath: string) => {
-  const pathChunk = projectPath.split('\\')
-  const name = pathChunk[pathChunk.length - 1]
-  return name.split('.')[0]
+  // const pathChunk = projectPath.split('\\')
+  // const name = pathChunk[pathChunk.length - 1]
+  // return name.split('.')[0]
+  return path.basename(projectPath)
 }
 
 // => 創建DB檔
@@ -134,7 +136,7 @@ onMounted(async () => {
   @apply grid grid-cols-3 p-10 gap-5;
 }
 .project {
-  @apply bg-gray-600 px-20 py-5 rounded-sm;
+  @apply bg-gray-600 py-5 rounded-sm;
   @apply cursor-pointer;
 }
 

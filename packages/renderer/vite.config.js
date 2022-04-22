@@ -7,6 +7,7 @@ import { defineConfig } from 'vite'
 import { loadAndSetEnv } from '../../scripts/loadAndSetEnv.mjs'
 import vue from '@vitejs/plugin-vue'
 import WindiCSS from 'vite-plugin-windicss'
+import path from 'path-browserify'
 
 const PACKAGE_ROOT = __dirname
 
@@ -24,15 +25,16 @@ export default defineConfig({
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
-    },
+      path: 'path-browserify'
+    }
   },
   plugins: [vue(), WindiCSS()],
 
   base: '',
   server: {
     fsServe: {
-      root: join(PACKAGE_ROOT, '../../'),
-    },
+      root: join(PACKAGE_ROOT, '../../')
+    }
   },
   build: {
     sourcemap: true,
@@ -42,13 +44,13 @@ export default defineConfig({
     terserOptions: {
       ecma: 2020,
       compress: {
-        passes: 2,
+        passes: 2
       },
-      safari10: false,
+      safari10: false
     },
     rollupOptions: {
-      external: [...builtinModules],
+      external: [...builtinModules]
     },
-    emptyOutDir: true,
-  },
+    emptyOutDir: true
+  }
 })

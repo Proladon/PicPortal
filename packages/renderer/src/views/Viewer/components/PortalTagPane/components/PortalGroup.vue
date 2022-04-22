@@ -88,8 +88,8 @@
     </section>
 
     <draggable
-      v-model="groupProtals"
-      group="protal"
+      v-model="groupPortals"
+      group="portal"
       item-key="id"
       :animation="300"
       :class="{
@@ -128,14 +128,7 @@
 <script setup>
 import draggable from 'vuedraggable'
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
-import {
-  NIcon,
-  NEllipsis,
-  NCheckbox,
-  NPopover,
-  NBadge,
-  NDivider
-} from 'naive-ui'
+import { NIcon, NEllipsis, NPopover, NBadge, NDivider } from 'naive-ui'
 import {
   Add,
   CaretDown,
@@ -158,7 +151,6 @@ const props = defineProps({
   groupData: Object
 })
 const store = useStore()
-const drag = ref(false)
 const listView = ref('list')
 const expand = ref(false)
 const showPopOver = ref(false)
@@ -174,7 +166,7 @@ const groupActivedPortalsCount = computed(() => {
   return filter(activeds, { group: groupId }).length
 })
 
-const groupProtals = computed({
+const groupPortals = computed({
   get: () => props.groupData.childs,
   set: async (newData) => {
     const portalsRef = portalsData.value

@@ -76,6 +76,7 @@ import { Folder, Cube, DocumentOutline } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
+import path from 'path'
 
 const { browserDialog } = useElectron()
 const store = useStore()

@@ -2,13 +2,14 @@ import { Module } from 'vuex'
 import { useElectron } from '/@/use/electron'
 const { database } = useElectron()
 import { map, flatten } from 'lodash-es'
+import path from 'path'
 
 const app: Module<any, any> = {
   state: {
     project: null,
     mainFolder: {},
     portals: [],
-    dockings: [],
+    dockings: []
   },
 
   mutations: {},
@@ -20,7 +21,7 @@ const app: Module<any, any> = {
       return state.mainFolder
     },
     projectName: (state) => {
-      return state.project
+      return state.project ? path.basename(state.project) : ''
     },
     portals: (state) => {
       return state.portals
@@ -32,8 +33,8 @@ const app: Module<any, any> = {
     },
     dockings: (state) => {
       return state.dockings
-    },
-  },
+    }
+  }
 }
 
 export default app
