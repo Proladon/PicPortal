@@ -3,23 +3,40 @@
     <div class="p-5 text-center bg-primary-bg">
       <p>{{ modalTitle }}</p>
 
-      <n-form :model="formData" :rules="formRules" ref="formRef">
-        <n-form-item path="name" :show-label="false">
-          <n-input placeholder="Portal Name" v-model:value="formData.name" />
-        </n-form-item>
-        <n-form-item path="link" :show-label="false">
-          <n-input
-            type="text"
-            v-model:value="formData.link"
-            placeholder="Portal Link"
-          />
-          <n-button @click="browseFolder">
-            <n-icon><FolderOpenOutline /></n-icon>
-          </n-button>
-        </n-form-item>
-        <n-color-picker v-model:value="formData.bg" :show-alpha="false" />
-        <n-color-picker v-model:value="formData.fg" :show-alpha="false" />
-      </n-form>
+      <n-tabs
+        v-model:value="type"
+        type="line"
+        justify-content="space-evenly"
+        class="mb-[10px]"
+      >
+        <n-tab-pane name="manaul" tab="Manaul">
+          <n-form :model="formData" :rules="formRules" ref="formRef">
+            <n-form-item path="name" :show-label="false">
+              <n-input
+                placeholder="Portal Name"
+                v-model:value="formData.name"
+              />
+            </n-form-item>
+            <n-form-item path="link" :show-label="false">
+              <n-input
+                type="text"
+                v-model:value="formData.link"
+                placeholder="Portal Link"
+              />
+              <n-button @click="browseFolder">
+                <n-icon><FolderOpenOutline /></n-icon>
+              </n-button>
+            </n-form-item>
+            <n-color-picker v-model:value="formData.bg" :show-alpha="false" />
+            <n-color-picker v-model:value="formData.fg" :show-alpha="false" />
+          </n-form>
+        </n-tab-pane>
+        <n-tab-pane name="drop" tab="Drop">
+          <n-icon size="48" :depth="3">
+            <Archive />
+          </n-icon>
+        </n-tab-pane>
+      </n-tabs>
 
       <n-button
         v-if="mode === 'create'"
@@ -40,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import { FolderOpenOutline } from '@vicons/ionicons5'
+import { FolderOpenOutline, Archive } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
 import {
   NButton,
@@ -49,7 +66,9 @@ import {
   NInput,
   NIcon,
   NColorPicker,
-  NModal
+  NModal,
+  NTabs,
+  NTabPane
 } from 'naive-ui'
 import { useStore } from 'vuex'
 import { findIndex } from 'lodash-es'
@@ -66,6 +85,7 @@ const props = defineProps({
 })
 const { browserDialog } = useElectron()
 const store = useStore()
+const type = ref('manaul')
 const showModal = ref<boolean>(false)
 const formRef = ref(null)
 const formData = reactive({
