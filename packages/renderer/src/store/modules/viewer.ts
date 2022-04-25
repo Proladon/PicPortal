@@ -30,24 +30,16 @@ wrapingQueue.on('error', (error) => {
 const viewer: Module<any, any> = {
   state: {
     loading: false,
-    lastViewer: 'GridView',
     folderFiles: [],
     selectedLabels: [],
     wraping: false,
     totalWrap: 0,
     curWrap: 0,
     errWrap: 0,
-    pullList: [],
-    viewerSide: 'left',
+    pullList: []
   },
 
   mutations: {
-    SET_LAST_VIEWER: (state, view: string) => {
-      state.lastViewer = view
-    },
-    SET_VIEWER_SIDE: (state, side: string) => {
-      state.viewerSide = side
-    },
     SET_FOLDER_FILES: (state, files: string[]) => {
       state.folderFiles = files
     },
@@ -77,7 +69,7 @@ const viewer: Module<any, any> = {
     RESET_WRAPING: (state) => {
       state.totalWrap = 0
       state.curWrap = 0
-    },
+    }
   },
 
   actions: {
@@ -102,7 +94,7 @@ const viewer: Module<any, any> = {
     DOCKING: async ({ dispatch }, { key, data }) => {
       await dispatch('SAVE_TO_DB', {
         key,
-        data: dataClone(data),
+        data: dataClone(data)
       })
     },
 
@@ -128,7 +120,7 @@ const viewer: Module<any, any> = {
         }
         wrapingQueue.add(task)
       }
-    },
+    }
   },
 
   getters: {
@@ -140,8 +132,8 @@ const viewer: Module<any, any> = {
     },
     wrapingProgress: (state) => {
       return state.curWrap / state.totalWrap
-    },
-  },
+    }
+  }
 }
 
 export default viewer

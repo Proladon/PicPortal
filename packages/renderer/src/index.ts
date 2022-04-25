@@ -7,4 +7,10 @@ import 'virtual:windi.css'
 import '/@/styles/index.css'
 import 'gitart-vue-dialog/dist/style.css'
 import 'viewerjs/dist/viewer.css'
-createApp(App).use(router).use(store).use(VueViewer).mount('#app')
+import { createPinia } from 'pinia'
+createApp(App)
+  .use(createPinia())
+  .use(router)
+  .use(store)
+  .use(VueViewer)
+  .mount('#app')

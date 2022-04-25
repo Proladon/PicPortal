@@ -3,7 +3,7 @@
     <n-popover trigger="hover" placement="right">
       <template #trigger>
         <router-link
-          :to="{ name: lastViewer }"
+          :to="{ name: lastViewerType }"
           class="nav-btn"
           :class="{ 'nav--actived': $route.name === 'Editor' }"
         >
@@ -63,15 +63,14 @@ import {
   Albums,
   AppsSharp,
   InformationCircle,
-  SettingsSharp,
+  SettingsSharp
 } from '@vicons/ionicons5'
 import { NIcon, NPopover } from 'naive-ui'
-import { useStore } from 'vuex'
+import { useViewerStore } from '/@/store/viewerStore'
 import { computed } from '@vue/reactivity'
 
-const lastViewer = computed(() => store.state.viewer.lastViewer)
-
-const store = useStore()
+const viewerStore = useViewerStore()
+const lastViewerType = computed(() => viewerStore.lastViewerType)
 </script>
 
 <style lang="postcss" scoped>
