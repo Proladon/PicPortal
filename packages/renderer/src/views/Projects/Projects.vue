@@ -3,46 +3,60 @@
     <div class="project-list">
       <n-tooltip
         trigger="hover"
-        v-for="(projectPath, index) in projectsList"
+        v-for="(project, index) in projectsList"
         :key="index"
       >
         <template #trigger>
-          <div class="project" @click="openProject(projectPath)">
-            <p>{{ getProjectName(projectPath) }}</p>
+          <div class="project-card" @click="openProject(project)">
+            <n-h3 prefix="bar">
+              <n-text type="primary">
+                <n-ellipsis>
+                  {{ project.name }}
+                </n-ellipsis>
+              </n-text>
+            </n-h3>
+            <p class="project-path">{{ project }}</p>
           </div>
         </template>
-        <p>{{ projectPath }}</p>
+        <p>{{ project }}</p>
       </n-tooltip>
     </div>
     <section class="btn-container">
-      <button class="new-project-btn" @click="newProject">新增專案</button>
+      <button class="new-project-btn" @click="showCreateProjectModal = true">
+        新增專案
+      </button>
       <button class="new-project-btn" @click="importProject">開啟專案</button>
     </section>
   </main>
+
+  <CreateProjectModal
+    v-if="showCreateProjectModal"
+    @close="showCreateProjectModal = false"
+    @created="onCreatedProject"
+  />
 </template>
 
 <script lang="ts" setup>
-import { NTooltip } from 'naive-ui'
+import { NTooltip, NH3, NText, NEllipsis } from 'naive-ui/es'
 import { onMounted, ref } from '@vue/runtime-core'
+import CreateProjectModal from './components/CreateProjectModal.vue'
 import { saveProjectDialog, importProjectDialog } from '/@/utils/browserDialog'
-import { useElectron } from '../use/electron'
+import { useElectron } from '../../use/electron'
 const { fileSystem, userStore } = useElectron()
 import { findIndex, find } from 'lodash-es'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import projectDBModel from '../model/projectDB'
-import path from 'path'
+import projectDBModel from '../../model/projectDB'
+import { getFileName } from '/@/utils/file'
 
 const store = useStore()
 const router = useRouter()
 const projectsList = ref([])
+const showCreateProjectModal = ref(false)
 
 // --- Methods ---
-const getProjectName = (projectPath: string) => {
-  // const pathChunk = projectPath.split('\\')
-  // const name = pathChunk[pathChunk.length - 1]
-  // return name.split('.')[0]
-  return path.basename(projectPath)
+const getProjectName = (project: string) => {
+  return getFileName(project.path)
 }
 
 // => 創建DB檔
@@ -59,14 +73,11 @@ const createDB = async (filePath: string) => {
 }
 
 // => 新增專案
-const newProject = async () => {
-  const save = await saveProjectDialog()
-  if (save.canceled) return
+const onCreatedProject = async (newProject) => {
   // TODO 覆蓋專案?
-  await createDB(save.filePath)
   const projects = await getProjects()
-  if (!projects) return await userStore.set('projects', [save.filePath])
-  projects.push(save.filePath)
+  if (!projects) return await userStore.set('projects', [newProject])
+  projects.push(newProject)
   await userStore.set('projects', projects)
   await refreshProjects()
 }
@@ -133,11 +144,15 @@ onMounted(async () => {
   @apply w-full h-full flex flex-col justify-between pb-10;
 }
 .project-list {
-  @apply grid grid-cols-3 p-10 gap-5;
+  @apply flex flex-wrap p-10 gap-5;
 }
-.project {
-  @apply bg-gray-600 py-5 rounded-sm;
-  @apply cursor-pointer;
+.project-card {
+  @apply w-[150px] h-[200px];
+  @apply bg-gray-600 p-[10px] rounded-sm text-left cursor-pointer;
+
+  .project-path {
+    @apply break-all;
+  }
 }
 
 .btn-container {

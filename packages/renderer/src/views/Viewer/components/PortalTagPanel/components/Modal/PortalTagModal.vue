@@ -121,7 +121,7 @@ const updateModalShow = (show: boolean) => {
   if (!show) {
     setTimeout(() => {
       emit('close')
-    }, 1500)
+    }, 300)
   }
   showModal.value = show
 }
