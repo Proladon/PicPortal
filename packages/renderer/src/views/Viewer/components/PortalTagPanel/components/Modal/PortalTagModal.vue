@@ -32,9 +32,13 @@
           </n-form>
         </n-tab-pane>
         <n-tab-pane name="drop" tab="Drop">
-          <n-icon size="48" :depth="3">
-            <Archive />
-          </n-icon>
+          <div>
+            <label for="drop-zone" @drop="drop">dwqdqwd</label>
+            <input id="drop-zone" type="file" @drop="drop" />
+            <n-icon size="48" :depth="3">
+              <Archive />
+            </n-icon>
+          </div>
         </n-tab-pane>
       </n-tabs>
 
@@ -68,7 +72,9 @@ import {
   NColorPicker,
   NModal,
   NTabs,
-  NTabPane
+  NTabPane,
+  messageDark,
+  useMessage
 } from 'naive-ui'
 import { useStore } from 'vuex'
 import { findIndex } from 'lodash-es'
@@ -85,6 +91,7 @@ const props = defineProps({
 })
 const { browserDialog } = useElectron()
 const store = useStore()
+const message = useMessage()
 const type = ref('manaul')
 const showModal = ref<boolean>(false)
 const formRef = ref(null)
@@ -199,6 +206,25 @@ const updatePortal = async (e) => {
   })
 }
 
+const drop = (e) => {
+  let folders = []
+  const ignore = ['image', 'video', 'audio']
+  let count = 0
+  // Get every
+  for (let i of e.dataTransfer.items) {
+    if (i.kind !== 'file' || ignore.includes(i.type.split('/')[0])) {
+      // Error not folder
+      message.error('Only support folder !')
+      return
+    } else {
+      count += 1
+      folders.push(i.getAsFile().path)
+    }
+  }
+  console.log(folders)
+  // Check Repeat
+}
+
 onMounted(() => {
   showModal.value = true
   if (props.mode === 'edit' && props.portal) {
@@ -211,4 +237,15 @@ onMounted(() => {
 })
 </script>
 
-<style lang="postcss" scoped></style>
+<style lang="postcss" scoped>
+input {
+  cursor: default;
+  all: unset;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  outline: none;
+  caret-color: transparent;
+}
+</style>
