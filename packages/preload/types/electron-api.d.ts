@@ -6,6 +6,7 @@ interface ElectronApi {
   readonly fileSystem: Object<Function>
   readonly database: Object<Function>
   readonly appWindow: Object<Function>
+  readonly platform: { [key: string]: boolean }
 }
 
 declare interface Window {

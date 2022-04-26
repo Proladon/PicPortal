@@ -5,6 +5,7 @@ import fastGlob from './render/modules/fastGlob'
 import fileSystem from './render/modules/fileSystem'
 import database from './render/modules/database'
 import appWindow from './render/modules/app'
+import platform from './render/modules/platform'
 
 const apiKey = 'electron'
 /**
@@ -18,6 +19,7 @@ const api: ElectronApi = {
   fileSystem,
   database,
   appWindow,
+  platform
 }
 
 if (import.meta.env.MODE !== 'test') {
