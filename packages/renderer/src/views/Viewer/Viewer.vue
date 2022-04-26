@@ -1,17 +1,17 @@
 <template>
   <div class="viewer">
-    <splitpanes v-if="viewerSide === 'left'">
+    <splitpanes v-if="portalPanelPosition === 'right'">
       <pane>
         <router-view></router-view>
       </pane>
       <pane size="30">
-        <PortalTagPane />
+        <PortalTagPanel />
       </pane>
     </splitpanes>
 
-    <splitpanes v-if="viewerSide === 'right'">
+    <splitpanes v-if="portalPanelPosition === 'left'">
       <pane size="30">
-        <PortalTagPane />
+        <PortalTagPanel />
       </pane>
       <pane>
         <router-view></router-view>
@@ -21,14 +21,14 @@
 </template>
 
 <script setup lang="ts">
-import PortalTagPane from './components/PortalTagPane/index.vue'
+import PortalTagPanel from './components/PortalTagPanel/PortalTagPanel.vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
-import { useStore } from 'vuex'
+import { useViewerStore } from '/@/store/viewerStore'
 import { computed } from '@vue/reactivity'
 
-const store = useStore()
-const viewerSide = computed(() => store.state.viewer.viewerSide)
+const viewerStore = useViewerStore()
+const portalPanelPosition = computed(() => viewerStore.portalPanelPosition)
 </script>
 
 <style scoped lang="postcss">

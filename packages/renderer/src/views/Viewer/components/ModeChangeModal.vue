@@ -38,7 +38,7 @@ import { computed, reactive, ref } from '@vue/reactivity'
 import { useRouter } from 'vue-router'
 import { NModal, NIcon, NButton } from 'naive-ui/es'
 import { AppsSharp, ListSharp, ImageOutline } from '@vicons/ionicons5'
-import { useStore } from 'vuex'
+import { useViewerStore } from '/@/store/viewerStore'
 import { onMounted } from '@vue/runtime-core'
 
 const emit = defineEmits(['close'])
@@ -49,7 +49,7 @@ const props = defineProps({
 
 const showModal = ref(false)
 const router = useRouter()
-const store = useStore()
+const viewerStore = useViewerStore()
 
 const updateModalShow = (show: boolean) => {
   if (!show) {
@@ -67,10 +67,10 @@ const closeModal = (): void => {
   }, 150)
 }
 
-const changeView = (view: string): void => {
-  router.push({ name: view })
-  store.commit('SET_LAST_VIEWER', view)
+const changeView = (type: string): void => {
+  viewerStore.SET_LAST_VIEWER_TYPE(type)
   closeModal()
+  router.push({ name: type })
 }
 
 onMounted(() => {

@@ -8,11 +8,11 @@
           <n-icon
             size="20"
             :class="[
-              { transform: viewerSide === 'left' },
-              { 'rotate-180': viewerSide === 'left' }
+              { transform: portalPanelPosition === 'right' },
+              { 'rotate-180': portalPanelPosition === 'right' }
             ]"
             class="cursor-pointer"
-            @click="cahngeViewerSide"
+            @click="changePortalPanelPosition"
             ><EnterSharp
           /></n-icon>
         </n-button>
@@ -58,18 +58,20 @@ import Draggable from 'vuedraggable'
 import PortalGroup from './components/PortalGroup.vue'
 import PortalGroupModal from './components/Modal/PortalGroupModal.vue'
 import ControlsBlock from './components/ControlsBlock.vue'
-import { Pricetags, EnterSharp, Search, Folder } from '@vicons/ionicons5'
+import { EnterSharp, Search, Folder } from '@vicons/ionicons5'
 import { NIcon, NEllipsis, NCheckbox, NButton } from 'naive-ui/es'
 import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
+import { useViewerStore } from '/@/store/viewerStore'
 
 // --- Data ---
+const viewerStore = useViewerStore()
 const store = useStore()
 const drag = ref(false)
 const showPortalGroupModal = ref(false)
 // --- Computed ---
-const viewerSide = computed(() => store.state.viewer.viewerSide)
+const portalPanelPosition = computed(() => viewerStore.portalPanelPosition)
 const portals = computed({
   get: () => store.getters.portals,
   set: async (newData) => {
@@ -82,10 +84,11 @@ const portals = computed({
   }
 })
 
-const cahngeViewerSide = () => {
-  console.log(viewerSide.value)
-  if (viewerSide.value === 'right') store.commit('SET_VIEWER_SIDE', 'left')
-  else if (viewerSide.value === 'left') store.commit('SET_VIEWER_SIDE', 'right')
+const changePortalPanelPosition = () => {
+  if (portalPanelPosition.value === 'right')
+    viewerStore.SET_PORTAL_PANEL_POSITION('left')
+  else if (portalPanelPosition.value === 'left')
+    viewerStore.SET_PORTAL_PANEL_POSITION('right')
 }
 
 // --- Mounted ---
