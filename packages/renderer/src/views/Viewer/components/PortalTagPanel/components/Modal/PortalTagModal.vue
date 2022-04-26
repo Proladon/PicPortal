@@ -1,15 +1,16 @@
 <template>
   <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
-    <div class="p-5 text-center bg-primary-bg">
+    <div class="p-5 text-center bg-primary-bg w-[260px]">
       <p>{{ modalTitle }}</p>
 
       <n-tabs
-        v-model:value="type"
+        v-model:value="tab"
         type="line"
         justify-content="space-evenly"
-        class="mb-[10px]"
+        class="mb-[10px] h-[220px]"
       >
-        <n-tab-pane name="manaul" tab="Manaul">
+        <!-- Manual Tab -->
+        <n-tab-pane name="manual" tab="Manual">
           <n-form :model="formData" :rules="formRules" ref="formRef">
             <n-form-item path="name" :show-label="false">
               <n-input
@@ -31,22 +32,47 @@
             <n-color-picker v-model:value="formData.fg" :show-alpha="false" />
           </n-form>
         </n-tab-pane>
-        <n-tab-pane name="drop" tab="Drop">
-          <div>
-            <label for="drop-zone" @drop="drop">dwqdqwd</label>
-            <input id="drop-zone" type="file" @drop="drop" />
-            <n-icon size="48" :depth="3">
+        <!-- Drop Tab -->
+        <n-tab-pane name="drop" tab="Drop" class="flex flex-col h-full">
+          <n-button
+            class="cursor-default h-full"
+            :class="{ 'drop-zone-collapse': dropList.length }"
+            dashed
+            block
+            @drop="drop"
+            @dragenter.prevent
+            @dragover.prevent
+          >
+            <n-icon size="24" :depth="3">
               <Archive />
             </n-icon>
-          </div>
+          </n-button>
+          <n-scrollbar class="mt-[10px]">
+            <div class="folder-list">
+              <n-tooltip
+                :delay="500"
+                trigger="hover"
+                v-for="folder in dropList"
+                :key="folder"
+              >
+                <template #trigger>
+                  <n-tag class="folder-item">
+                    {{ getFileName(folder) }}
+                  </n-tag>
+                </template>
+                {{ folder }}
+              </n-tooltip>
+            </div>
+          </n-scrollbar>
         </n-tab-pane>
       </n-tabs>
 
       <n-button
         v-if="mode === 'create'"
+        :disabled="disabledCreate"
         class="mt-[50px]"
         block
-        @click="addPortal"
+        @click="createPortal"
         >Add</n-button
       >
       <n-button
@@ -63,6 +89,7 @@
 <script lang="ts" setup>
 import { FolderOpenOutline, Archive } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
+import { onMounted } from '@vue/runtime-core'
 import {
   NButton,
   NForm,
@@ -73,15 +100,17 @@ import {
   NModal,
   NTabs,
   NTabPane,
-  messageDark,
+  NScrollbar,
+  NTooltip,
+  NTag,
   useMessage
-} from 'naive-ui'
+} from 'naive-ui/es'
 import { useStore } from 'vuex'
-import { findIndex } from 'lodash-es'
+import { findIndex, forEach } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
 import { useElectron } from '/@/use/electron'
-import { onMounted } from '@vue/runtime-core'
 import { dataClone } from '/@/utils/data'
+import { getFileName } from '/@/utils/file'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -92,7 +121,8 @@ const props = defineProps({
 const { browserDialog } = useElectron()
 const store = useStore()
 const message = useMessage()
-const type = ref('manaul')
+const tab = ref<'manual' | 'drop'>('manual')
+const dropList = ref<string[]>([])
 const showModal = ref<boolean>(false)
 const formRef = ref(null)
 const formData = reactive({
@@ -108,39 +138,37 @@ const formRules = {
   link: { required: true }
 }
 
-// --- Computed ---
+// ANCHOR --- Computed ---
 const modalTitle = computed(() => {
   let title = ''
   switch (props.mode) {
     case 'create':
-      title = 'Add Portal Tag'
+      title = 'Create Portal'
       break
     case 'edit':
-      title = 'Update Portal Tag'
+      title = 'Update Portal'
       break
   }
   return title
 })
 const portalsData = computed(() => store.getters.portals)
-
-// --- Methods ---
+const disabledCreate = computed(() => {
+  if (tab.value == 'manual') {
+    if (!formData.name || !formData.link) return true
+  }
+  if (tab.value == 'drop') {
+    if (!dropList.value.length) return true
+  }
+  return false
+})
+// ANCHOR --- Methods ---
 const updateModalShow = (show: boolean) => {
   if (!show) {
     setTimeout(() => {
       emit('close')
-    }, 1500)
+    }, 300)
   }
   showModal.value = show
-}
-const closeModal = (): void => {
-  // if (!state) formRef.value.restoreValidation()
-  // formData.name = ''
-  // formData.color = ''
-  // formData.link = ''
-  setTimeout(() => {
-    console.log('close')
-    emit('close')
-  }, 1500)
 }
 
 const browseFolder = async (): Promise<void> => {
@@ -171,19 +199,33 @@ const updateDBData = async (data: unknown): Promise<void> => {
 }
 
 // => 新增 PortalTag
-const addPortal = async (e): Promise<void> => {
+const createPortal = async (e): Promise<void> => {
   e.preventDefault()
-  await formRef.value.validate(async (errors: any) => {
-    if (errors) return
-
-    const portals = portalsData.value
-    const portal = await newPortal()
-    const groupIndex = findIndex(portals, { id: props.groupId })
-    portals[groupIndex].childs.push(portal)
-    await updateDBData(portals)
-    showModal.value = false
-    closeModal()
-  })
+  console.log(tab.value)
+  const portals = dataClone(portalsData.value)
+  const groupIndex = findIndex(portals, { id: props.groupId })
+  if (tab.value == 'manual') {
+    await formRef.value.validate(async (errors: any) => {
+      if (errors) return
+      const portal = await newPortal()
+      portals[groupIndex].childs.push(portal)
+    })
+  } else if (tab.value === 'drop') {
+    for (const folder of dropList.value) {
+      const portal = {
+        name: getFileName(folder),
+        id: await nanoid(10),
+        bg: '',
+        fg: '',
+        link: folder
+      }
+      portals[groupIndex].childs.push(portal)
+    }
+  }
+  console.log(portals[groupIndex].childs)
+  await updateDBData(portals)
+  showModal.value = false
+  updateModalShow(false)
 }
 
 // => 更新 PortalTag
@@ -202,14 +244,12 @@ const updatePortal = async (e) => {
     portals[groupIndex].childs[portalIndex] = portal
     await updateDBData(portals)
     showModal.value = false
-    closeModal()
+    updateModalShow(false)
   })
 }
 
 const drop = (e) => {
-  let folders = []
   const ignore = ['image', 'video', 'audio']
-  let count = 0
   // Get every
   for (let i of e.dataTransfer.items) {
     if (i.kind !== 'file' || ignore.includes(i.type.split('/')[0])) {
@@ -217,11 +257,9 @@ const drop = (e) => {
       message.error('Only support folder !')
       return
     } else {
-      count += 1
-      folders.push(i.getAsFile().path)
+      dropList.value.push(i.getAsFile().path)
     }
   }
-  console.log(folders)
   // Check Repeat
 }
 
@@ -238,14 +276,13 @@ onMounted(() => {
 </script>
 
 <style lang="postcss" scoped>
-input {
-  cursor: default;
-  all: unset;
-  width: 100%;
-  height: 100%;
-  margin: 0 auto;
-  box-sizing: border-box;
-  outline: none;
-  caret-color: transparent;
+.drop-zone-collapse {
+  @apply !h-[80px];
+}
+.folder-list {
+  @apply flex flex-col gap-[5px];
+}
+.folder-item {
+  @apply text-left w-full hover:(bg-border text-primary-bg);
 }
 </style>
