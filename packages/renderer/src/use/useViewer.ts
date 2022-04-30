@@ -3,20 +3,24 @@ import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
 import { dataClone } from '/@/utils/data'
 import { map, findIndex, chunk, uniq } from 'lodash-es'
+import { useAppStore } from '/@/store/appStore'
+import { useViewerStore } from '/@/store/viewerStore'
 
 const useViewer = (
   perPageDefault: number,
   chunkFiles: CallableFunction,
   virtualGrid = false
 ): any => {
+  const appStore = useAppStore()
+  const viewerStore = useViewerStore()
   const store = useStore()
   const loading = ref(false)
   const pngs = ref<unknown>([])
   const perPage = ref(perPageDefault)
   const page = ref(1)
 
-  const mainFolder = computed(() => store.getters.mainFolder)
-  const folderFiles = computed(() => store.state.viewer.folderFiles)
+  const mainFolder = computed(() => appStore.projectMainFolder)
+  const folderFiles = computed(() => viewerStore.folderFiles)
   const dockings = computed(() => store.getters.dockings)
   const activedPortals = computed(() => store.getters.activedPortals)
   const wrapingStatus = computed(() => store.state.viewer.wraping)
@@ -35,7 +39,7 @@ const useViewer = (
   })
 
   // docking protals
-  const selectItem = async (e, row: any): Promise<void> => {
+  const selectItem = async (e: any, row: any): Promise<void> => {
     const ignore = ['I', 'path', 'svg']
     const htmlTarget = e.target.tagName
     if (ignore.includes(htmlTarget)) return
@@ -61,7 +65,7 @@ const useViewer = (
       } else if (dockingProtalMode.value.toLowerCase() === 'override') {
         const dockingsData = {
           target,
-          portals: map(activedPortalsRef, 'id'),
+          portals: map(activedPortalsRef, 'id')
         }
         dockingsRef[isExist] = dockingsData
       }
@@ -69,14 +73,14 @@ const useViewer = (
     if (isExist < 0) {
       const dockingsData = {
         target,
-        portals: map(activedPortalsRef, 'id'),
+        portals: map(activedPortalsRef, 'id')
       }
       dockingsRef.push(dockingsData)
     }
 
     await store.dispatch('DOCKING', {
       key: 'dockings',
-      data: dockingsRef,
+      data: dockingsRef
     })
     await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
   }
@@ -94,7 +98,7 @@ const useViewer = (
     filesCount,
     mainFolder,
     selectItem,
-    chunkFiles,
+    chunkFiles
   }
 }
 

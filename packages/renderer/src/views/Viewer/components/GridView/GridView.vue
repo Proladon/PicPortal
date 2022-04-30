@@ -32,15 +32,17 @@ import { NPagination } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
 import { chunk, map } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
+import { useViewerStore } from '/@/store/viewerStore'
 
 const appStore = useAppStore()
+const viewerStore = useViewerStore()
 // --- Data ---
 const imgSize = ref(150)
 
 // --- Methods ---
 const chunkFiles = async () => {
   loading.value = true
-  await store.dispatch('GET_FOLDER_ALL_FILES')
+  await viewerStore.GetFolderAllFiles()
   const files = map(folderFiles.value, (path) => ({ path: path }))
   const filesChunkList = chunk(files, perPage.value)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))

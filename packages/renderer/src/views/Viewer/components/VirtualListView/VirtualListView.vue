@@ -35,8 +35,10 @@ import { map } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'
+import { useViewerStore } from '/@/store/viewerStore'
 
 const appStore = useAppStore()
+const viewerStore = useViewerStore()
 // --- Data ---
 const ch = ref(0)
 const column = ref(1)
@@ -44,7 +46,7 @@ const column = ref(1)
 // --- Methods ---
 const chunkFiles = async () => {
   loading.value = true
-  await store.dispatch('GET_FOLDER_ALL_FILES')
+  await viewerStore.GetFolderAllFiles()
   const files = map(folderFiles.value, (path) => ({ path: path }))
   pngs.value = files
   loading.value = false

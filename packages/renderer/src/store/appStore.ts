@@ -103,7 +103,7 @@ export const useAppStore = defineStore('app', {
     projectName(): string {
       return this.openProject?.name || ''
     },
-    projectMainFolder(): MainFolder | Record<never, never> {
+    projectMainFolder(): MainFolder | Record<string, never> {
       return this.dbData?.mainFolder || {}
     }
   }

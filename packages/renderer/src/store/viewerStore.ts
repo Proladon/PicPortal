@@ -1,4 +1,7 @@
 import { defineStore } from 'pinia'
+import { useElectron } from '/@/use/electron'
+import { useAppStore } from '/@/store/appStore'
+const { fastGlob, fileSystem } = useElectron()
 
 export type ViewerTypes =
   | 'GridView'
@@ -43,6 +46,14 @@ export const useViewerStore = defineStore('viewer', {
     },
     SET_LAST_VIEWER_TYPE(type: ViewerTypes) {
       this.lastViewerType = type
+    },
+    async GetFolderAllFiles() {
+      const appStore = useAppStore()
+      const mainFolderPath = appStore.projectMainFolder.path
+      if (!mainFolderPath) return
+      const files = await fastGlob.glob(mainFolderPath + '/**/*.{png,jpg,jpeg}')
+      this.folderFiles = files
     }
-  }
+  },
+  getters: {}
 })

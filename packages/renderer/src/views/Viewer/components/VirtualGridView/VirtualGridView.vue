@@ -43,15 +43,17 @@ import { onMounted, watch } from '@vue/runtime-core'
 import { NSpin } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'
+import { useViewerStore } from '/@/store/viewerStore'
 
 const appStore = useAppStore()
+const viewerStore = useViewerStore()
 // --- Data ---
 const ch = ref(0)
 const column = ref(5)
 // --- Methods ---
 const chunkFiles = async () => {
   loading.value = true
-  await store.dispatch('GET_FOLDER_ALL_FILES')
+  await viewerStore.GetFolderAllFiles()
   const files = map(folderFiles.value, (path) => ({ path: path }))
   const filesChunkList = chunk(files, column.value)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))

@@ -59,20 +59,21 @@ import PortalGroup from './components/PortalGroup.vue'
 import PortalGroupModal from './components/Modal/PortalGroupModal.vue'
 import ControlsBlock from './components/ControlsBlock.vue'
 import { EnterSharp, Search, Folder } from '@vicons/ionicons5'
-import { NIcon, NEllipsis, NCheckbox, NButton } from 'naive-ui/es'
+import { NIcon, NButton } from 'naive-ui/es'
 import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useViewerStore } from '/@/store/viewerStore'
 import { useAppStore } from '/@/store/appStore'
 
+// ANCHOR Use
 const appStore = useAppStore()
 const store = useStore()
 const viewerStore = useViewerStore()
-// --- Data ---
+// ANCHOR Data
 const drag = ref(false)
 const showPortalGroupModal = ref(false)
-// --- Computed ---
+// ANCHOR Computed
 const portalPanelPosition = computed(() => viewerStore.portalPanelPosition)
 const portals = computed({
   get: () => store.getters.portals,
@@ -82,7 +83,7 @@ const portals = computed({
     if (error) alert(error)
   }
 })
-
+// ANCHOR Methods
 const changePortalPanelPosition = () => {
   if (portalPanelPosition.value === 'right')
     viewerStore.SET_PORTAL_PANEL_POSITION('left')
@@ -90,7 +91,7 @@ const changePortalPanelPosition = () => {
     viewerStore.SET_PORTAL_PANEL_POSITION('right')
 }
 
-// --- Mounted ---
+// ANCHOR Mounted
 onMounted(async () => {
   await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 })
