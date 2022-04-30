@@ -1,0 +1,6 @@
+.n-notification-container.n-notification-container--scrollable.n-notification-container--top-right {
+    @apply top-[40px];
+}
+.n-notification-container.n-notification-container--scrollable.n-notification-container--top-left {
+    @apply top-[40px];
+}

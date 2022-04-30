@@ -16,14 +16,14 @@
     <n-popover trigger="hover" placement="right">
       <template #trigger>
         <router-link
-          to="/settings"
+          :to="{ name: 'Projects' }"
           class="nav-btn"
-          :class="{ 'nav--actived': $route.name === 'Record' }"
+          :class="{ 'nav--actived': $route.name === 'Projects' }"
         >
           <img :src="RecordIcon" alt="" />
         </router-link>
       </template>
-      Record
+      Projects
     </n-popover>
 
     <n-popover trigger="hover" placement="right">
