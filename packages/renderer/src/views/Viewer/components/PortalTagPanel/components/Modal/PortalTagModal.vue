@@ -111,6 +111,7 @@ import { nanoid } from 'nanoid/async'
 import { useElectron } from '/@/use/electron'
 import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/file'
+import { useAppStore } from '/@/store/appStore'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -121,6 +122,8 @@ const props = defineProps({
 const { browserDialog } = useElectron()
 const store = useStore()
 const message = useMessage()
+const appStore = useAppStore()
+
 const tab = ref<'manual' | 'drop'>('manual')
 const dropList = ref<string[]>([])
 const showModal = ref<boolean>(false)
@@ -195,7 +198,7 @@ const updateDBData = async (data: unknown): Promise<void> => {
   })
   if (saveError) alert(saveError)
 
-  await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+  await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 }
 
 // => 新增 PortalTag

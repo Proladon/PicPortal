@@ -31,7 +31,9 @@ import { onMounted, watch } from '@vue/runtime-core'
 import { NPagination } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
 import { chunk, map } from 'lodash-es'
+import { useAppStore } from '/@/store/appStore'
 
+const appStore = useAppStore()
 // --- Data ---
 const imgSize = ref(150)
 
@@ -59,13 +61,13 @@ const {
 
 // --- Watch ---
 watch(mainFolder, async () => {
-  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
 })
 
 // --- Mounted ---
 onMounted(async () => {
-  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
 })
 </script>

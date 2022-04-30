@@ -42,7 +42,9 @@ import { chunk, map } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
 import { NSpin } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
+import { useAppStore } from '/@/store/appStore'
 
+const appStore = useAppStore()
 // --- Data ---
 const ch = ref(0)
 const column = ref(5)
@@ -65,7 +67,7 @@ const { store, loading, pngs, folderFiles, mainFolder, selectItem } = useViewer(
 
 // --- Watch ---
 watch(mainFolder, async () => {
-  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
 })
 
@@ -78,7 +80,7 @@ onMounted(async () => {
     ch.value = window.innerHeight - 100
   }
   await chunkFiles()
-  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   loading.value = false
 })
 </script>

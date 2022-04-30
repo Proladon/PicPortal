@@ -49,14 +49,16 @@ import { computed, reactive, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
 import { onMounted, watch } from '@vue/runtime-core'
 import { findIndex, find, cloneDeep } from 'lodash-es'
+import { useAppStore } from '/@/store/appStore'
 // --- Props ---
 const props = defineProps({
   groupId: String,
   data: Object
 })
 
-// --- Data ---
+const appStore = useAppStore()
 const store = useStore()
+// --- Data ---
 const actived = ref(false)
 const showPopOver = ref(false)
 const showPortalTagModal = ref(false)
@@ -109,7 +111,7 @@ const deletePortalTag = async (groupId, portal) => {
     key: 'portals',
     data: portals
   })
-  await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+  await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 
   const activedPortalsRef = activedPortals.value
   const exist = findIndex(activedPortalsRef, { id: portal.id })

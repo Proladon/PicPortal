@@ -76,15 +76,17 @@ import { Folder, Cube, DocumentOutline } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
-import path from 'path'
+import { useAppStore } from '/@/store/appStore'
 
+// ANCHOR Use
 const { browserDialog } = useElectron()
+const appStore = useAppStore()
 const store = useStore()
 const showWarningModal = ref(false)
 
 // --- Computed ---
-const mainFolder = computed(() => store.getters.mainFolder || {})
-const projectName = computed(() => store.getters.projectName || '')
+const mainFolder = computed(() => appStore.projectMainFolder)
+const projectName = computed(() => appStore.projectName)
 const filesCount = computed(() => store.getters.filesCount)
 const totalWrap = computed(() => store.state.viewer.totalWrap)
 const curWrap = computed(() => store.state.viewer.curWrap)
@@ -104,17 +106,12 @@ const choseMainFolder = async () => {
         name: chunk[chunk.length - 1],
         path: res.filePaths[0].replaceAll('\\', '/')
       }
-      await store.dispatch('SAVE_TO_DB', {
-        key: 'mainFolder',
-        data: folder
+      console.log(folder)
+      await appStore.SaveToDB({ key: 'mainFolder', data: folder })
+      await appStore.SaveToDB({ key: 'dockings', data: [] })
+      await appStore.SyncDBDataToState({
+        syncKeys: ['mainFolder', 'dockings']
       })
-      await store.dispatch('SYNC_DB_TO_STATE', 'mainFolder')
-
-      await store.dispatch('SAVE_TO_DB', {
-        key: 'dockings',
-        data: []
-      })
-      await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
     }
   } catch (error) {
     console.log(error)

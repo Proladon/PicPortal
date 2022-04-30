@@ -64,10 +64,12 @@ import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useViewerStore } from '/@/store/viewerStore'
+import { useAppStore } from '/@/store/appStore'
 
-// --- Data ---
-const viewerStore = useViewerStore()
+const appStore = useAppStore()
 const store = useStore()
+const viewerStore = useViewerStore()
+// --- Data ---
 const drag = ref(false)
 const showPortalGroupModal = ref(false)
 // --- Computed ---
@@ -79,7 +81,7 @@ const portals = computed({
       key: 'portals',
       data: newData
     })
-    await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+    await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
     if (error) alert(error)
   }
 })
@@ -93,7 +95,7 @@ const changePortalPanelPosition = () => {
 
 // --- Mounted ---
 onMounted(async () => {
-  await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+  await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 })
 </script>
 

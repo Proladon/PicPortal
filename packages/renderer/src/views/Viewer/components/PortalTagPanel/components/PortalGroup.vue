@@ -129,7 +129,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import draggable from 'vuedraggable'
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
 import { NButton, NIcon, NEllipsis, NPopover, NBadge, NDivider } from 'naive-ui'
@@ -149,11 +149,13 @@ import PortalTagModal from './Modal/PortalTagModal.vue'
 import { useStore } from 'vuex'
 import { filter, findIndex } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
+import { useAppStore } from '/@/store/appStore'
 
 // --- Data ---
 const props = defineProps({
   groupData: Object
 })
+const appStore = useAppStore()
 const store = useStore()
 const listView = ref('list')
 const expand = ref(false)
@@ -179,7 +181,7 @@ const groupPortals = computed({
       keys: `[portals][${groupIndex}][childs]`,
       data: newData
     })
-    await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+    await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
   }
 })
 
@@ -204,7 +206,7 @@ const deleteGroup = async (groupId) => {
     key: 'portals',
     data: protals
   })
-  await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+  await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 
   const needDelete = filter(
     activedPortals.value,

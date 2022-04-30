@@ -9,7 +9,7 @@
           :color="{
             color: portal.bg,
             textColor: portal.fg,
-            borderColor: portal.bg,
+            borderColor: portal.bg
           }"
           v-for="portal in targetPortals"
           :key="portal.id"
@@ -29,16 +29,19 @@ import { useStore } from 'vuex'
 import { NTag } from 'naive-ui'
 import { find, map, findIndex, pull, filter } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
+import { useAppStore } from '/@/store/appStore'
 
 const props = defineProps({
   img: {
-    type: String,
-  },
+    type: String
+  }
 })
+
+const store = useStore()
+const appStore = useAppStore()
 
 const targetPortals = ref<any>([])
 const target = ref(null)
-const store = useStore()
 const dockings = computed(() => store.getters.dockings)
 const flattenPortals = computed(() => store.getters.flattenPortals)
 
@@ -54,20 +57,20 @@ const removePortal = async (portal) => {
   if (!portalsRef.length) {
     await store.dispatch('DB_SLICE', {
       key: 'dockings',
-      index: targetIndex,
+      index: targetIndex
     })
 
-    await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+    await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
     return
   }
 
   if (portalsRef.length) {
     await store.dispatch('DEEP_SAVE_TO_DB', {
       keys: `[dockings][${targetIndex}][portals]`,
-      data: portalsRef,
+      data: portalsRef
     })
 
-    await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+    await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   }
 }
 

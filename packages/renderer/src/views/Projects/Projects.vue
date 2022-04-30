@@ -34,22 +34,18 @@
 
 <script lang="ts" setup>
 import ProjectCard from './components/ProjectCard.vue'
-import { NScrollbar, NButton } from 'naive-ui/es'
-import { onMounted, ref } from '@vue/runtime-core'
 import CreateProjectModal from './components/CreateProjectModal.vue'
 import EditProjectModal from './components/EditProjectModal.vue'
+import { NScrollbar, NButton, useNotification } from 'naive-ui/es'
+import { onMounted, ref } from '@vue/runtime-core'
 import { importProjectDialog } from '/@/utils/browserDialog'
 import { useElectron } from '/@/use/electron'
-import { findIndex } from 'lodash-es'
-import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid/async'
-import { useNotification } from 'naive-ui'
 import { useAppStore } from '/@/store/appStore'
 
 // ANCHOR Use
 const { fileSystem, userStore } = useElectron()
-const store = useStore()
 const router = useRouter()
 const notify = useNotification()
 const appStore = useAppStore()
@@ -60,29 +56,6 @@ const showImportProjectEditModal = ref(false)
 const importProjectData = ref<any>(null)
 
 // --- Methods ---
-
-// => 開啟專案
-// const openProject = async (projectPath: string) => {
-//   // TODO 開啟專案
-//   // 檢查專案檔是否存在
-//   const [file, fileError] = await fileSystem.checkExist(projectPath)
-//   if (fileError) return console.log(fileError)
-//   // TODO 找不到檔案 彈出提示刪除窗
-//   if (!file) {
-//     const projects = await userStore.get('projects')
-//     const index = findIndex(projects, projectPath)
-//     projects.splice(index, 1)
-//     await userStore.set('projects', projects)
-//     await refreshProjects()
-//   }
-
-//   await store.dispatch('PROJECT_PATH', projectPath)
-//   const [db, dbError] = await store.dispatch('CONNECT_DB')
-//   if (dbError) return alert(dbError)
-//   await store.dispatch('SYNC_DB', db)
-
-//   router.push('/editor/viewer/grid-view')
-// }
 
 const openProject = async (project: any) => {
   console.log(project)

@@ -34,7 +34,9 @@ import { ref } from '@vue/reactivity'
 import { map } from 'lodash-es'
 import { onMounted, watch } from '@vue/runtime-core'
 import useViewer from '/@/use/useViewer'
+import { useAppStore } from '/@/store/appStore'
 
+const appStore = useAppStore()
 // --- Data ---
 const ch = ref(0)
 const column = ref(1)
@@ -55,7 +57,7 @@ const { store, loading, pngs, folderFiles, mainFolder, selectItem } = useViewer(
 
 // --- Watch ---
 watch(mainFolder, async () => {
-  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
 })
 
@@ -67,7 +69,7 @@ onMounted(async () => {
   window.onresize = () => {
     ch.value = window.innerHeight - 100
   }
-  await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
   loading.value = false
 })

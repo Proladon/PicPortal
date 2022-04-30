@@ -48,6 +48,7 @@ import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull, filter, compact } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { api as viewerApi } from 'v-viewer'
+import { useAppStore } from '/@/store/appStore'
 
 const props = defineProps({
   img: {
@@ -55,11 +56,12 @@ const props = defineProps({
   }
 })
 
+const appStore = useAppStore()
+const store = useStore()
 const viewerOptions = {}
 
 const targetPortals = ref([])
 const target = ref(null)
-const store = useStore()
 const dockings = computed(() => store.getters.dockings)
 const flattenPortals = computed(() => store.getters.flattenPortals)
 
@@ -78,7 +80,7 @@ const removePortal = async (portal) => {
       index: targetIndex
     })
 
-    await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+    await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
     return
   }
 
@@ -88,7 +90,7 @@ const removePortal = async (portal) => {
       data: portalsRef
     })
 
-    await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+    await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   }
 }
 

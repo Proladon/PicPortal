@@ -27,8 +27,8 @@ import { nanoid } from 'nanoid/async'
 import { onMounted } from '@vue/runtime-core'
 import { findIndex } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
+import { useAppStore } from '/@/store/appStore'
 
-// --- Data ---
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
@@ -36,6 +36,8 @@ const props = defineProps({
 })
 
 const store = useStore()
+const appStore = useAppStore()
+// --- Data ---
 const showModal = ref(false)
 
 const formRef = ref(null)
@@ -86,7 +88,7 @@ const updatePortalGroup = async (): Promise<void> => {
     })
     if (saveError) alert(saveError)
 
-    await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+    await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
     showModal.value = false
     closeModal()
   })
@@ -104,7 +106,7 @@ const createPortalGroup = async (): Promise<void> => {
   })
   if (saveError) alert(saveError)
 
-  await store.dispatch('SYNC_DB_TO_STATE', 'portals')
+  await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
   showModal.value = false
   closeModal()
 }

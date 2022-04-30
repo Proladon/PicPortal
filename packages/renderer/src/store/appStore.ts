@@ -11,16 +11,38 @@ type Project = {
   path: string
   color: string
 }
+type MainFolder = {
+  name: string
+  path: string
+}
+type PortalChild = {
+  id: string
+  name: string
+  link: string
+  bg: string
+  fg: string
+}
+type Portals = {
+  childs: PortalChild[]
+  group: string
+  id: string
+}
+type DBData = {
+  project: string
+  portals: Portals[]
+  dockings: any[]
+  mainFolder: MainFolder
+}
 
 interface AppStoreState {
   openProject: null | Project
-  dbData: any
+  dbData: null | DBData
 }
 
 export const useAppStore = defineStore('app', {
   state: (): AppStoreState => ({
     openProject: null,
-    dbData: {}
+    dbData: null
   }),
   actions: {
     SetOpenProject(project: Project) {
@@ -33,10 +55,10 @@ export const useAppStore = defineStore('app', {
       return [null, 'No project open']
     },
     async SaveToDB({ key, data }: { key: string; data: any }) {
-      const start = performance.now()
+      // const start = performance.now()
       const stringData = JSON.stringify(data)
-      const end = performance.now()
-      console.log(`stringify: ${(end - start) / 1000} 秒`)
+      // const end = performance.now()
+      // console.log(`stringify: ${(end - start) / 1000} 秒`)
       return await database.save(key, stringData)
     },
     async DeepSaveToDB({ key, data }: { key: string; data: any }) {
@@ -62,6 +84,27 @@ export const useAppStore = defineStore('app', {
     /** 同步DB資料 */
     async SyncDBData({ dbData }: { dbData: any }) {
       this.dbData = dbData
+    },
+
+    async SyncDBDataToState({
+      syncKeys
+    }: {
+      syncKeys: Array<'project' | 'portals' | 'mainFolder' | 'dockings'>
+    }) {
+      if (!this.dbData) return
+      for (const key of syncKeys) {
+        const [getRes, getError] = await database.get(key)
+        if (getError) return alert(getError)
+        this.dbData[key] = getRes
+      }
+    }
+  },
+  getters: {
+    projectName(): string {
+      return this.openProject?.name || ''
+    },
+    projectMainFolder(): MainFolder | Record<never, never> {
+      return this.dbData?.mainFolder || {}
     }
   }
 })
