@@ -48,8 +48,10 @@ import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
 import { useStore } from 'vuex'
 import { onMounted, watch } from '@vue/runtime-core'
-import { findIndex, find, cloneDeep } from 'lodash-es'
+import { findIndex, find } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
+import { dataClone } from '/@/utils/data'
 // --- Props ---
 const props = defineProps({
   groupId: String,
@@ -57,12 +59,13 @@ const props = defineProps({
 })
 
 const appStore = useAppStore()
+const portalPaneStore = usePortalPaneStore()
 const store = useStore()
 // --- Data ---
 const actived = ref(false)
 const showPopOver = ref(false)
 const showPortalTagModal = ref(false)
-const selectPortal = ref(false)
+const selectPortal = ref<any>(null)
 const styles = reactive({
   borderColor: '',
   background: '',
@@ -70,25 +73,25 @@ const styles = reactive({
 })
 
 // --- Computed ---
-const portalsData = computed(() => store.getters.portals)
-const activedPortals = computed(() => store.getters.activedPortals)
+const portalsData = computed(() => portalPaneStore.portals)
+const activePortals = computed(() => portalPaneStore.activePortals)
 
 // --- Methods ---
 // => 啟用protalTag
-const activePortal = async (e) => {
+const activePortal = async () => {
   actived.value = !actived.value
 
-  const portal = props.data
+  const portal: Portal = props.data
   const groupId = props.groupId
-  const activedPortalsRef = activedPortals.value
-  const exist = findIndex(activedPortalsRef, { id: portal.id })
-
+  const activePortalsRef = activePortals.value
+  const exist = findIndex(activePortalsRef, { id: portal.id })
+  if (!groupId) return
   if (actived.value) {
     styles.borderColor = portal.bg
     styles.background = portal.bg
     styles.color = portal.fg
     if (exist < 0)
-      await store.dispatch('PUSH_ACTIVED_PORTALS', {
+      portalPaneStore.AddActivedPortal({
         id: portal.id,
         group: groupId
       })
@@ -96,22 +99,23 @@ const activePortal = async (e) => {
     styles.borderColor = portal.bg
     styles.background = ''
     styles.color = ''
-    if (exist >= 0) await store.dispatch('SPLICE_ACTIVED_PORTALS', exist)
+    if (exist >= 0) portalPaneStore.RemoveActivePortal(exist)
   }
 }
 
 // => 刪除protalTag
-const deletePortalTag = async (groupId, portal) => {
-  const portals = cloneDeep(portalsData.value)
-  const group = find(portals, { id: groupId })
+const deletePortalTag = async (groupId: string, portal: Portal) => {
+  const portals = dataClone(portalsData.value) as PortalGroup[]
+  const group: PortalGroup | undefined = find(portals, { id: groupId })
+  if (!group) return
   const index = findIndex(group.childs, { id: portal.id })
   group.childs.splice(index, 1)
 
   await appStore.SaveToDB({ key: 'portals', data: portals })
   await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 
-  const activedPortalsRef = activedPortals.value
-  const exist = findIndex(activedPortalsRef, { id: portal.id })
+  const activePortalsRef = activePortals.value
+  const exist = findIndex(activePortalsRef, { id: portal.id })
   if (exist >= 0) await store.dispatch('SPLICE_ACTIVED_PORTALS', exist)
 }
 
@@ -123,7 +127,7 @@ const editPortalTag = async (groupId, portal) => {
 }
 
 // => 更新popover顯示狀態
-const updatePopOver = (show) => {
+const updatePopOver = (show: boolean) => {
   showPopOver.value = show
 }
 
@@ -131,8 +135,8 @@ watch(props, () => {
   const portal = props.data
   styles.borderColor = portal.bg
 
-  const activedPortalsRef = activedPortals.value
-  const exist = findIndex(activedPortalsRef, { id: portal.id })
+  const activePortalsRef = activePortals.value
+  const exist = findIndex(activePortalsRef, { id: portal.id })
   if (exist >= 0) {
     actived.value = true
     styles.borderColor = portal.bg
@@ -141,8 +145,8 @@ watch(props, () => {
   }
 })
 
-watch(activedPortals, () => {
-  if (activedPortals.value.length) return
+watch(activePortals, () => {
+  if (activePortals.value.length) return
   const portal = props.data
   actived.value = false
   styles.borderColor = portal.bg
@@ -155,8 +159,8 @@ onMounted(() => {
   const portal = props.data
   styles.borderColor = portal.bg
 
-  const activedPortalsRef = activedPortals.value
-  const exist = findIndex(activedPortalsRef, { id: portal.id })
+  const activePortalsRef = activePortals.value
+  const exist = findIndex(activePortalsRef, { id: portal.id })
   if (exist >= 0) {
     actived.value = true
     styles.borderColor = portal.bg

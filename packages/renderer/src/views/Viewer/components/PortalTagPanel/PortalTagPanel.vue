@@ -60,23 +60,23 @@ import PortalGroupModal from './components/Modal/PortalGroupModal.vue'
 import ControlsBlock from './components/ControlsBlock.vue'
 import { EnterSharp, Search, Folder } from '@vicons/ionicons5'
 import { NIcon, NButton } from 'naive-ui/es'
-import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useViewerStore } from '/@/store/viewerStore'
 import { useAppStore } from '/@/store/appStore'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
 
 // ANCHOR Use
 const appStore = useAppStore()
-const store = useStore()
 const viewerStore = useViewerStore()
+const portalPaneStore = usePortalPaneStore()
 // ANCHOR Data
 const drag = ref(false)
 const showPortalGroupModal = ref(false)
 // ANCHOR Computed
 const portalPanelPosition = computed(() => viewerStore.portalPanelPosition)
 const portals = computed({
-  get: () => store.getters.portals,
+  get: () => portalPaneStore.portals,
   set: async (newData) => {
     const [, error] = await appStore.SaveToDB({ key: 'portals', data: newData })
     await appStore.SyncDBDataToState({ syncKeys: ['portals'] })

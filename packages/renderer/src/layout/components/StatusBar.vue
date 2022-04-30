@@ -74,24 +74,25 @@ import WarningModal from './WarningModal.vue'
 import { NIcon, NPopover, NProgress } from 'naive-ui'
 import { Folder, Cube, DocumentOutline } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
-import { useStore } from 'vuex'
 import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'
+import { useViewerStore } from '/@/store/viewerStore'
 
 // ANCHOR Use
 const { browserDialog } = useElectron()
 const appStore = useAppStore()
-const store = useStore()
+const viewerStore = useViewerStore()
+
 const showWarningModal = ref(false)
 
 // --- Computed ---
 const mainFolder = computed(() => appStore.projectMainFolder)
 const projectName = computed(() => appStore.projectName)
-const filesCount = computed(() => store.getters.filesCount)
-const totalWrap = computed(() => store.state.viewer.totalWrap)
-const curWrap = computed(() => store.state.viewer.curWrap)
-const errWrap = computed(() => store.state.viewer.errWrap)
-const wrapingStatus = computed(() => store.state.viewer.wraping)
+const filesCount = computed(() => viewerStore.folderFilesCount)
+const totalWrap = computed(() => viewerStore.wrap.totalWrap)
+const curWrap = computed(() => viewerStore.wrap.curWrap)
+const errWrap = computed(() => viewerStore.wrap.errWrap)
+const wrapingStatus = computed(() => viewerStore.wrap.wraping)
 
 // --- Methods---
 const choseMainFolder = async () => {

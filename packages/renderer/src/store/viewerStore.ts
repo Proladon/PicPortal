@@ -47,13 +47,31 @@ export const useViewerStore = defineStore('viewer', {
     SET_LAST_VIEWER_TYPE(type: ViewerTypes) {
       this.lastViewerType = type
     },
-    async GetFolderAllFiles() {
+    async GetFolderAllFiles({ fileTypes }: { fileTypes?: string[] }) {
       const appStore = useAppStore()
       const mainFolderPath = appStore.projectMainFolder.path
       if (!mainFolderPath) return
-      const files = await fastGlob.glob(mainFolderPath + '/**/*.{png,jpg,jpeg}')
+      if (!fileTypes) fileTypes = ['png', 'jpg', 'jpeg', 'gif', 'webp']
+
+      let pathPattern
+      if (fileTypes.length === 1)
+        pathPattern = `${mainFolderPath}/**/*.${fileTypes[0]}`
+      else if (fileTypes.length > 2)
+        pathPattern = `${mainFolderPath}/**/*.{${fileTypes.join(',')}}`
+
+      const files = await fastGlob.glob(pathPattern)
+
       this.folderFiles = files
     }
   },
-  getters: {}
+  getters: {
+    folderFilesCount(): number {
+      return this.folderFiles.length
+    },
+    dockings(): Docking[] {
+      const appStore = useAppStore()
+      if (!appStore.dbData) return []
+      return appStore.dbData.dockings
+    }
+  }
 })

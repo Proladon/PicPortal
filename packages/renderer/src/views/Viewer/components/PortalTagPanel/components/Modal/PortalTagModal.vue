@@ -33,7 +33,12 @@
           </n-form>
         </n-tab-pane>
         <!-- Drop Tab -->
-        <n-tab-pane name="drop" tab="Drop" class="flex flex-col h-full">
+        <n-tab-pane
+          v-if="mode === 'create'"
+          name="drop"
+          tab="Drop"
+          class="flex flex-col h-full"
+        >
           <n-button
             class="cursor-default h-full"
             :class="{ 'drop-zone-collapse': dropList.length }"
@@ -112,6 +117,7 @@ import { useElectron } from '/@/use/electron'
 import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/file'
 import { useAppStore } from '/@/store/appStore'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -123,6 +129,7 @@ const { browserDialog } = useElectron()
 const store = useStore()
 const message = useMessage()
 const appStore = useAppStore()
+const portalPanelStore = usePortalPaneStore()
 
 const tab = ref<'manual' | 'drop'>('manual')
 const dropList = ref<string[]>([])
@@ -154,7 +161,7 @@ const modalTitle = computed(() => {
   }
   return title
 })
-const portalsData = computed(() => store.getters.portals)
+const portalsData = computed(() => portalPanelStore.portals)
 const disabledCreate = computed(() => {
   if (tab.value == 'manual') {
     if (!formData.name || !formData.link) return true
@@ -201,7 +208,6 @@ const updateDBData = async (data: unknown): Promise<void> => {
 // => 新增 PortalTag
 const createPortal = async (e): Promise<void> => {
   e.preventDefault()
-  console.log(tab.value)
   const portals = dataClone(portalsData.value)
   const groupIndex = findIndex(portals, { id: props.groupId })
   if (tab.value == 'manual') {
@@ -222,7 +228,6 @@ const createPortal = async (e): Promise<void> => {
       portals[groupIndex].childs.push(portal)
     }
   }
-  console.log(portals[groupIndex].childs)
   await updateDBData(portals)
   showModal.value = false
   updateModalShow(false)
@@ -231,7 +236,6 @@ const createPortal = async (e): Promise<void> => {
 // => 更新 PortalTag
 const updatePortal = async (e) => {
   e.preventDefault()
-  console.log(0)
   await formRef.value.validate(async (errors: any) => {
     if (errors) return
 

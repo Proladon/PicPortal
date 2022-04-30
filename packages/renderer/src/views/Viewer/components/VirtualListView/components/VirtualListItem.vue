@@ -51,6 +51,8 @@ import { find, map, findIndex, pull, filter } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { api as viewerApi } from 'v-viewer'
 import { useAppStore } from '/@/store/appStore'
+import { useViewerStore } from '/@/store/viewerStore'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
 
 const props = defineProps({
   img: {
@@ -60,10 +62,13 @@ const props = defineProps({
 
 const store = useStore()
 const appStore = useAppStore()
+const viewerStore = useViewerStore()
+const portalPanelStore = usePortalPaneStore()
+
 const targetPortals = ref<any>([])
 const target = ref(null)
-const dockings = computed(() => store.getters.dockings)
-const flattenPortals = computed(() => store.getters.flattenPortals)
+const dockings = computed(() => viewerStore.dockings)
+const flattenPortals = computed(() => portalPanelStore.flattenPortals)
 
 // => 移除圖片上的 portal
 const removePortal = async (portal) => {
@@ -75,11 +80,7 @@ const removePortal = async (portal) => {
   pull(portalsRef, portal.id)
 
   if (!portalsRef.length) {
-    await store.dispatch('DB_SLICE', {
-      key: 'dockings',
-      index: targetIndex
-    })
-
+    await appStore.DBSlice({ key: 'dockings', index: targetIndex })
     await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
     return
   }

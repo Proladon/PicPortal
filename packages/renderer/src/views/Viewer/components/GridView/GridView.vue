@@ -42,7 +42,7 @@ const imgSize = ref(150)
 // --- Methods ---
 const chunkFiles = async () => {
   loading.value = true
-  await viewerStore.GetFolderAllFiles()
+  await viewerStore.GetFolderAllFiles({})
   const files = map(folderFiles.value, (path) => ({ path: path }))
   const filesChunkList = chunk(files, perPage.value)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))

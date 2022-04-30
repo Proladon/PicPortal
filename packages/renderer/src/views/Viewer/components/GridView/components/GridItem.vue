@@ -42,13 +42,14 @@
 <script setup lang="ts">
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
-import { useStore } from 'vuex'
 import { NButton, NTag, NPopover, NIcon } from 'naive-ui/es'
 import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull, compact } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { api as viewerApi } from 'v-viewer'
 import { useAppStore } from '/@/store/appStore'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
+import { useViewerStore } from '/@/store/viewerStore'
 
 const props = defineProps({
   img: {
@@ -57,12 +58,14 @@ const props = defineProps({
 })
 
 const appStore = useAppStore()
-const store = useStore()
+const viewerStore = useViewerStore()
+const portalPanelStore = usePortalPaneStore()
 
 const targetPortals = ref([])
 const target = ref<any>(null)
-const dockings = computed(() => store.getters.dockings)
-const flattenPortals = computed(() => store.getters.flattenPortals)
+
+const dockings = computed(() => viewerStore.dockings)
+const flattenPortals = computed(() => portalPanelStore.flattenPortals)
 
 // => 移除圖片上的 portal
 const removePortal = async (portal: any) => {
@@ -74,11 +77,7 @@ const removePortal = async (portal: any) => {
   pull(portalsRef, portal.id)
 
   if (!portalsRef.length) {
-    await store.dispatch('DB_SLICE', {
-      key: 'dockings',
-      index: targetIndex
-    })
-
+    await appStore.DBSlice({ key: 'dockings', index: targetIndex })
     await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
     return
   }
@@ -88,7 +87,6 @@ const removePortal = async (portal: any) => {
       key: `[dockings][${targetIndex}][portals]`,
       data: portalsRef
     })
-
     await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   }
 }

@@ -150,12 +150,14 @@ import { useStore } from 'vuex'
 import { filter, findIndex } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
 
 // --- Data ---
 const props = defineProps({
   groupData: Object
 })
 const appStore = useAppStore()
+const portalPaneStore = usePortalPaneStore()
 const store = useStore()
 const listView = ref('list')
 const expand = ref(false)
@@ -164,11 +166,11 @@ const showPortalTagModal = ref(false)
 const showPortalGroupModal = ref(false)
 
 // --- Computed ---
-const portalsData = computed(() => store.getters.portals)
-const activedPortals = computed(() => store.getters.activedPortals)
+const portalsData = computed(() => portalPaneStore.portals)
+const activePortals = computed(() => store.getters.activePortals)
 const groupActivedPortalsCount = computed(() => {
   const groupId = props.groupData.id
-  const activeds = store.getters.activedPortals
+  const activeds = activePortals.value
   return filter(activeds, { group: groupId }).length
 })
 
@@ -200,31 +202,27 @@ const expandGroup = async () => {
 
 // => 刪除 portalGroup
 const deleteGroup = async (groupId: any) => {
-  const protals: any = dataClone(portalsData.value)
+  const protals: PortalGroup[] = dataClone(portalsData.value)
   const grounIndex = findIndex(protals, { id: groupId })
   protals.splice(grounIndex, 1)
   await appStore.SaveToDB({ key: 'portals', data: protals })
   await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 
   const needDelete = filter(
-    activedPortals.value,
+    activePortals.value,
     (portal) => portal.group === groupId
   )
   // TODO background task
   for (let t = 0; t < needDelete.length; t++) {
-    const index = findIndex(activedPortals.value, {
+    const index = findIndex(activePortals.value, {
       group: needDelete[t].group
     })
-    await store.dispatch('SPLICE_ACTIVED_PORTALS', index)
+    portalPaneStore.RemoveActivePortal(index)
   }
 }
 
-const updatePopOver = (show) => {
+const updatePopOver = (show: boolean) => {
   showPopOver.value = show
-}
-
-const renameGroup = () => {
-  showPopOver.value = false
 }
 </script>
 

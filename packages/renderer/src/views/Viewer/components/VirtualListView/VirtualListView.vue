@@ -46,7 +46,7 @@ const column = ref(1)
 // --- Methods ---
 const chunkFiles = async () => {
   loading.value = true
-  await viewerStore.GetFolderAllFiles()
+  await viewerStore.GetFolderAllFiles({})
   const files = map(folderFiles.value, (path) => ({ path: path }))
   pngs.value = files
   loading.value = false

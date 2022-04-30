@@ -5,35 +5,6 @@ const { database } = useElectron()
 import PQueue from 'p-queue'
 export const DBQueue = new PQueue({ concurrency: 1 })
 
-type Project = {
-  id: string
-  name: string
-  path: string
-  color: string
-}
-type MainFolder = {
-  name: string
-  path: string
-}
-type PortalChild = {
-  id: string
-  name: string
-  link: string
-  bg: string
-  fg: string
-}
-type Portals = {
-  childs: PortalChild[]
-  group: string
-  id: string
-}
-type DBData = {
-  project: string
-  portals: Portals[]
-  dockings: any[]
-  mainFolder: MainFolder
-}
-
 interface AppStoreState {
   openProject: null | Project
   dbData: null | DBData

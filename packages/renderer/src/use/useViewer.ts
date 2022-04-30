@@ -5,6 +5,7 @@ import { dataClone } from '/@/utils/data'
 import { map, findIndex, chunk, uniq } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
+import { usePortalPaneStore } from '../store/portalPaneStore'
 
 const useViewer = (
   perPageDefault: number,
@@ -13,6 +14,7 @@ const useViewer = (
 ): any => {
   const appStore = useAppStore()
   const viewerStore = useViewerStore()
+  const portalPaneStore = usePortalPaneStore()
   const store = useStore()
   const loading = ref(false)
   const pngs = ref<unknown>([])
@@ -21,20 +23,18 @@ const useViewer = (
 
   const mainFolder = computed(() => appStore.projectMainFolder)
   const folderFiles = computed(() => viewerStore.folderFiles)
-  const dockings = computed(() => store.getters.dockings)
-  const activedPortals = computed(() => store.getters.activedPortals)
-  const wrapingStatus = computed(() => store.state.viewer.wraping)
-  const filesCount = computed(() => store.getters.filesCount)
+  const filesCount = computed(() => viewerStore.folderFilesCount)
+  const dockings = computed(() => viewerStore.dockings)
+  const activePortals = computed(() => portalPaneStore.activePortals)
+  const wrapingStatus = computed(() => viewerStore.wrap.wraping)
   const dockingProtalMode = computed(() => store.state.portal.dockingProtalMode)
 
   watch(filesCount, async () => {
     if (wrapingStatus.value) return
-    console.log('filesCount')
     await chunkFiles()
   })
   watch(wrapingStatus, async () => {
     if (wrapingStatus.value) return
-    console.log('wrapingStatus')
     await chunkFiles()
   })
 
@@ -43,7 +43,7 @@ const useViewer = (
     const ignore = ['I', 'path', 'svg']
     const htmlTarget = e.target.tagName
     if (ignore.includes(htmlTarget)) return
-    if (!activedPortals.value.length) return
+    if (!activePortals.value.length) return
 
     let target = row.path
 
@@ -54,7 +54,7 @@ const useViewer = (
     }
 
     const dockingsRef = dataClone(dockings.value)
-    const activedPortalsRef: ActivedPortals[] = dataClone(activedPortals.value)
+    const activedPortalsRef: activePortals[] = dataClone(activePortals.value)
 
     const isExist = findIndex(dockingsRef, { target: target })
 
@@ -78,11 +78,8 @@ const useViewer = (
       dockingsRef.push(dockingsData)
     }
 
-    await store.dispatch('DOCKING', {
-      key: 'dockings',
-      data: dockingsRef
-    })
-    await store.dispatch('SYNC_DB_TO_STATE', 'dockings')
+    await appStore.SaveToDB({ key: 'dockings', data: dockingsRef })
+    await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   }
 
   return {
@@ -93,7 +90,7 @@ const useViewer = (
     perPage,
     folderFiles,
     dockings,
-    activedPortals,
+    activePortals,
     wrapingStatus,
     filesCount,
     mainFolder,
