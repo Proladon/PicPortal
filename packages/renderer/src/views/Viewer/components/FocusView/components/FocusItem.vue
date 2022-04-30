@@ -54,17 +54,17 @@ const appStore = useAppStore()
 const viewerOptions = {}
 
 const targetPortals = ref<any>([])
-const target = ref(null)
+const target = ref<any>(null)
 const dockings = computed(() => store.getters.dockings)
 const flattenPortals = computed(() => store.getters.flattenPortals)
 
 // => 移除圖片上的 portal
-const removePortal = async (portal) => {
+const removePortal = async (portal: any) => {
   const targetIndex = findIndex(
     dockings.value,
-    (item) => item.target === props.img
+    (item: any) => item.target === props.img
   )
-  const portalsRef = dataClone(target.value.portals)
+  const portalsRef: any = dataClone(target.value.portals)
   pull(portalsRef, portal.id)
 
   if (!portalsRef.length) {
@@ -77,8 +77,8 @@ const removePortal = async (portal) => {
   }
 
   if (portalsRef.length) {
-    await store.dispatch('DEEP_SAVE_TO_DB', {
-      keys: `[dockings][${targetIndex}][portals]`,
+    await appStore.DeepSaveToDB({
+      key: `[dockings][${targetIndex}][portals]`,
       data: portalsRef
     })
     await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })

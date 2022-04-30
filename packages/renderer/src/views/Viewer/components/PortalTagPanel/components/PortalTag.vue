@@ -107,10 +107,7 @@ const deletePortalTag = async (groupId, portal) => {
   const index = findIndex(group.childs, { id: portal.id })
   group.childs.splice(index, 1)
 
-  await store.dispatch('SAVE_TO_DB', {
-    key: 'portals',
-    data: portals
-  })
+  await appStore.SaveToDB({ key: 'portals', data: portals })
   await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 
   const activedPortalsRef = activedPortals.value

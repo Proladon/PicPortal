@@ -77,10 +77,7 @@ const portalPanelPosition = computed(() => viewerStore.portalPanelPosition)
 const portals = computed({
   get: () => store.getters.portals,
   set: async (newData) => {
-    const [, error] = await store.dispatch('SAVE_TO_DB', {
-      key: 'portals',
-      data: newData
-    })
+    const [, error] = await appStore.SaveToDB({ key: 'portals', data: newData })
     await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
     if (error) alert(error)
   }

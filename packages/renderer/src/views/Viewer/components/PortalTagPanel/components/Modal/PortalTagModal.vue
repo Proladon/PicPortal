@@ -192,10 +192,7 @@ const newPortal = async (exist = null) => {
 }
 
 const updateDBData = async (data: unknown): Promise<void> => {
-  const [, saveError] = await store.dispatch('SAVE_TO_DB', {
-    key: 'portals',
-    data
-  })
+  const [, saveError] = await appStore.SaveToDB({ key: 'portals', data })
   if (saveError) alert(saveError)
 
   await appStore.SyncDBDataToState({ syncKeys: ['portals'] })

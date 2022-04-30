@@ -177,8 +177,9 @@ const groupPortals = computed({
   set: async (newData) => {
     const portalsRef = portalsData.value
     const groupIndex = findIndex(portalsRef, { id: props.groupData.id })
-    await store.dispatch('DEEP_SAVE_TO_DB', {
-      keys: `[portals][${groupIndex}][childs]`,
+
+    await appStore.DeepSaveToDB({
+      key: `[portals][${groupIndex}][childs]`,
       data: newData
     })
     await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
@@ -198,14 +199,11 @@ const expandGroup = async () => {
 }
 
 // => 刪除 portalGroup
-const deleteGroup = async (groupId) => {
-  const protals = dataClone(portalsData.value)
+const deleteGroup = async (groupId: any) => {
+  const protals: any = dataClone(portalsData.value)
   const grounIndex = findIndex(protals, { id: groupId })
   protals.splice(grounIndex, 1)
-  await store.dispatch('SAVE_TO_DB', {
-    key: 'portals',
-    data: protals
-  })
+  await appStore.SaveToDB({ key: 'portals', data: protals })
   await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 
   const needDelete = filter(

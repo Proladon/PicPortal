@@ -45,7 +45,7 @@ import { onMounted, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
 import { NButton, NTag, NPopover, NIcon } from 'naive-ui/es'
 import { ExpandOutline } from '@vicons/ionicons5'
-import { find, map, findIndex, pull, filter, compact } from 'lodash-es'
+import { find, map, findIndex, pull, compact } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { api as viewerApi } from 'v-viewer'
 import { useAppStore } from '/@/store/appStore'
@@ -58,20 +58,19 @@ const props = defineProps({
 
 const appStore = useAppStore()
 const store = useStore()
-const viewerOptions = {}
 
 const targetPortals = ref([])
-const target = ref(null)
+const target = ref<any>(null)
 const dockings = computed(() => store.getters.dockings)
 const flattenPortals = computed(() => store.getters.flattenPortals)
 
 // => 移除圖片上的 portal
-const removePortal = async (portal) => {
+const removePortal = async (portal: any) => {
   const targetIndex = findIndex(
     dockings.value,
-    (item) => item.target === props.img
+    (item: any) => item.target === props.img
   )
-  const portalsRef = dataClone(target.value.portals)
+  const portalsRef: any = dataClone(target.value.portals)
   pull(portalsRef, portal.id)
 
   if (!portalsRef.length) {
@@ -85,8 +84,8 @@ const removePortal = async (portal) => {
   }
 
   if (portalsRef.length) {
-    await store.dispatch('DEEP_SAVE_TO_DB', {
-      keys: `[dockings][${targetIndex}][portals]`,
+    await appStore.DeepSaveToDB({
+      key: `[dockings][${targetIndex}][portals]`,
       data: portalsRef
     })
 

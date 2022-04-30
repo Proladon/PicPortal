@@ -82,7 +82,7 @@ const updatePortalGroup = async (): Promise<void> => {
     const groupIndex = findIndex(portalsRef, { id: props.group.id })
     portalsRef[groupIndex] = group
 
-    const [, saveError] = await store.dispatch('SAVE_TO_DB', {
+    const [, saveError] = await appStore.SaveToDB({
       key: 'portals',
       data: portalsRef
     })
@@ -100,7 +100,7 @@ const createPortalGroup = async (): Promise<void> => {
   const group = await newGroup()
   portalsRef.push(group)
 
-  const [, saveError] = await store.dispatch('SAVE_TO_DB', {
+  const [, saveError] = await appStore.SaveToDB({
     key: 'portals',
     data: portalsRef
   })

@@ -65,8 +65,8 @@ const removePortal = async (portal) => {
   }
 
   if (portalsRef.length) {
-    await store.dispatch('DEEP_SAVE_TO_DB', {
-      keys: `[dockings][${targetIndex}][portals]`,
+    await appStore.DeepSaveToDB({
+      key: `[dockings][${targetIndex}][portals]`,
       data: portalsRef
     })
 
