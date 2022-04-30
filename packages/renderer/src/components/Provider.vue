@@ -3,7 +3,7 @@
   <n-config-provider :theme="darkTheme" class="h-full">
     <n-global-style />
     <!-- <n-loading-bar-provider> -->
-    <n-notification-provider placement="bottom-right">
+    <n-notification-provider placement="top-right">
       <n-message-provider>
         <n-dialog-provider>
           <slot />
