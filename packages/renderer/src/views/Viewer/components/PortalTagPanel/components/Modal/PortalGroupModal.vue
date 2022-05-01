@@ -21,13 +21,12 @@
 <script lang="ts" setup>
 import { computed, reactive, ref } from '@vue/reactivity'
 import { NModal, NButton, NForm, NFormItem, NInput } from 'naive-ui/es'
-import { GDialog } from 'gitart-vue-dialog'
-import { useStore } from 'vuex'
 import { nanoid } from 'nanoid/async'
 import { onMounted } from '@vue/runtime-core'
 import { findIndex } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -35,8 +34,8 @@ const props = defineProps({
   group: Object
 })
 
-const store = useStore()
 const appStore = useAppStore()
+const portalPaneStore = usePortalPaneStore()
 // --- Data ---
 const showModal = ref(false)
 
@@ -49,7 +48,7 @@ const formRules = {
 }
 
 // --- Computed ---
-const portalsData = computed(() => store.getters.portals)
+const portalsData = computed(() => portalPaneStore.portals)
 const modalTitle = computed(() => {
   const mode = props.mode
   if (mode === 'edit') return 'Update Portal Group'

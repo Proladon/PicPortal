@@ -146,7 +146,6 @@ import {
 import { computed, ref } from '@vue/reactivity'
 import PortalTag from './PortalTag.vue'
 import PortalTagModal from './Modal/PortalTagModal.vue'
-import { useStore } from 'vuex'
 import { filter, findIndex } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
@@ -158,7 +157,6 @@ const props = defineProps({
 })
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
-const store = useStore()
 const listView = ref('list')
 const expand = ref(false)
 const showPopOver = ref(false)
@@ -167,7 +165,7 @@ const showPortalGroupModal = ref(false)
 
 // --- Computed ---
 const portalsData = computed(() => portalPaneStore.portals)
-const activePortals = computed(() => store.getters.activePortals)
+const activePortals = computed(() => portalPaneStore.activePortals)
 const groupActivedPortalsCount = computed(() => {
   const groupId = props.groupData.id
   const activeds = activePortals.value

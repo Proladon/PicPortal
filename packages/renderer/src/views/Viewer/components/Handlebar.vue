@@ -36,17 +36,20 @@ import ModeChangeModal from './ModeChangeModal.vue'
 import { NIcon, NTag } from 'naive-ui'
 import { BrowsersOutline, RocketSharp } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
-import { useStore } from 'vuex'
-import { map, forEach, find, findIndex } from 'lodash-es'
+import { forEach, find } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/data'
+import { useViewerStore } from '/@/store/viewerStore'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
+
+const viewerStore = useViewerStore()
+const portalPaneStore = usePortalPaneStore()
 
 const showModeChangeModal = ref(false)
-const store = useStore()
 // --- Computed ---
-const dockings = computed(() => store.getters.dockings)
-const flattenPortals = computed(() => store.getters.flattenPortals)
-const wrapingStatus = computed(() => store.state.viewer.wraping)
+const dockings = computed(() => viewerStore.dockings)
+const flattenPortals = computed(() => portalPaneStore.flattenPortals)
+const wrapingStatus = computed(() => viewerStore.wrap.wraping)
 
 // --- Methods ---
 const wraping = async () => {
@@ -64,7 +67,7 @@ const wraping = async () => {
         (item) => item.id === portal
       ).link
 
-      await store.dispatch('WRAPING', {
+      await viewerStore.Wraping({
         mode: count === dock.portals.length ? 'move' : 'copy',
         filePath: src,
         destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src)
@@ -72,9 +75,9 @@ const wraping = async () => {
     })
     waitRemove.push(src)
   })
-  store.commit('UPDATE_PULL_LIST', waitRemove)
-  store.commit('PURGE_FILES', waitRemove)
-  await store.dispatch('START_WRAPING')
+  viewerStore.UpdatePullList(waitRemove)
+  viewerStore.PurgeFiles(waitRemove)
+  viewerStore.StartWraping()
 }
 </script>
 

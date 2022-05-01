@@ -18,7 +18,7 @@
           :on-update:value="changeDockingMode"
         >
           <n-radio-button
-            v-for="mode in ['Append', 'Override']"
+            v-for="mode in ['append', 'override']"
             :key="mode"
             :value="mode"
           >
@@ -33,13 +33,13 @@
 <script setup lang="ts">
 import { computed, ref } from '@vue/reactivity'
 import { NButton, NBadge, NRadioGroup, NRadioButton } from 'naive-ui'
-import { useStore } from 'vuex'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
 
-const store = useStore()
-const dockingMode = ref('Append')
+const portalPaneStore = usePortalPaneStore()
+const dockingMode = ref('append')
 
 const activatedPortalsCount = computed(
-  () => store.getters.activedPortals.length
+  () => portalPaneStore.activePortals.length
 )
 
 const portalsCountBadgeBg = computed(() => {
@@ -48,11 +48,11 @@ const portalsCountBadgeBg = computed(() => {
 })
 
 const resetAvtivatedPortals = async () => {
-  await store.dispatch('RESET_ACTIVED_PORTALS')
+  await portalPaneStore.ResetActivePortal()
 }
 
-const changeDockingMode = (mode: string) => {
-  store.commit('SET_DOCKING_MODE', mode)
+const changeDockingMode = (mode: 'append' | 'override') => {
+  portalPaneStore.SetDockingMode(mode)
   dockingMode.value = mode
 }
 </script>

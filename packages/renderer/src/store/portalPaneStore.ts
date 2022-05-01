@@ -4,11 +4,13 @@ import { map, flatten } from 'lodash-es'
 
 interface PortalPaneStoreState {
   activePortals: ActivePortalRef[]
+  dockingMode: 'append' | 'override'
 }
 
 export const usePortalPaneStore = defineStore('portalPane', {
   state: (): PortalPaneStoreState => ({
-    activePortals: []
+    activePortals: [],
+    dockingMode: 'append'
   }),
   actions: {
     AddActivedPortal(portal: ActivePortalRef) {
@@ -16,6 +18,12 @@ export const usePortalPaneStore = defineStore('portalPane', {
     },
     RemoveActivePortal(index: number) {
       this.activePortals.splice(index, 1)
+    },
+    ResetActivePortal() {
+      this.activePortals = []
+    },
+    SetDockingMode(mode: 'append' | 'override') {
+      this.dockingMode = mode
     }
   },
   getters: {

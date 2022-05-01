@@ -110,8 +110,7 @@ import {
   NTag,
   useMessage
 } from 'naive-ui/es'
-import { useStore } from 'vuex'
-import { findIndex, forEach } from 'lodash-es'
+import { findIndex } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
 import { useElectron } from '/@/use/electron'
 import { dataClone } from '/@/utils/data'
@@ -126,7 +125,6 @@ const props = defineProps({
   portal: Object
 })
 const { browserDialog } = useElectron()
-const store = useStore()
 const message = useMessage()
 const appStore = useAppStore()
 const portalPanelStore = usePortalPaneStore()

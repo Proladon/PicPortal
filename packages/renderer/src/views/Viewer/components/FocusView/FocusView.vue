@@ -27,10 +27,7 @@ const chunkFiles = async () => {
   loading.value = false
 }
 
-const { store, loading, pngs, folderFiles, mainFolder } = useViewer(
-  0,
-  chunkFiles
-)
+const { loading, pngs, folderFiles, mainFolder } = useViewer(0, chunkFiles)
 
 // --- Watch ---
 watch(mainFolder, async () => {

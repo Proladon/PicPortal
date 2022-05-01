@@ -52,7 +52,7 @@ const chunkFiles = async () => {
   loading.value = false
 }
 
-const { store, loading, pngs, folderFiles, mainFolder, selectItem } = useViewer(
+const { loading, pngs, folderFiles, mainFolder, selectItem } = useViewer(
   0,
   chunkFiles
 )

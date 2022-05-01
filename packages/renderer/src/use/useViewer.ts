@@ -15,7 +15,6 @@ const useViewer = (
   const appStore = useAppStore()
   const viewerStore = useViewerStore()
   const portalPaneStore = usePortalPaneStore()
-  const store = useStore()
   const loading = ref(false)
   const pngs = ref<unknown>([])
   const perPage = ref(perPageDefault)
@@ -27,7 +26,7 @@ const useViewer = (
   const dockings = computed(() => viewerStore.dockings)
   const activePortals = computed(() => portalPaneStore.activePortals)
   const wrapingStatus = computed(() => viewerStore.wrap.wraping)
-  const dockingProtalMode = computed(() => store.state.portal.dockingProtalMode)
+  const dockingMode = computed(() => portalPaneStore.dockingMode)
 
   watch(filesCount, async () => {
     if (wrapingStatus.value) return
@@ -59,10 +58,10 @@ const useViewer = (
     const isExist = findIndex(dockingsRef, { target: target })
 
     if (isExist >= 0) {
-      if (dockingProtalMode.value.toLowerCase() === 'append') {
+      if (dockingMode.value.toLowerCase() === 'append') {
         dockingsRef[isExist].portals.push(...map(activedPortalsRef, 'id'))
         dockingsRef[isExist].portals = uniq(dockingsRef[isExist].portals)
-      } else if (dockingProtalMode.value.toLowerCase() === 'override') {
+      } else if (dockingMode.value.toLowerCase() === 'override') {
         const dockingsData = {
           target,
           portals: map(activedPortalsRef, 'id')
@@ -83,7 +82,6 @@ const useViewer = (
   }
 
   return {
-    store,
     loading,
     pngs,
     page,

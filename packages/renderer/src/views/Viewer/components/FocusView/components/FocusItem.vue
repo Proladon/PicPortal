@@ -38,9 +38,8 @@
 <script setup lang="ts">
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
-import { useStore } from 'vuex'
 import { NTag } from 'naive-ui'
-import { find, map, findIndex, pull, filter } from 'lodash-es'
+import { find, map, findIndex, pull } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
@@ -51,7 +50,6 @@ const props = defineProps({
     type: String
   }
 })
-const store = useStore()
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
 const portalPaneStore = usePortalPaneStore()

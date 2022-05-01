@@ -46,7 +46,6 @@ import PortalTagModal from './Modal/PortalTagModal.vue'
 import { NIcon, NPopover, NButton, NEllipsis } from 'naive-ui'
 import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
 import { computed, reactive, ref } from '@vue/reactivity'
-import { useStore } from 'vuex'
 import { onMounted, watch } from '@vue/runtime-core'
 import { findIndex, find } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
@@ -60,7 +59,6 @@ const props = defineProps({
 
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
-const store = useStore()
 // --- Data ---
 const actived = ref(false)
 const showPopOver = ref(false)
@@ -116,7 +114,7 @@ const deletePortalTag = async (groupId: string, portal: Portal) => {
 
   const activePortalsRef = activePortals.value
   const exist = findIndex(activePortalsRef, { id: portal.id })
-  if (exist >= 0) await store.dispatch('SPLICE_ACTIVED_PORTALS', exist)
+  if (exist >= 0) await portalPaneStore.RemoveActivePortal(exist)
 }
 
 // => 編輯更新protalTag
