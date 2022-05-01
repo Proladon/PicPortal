@@ -1,5 +1,4 @@
 import { watch } from '@vue/runtime-core'
-import { useStore } from 'vuex'
 import { computed, ref } from '@vue/reactivity'
 import { dataClone } from '/@/utils/data'
 import { map, findIndex, chunk, uniq } from 'lodash-es'
@@ -28,12 +27,21 @@ const useViewer = (
   const activePortals = computed(() => portalPaneStore.activePortals)
   const wrapingStatus = computed(() => viewerStore.wrap.wraping)
   const dockingMode = computed(() => portalPaneStore.dockingMode)
+  const showFiles = computed(() => viewerStore.showFiles)
+  const showFilesCount = computed(() => viewerStore.showFilesCount)
 
+  watch(showFilesCount, async () => {
+    console.log('showFiles')
+    if (wrapingStatus.value) return
+    await chunkFiles()
+  })
   watch(filesCount, async () => {
+    console.log('filesCount')
     if (wrapingStatus.value) return
     await chunkFiles()
   })
   watch(wrapingStatus, async () => {
+    console.log('wrapingStatus')
     if (wrapingStatus.value) return
     await chunkFiles()
   })
@@ -94,7 +102,8 @@ const useViewer = (
     filesCount,
     mainFolder,
     selectItem,
-    chunkFiles
+    chunkFiles,
+    showFiles
   }
 }
 

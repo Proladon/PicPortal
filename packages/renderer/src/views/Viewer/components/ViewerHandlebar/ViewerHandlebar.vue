@@ -1,29 +1,39 @@
 <template>
-  <section class="viewer-handle-bar">
-    <n-tag
-      type="info"
-      class="p-4 cursor-pointer"
-      @click="showModeChangeModal = true"
-    >
-      <div class="handle-item">
-        <n-icon><BrowsersOutline /></n-icon>
-        <span class="ml-2 text-gray-300">{{ $route.name }}</span>
-      </div>
-    </n-tag>
+  <div class="viewer-handlebar">
+    <div class="handlebar">
+      <n-tag
+        type="info"
+        class="p-4 cursor-pointer"
+        @click="showModeChangeModal = true"
+      >
+        <div class="handle-item">
+          <n-icon><BrowsersOutline /></n-icon>
+          <span class="ml-2 text-gray-300">{{ $route.name }}</span>
+        </div>
+      </n-tag>
 
-    <n-tag
-      type="warning"
-      class="p-4 cursor-pointer"
-      @click="wraping"
-      :disabled="wrapingStatus || !dockings.length"
-    >
-      <div class="handle-item">
-        <n-icon><RocketSharp /></n-icon>
-        <span v-if="!wrapingStatus" class="ml-2 text-gray-300">START !</span>
-        <span v-if="wrapingStatus" class="ml-2 text-gray-300">WRAPING ...</span>
-      </div>
-    </n-tag>
-  </section>
+      <n-tag
+        type="warning"
+        class="p-4 cursor-pointer"
+        @click="wraping"
+        :disabled="wrapingStatus || !dockings.length"
+      >
+        <div class="handle-item">
+          <n-icon><RocketSharp /></n-icon>
+          <span v-if="!wrapingStatus" class="ml-2 text-gray-300">START !</span>
+          <span v-if="wrapingStatus" class="ml-2 text-gray-300"
+            >WRAPING ...</span
+          >
+        </div>
+      </n-tag>
+
+      <QuickActions />
+      <n-button class="h-[32px]" ghost @click="showFilter = !showFilter">
+        <n-icon size="20"><Filter /></n-icon>
+      </n-button>
+    </div>
+    <ViewerFilter class="right-fixed" v-model:show="showFilter" />
+  </div>
 
   <ModeChangeModal
     v-if="showModeChangeModal"
@@ -32,9 +42,11 @@
 </template>
 
 <script lang="ts" setup>
-import ModeChangeModal from './ModeChangeModal.vue'
-import { NIcon, NTag } from 'naive-ui'
-import { BrowsersOutline, RocketSharp } from '@vicons/ionicons5'
+import ModeChangeModal from './components/ModeChangeModal.vue'
+import ViewerFilter from './components/ViewerFilter.vue'
+import QuickActions from './components/QuickActions.vue'
+import { NButton, NIcon, NTag } from 'naive-ui/es'
+import { BrowsersOutline, RocketSharp, Filter } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
 import { forEach, find } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
@@ -46,6 +58,7 @@ const viewerStore = useViewerStore()
 const portalPaneStore = usePortalPaneStore()
 
 const showModeChangeModal = ref(false)
+const showFilter = ref(false)
 // --- Computed ---
 const dockings = computed(() => viewerStore.dockings)
 const flattenPortals = computed(() => portalPaneStore.flattenPortals)
@@ -82,11 +95,14 @@ const wraping = async () => {
 </script>
 
 <style lang="postcss" scoped>
-.viewer-handle-bar {
-  @apply flex gap-2 justify-center items-center p-3 rounded-md;
+.viewer-handlebar {
+  @apply pb-3;
+}
+.handlebar {
+  @apply flex gap-2 justify-center items-center pt-3 rounded-md;
 }
 
 .handle-item {
-  @apply flex items-center;
+  @apply flex items-center h-[32px];
 }
 </style>

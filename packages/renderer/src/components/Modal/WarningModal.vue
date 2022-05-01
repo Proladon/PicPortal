@@ -10,7 +10,9 @@
       </div>
       <div class="flex justify-end gap-[10px]">
         <n-button @click="updateModalShow(false)">Cancel</n-button>
-        <n-button ghost type="error" @click="$emit('delete')">Delete</n-button>
+        <n-button ghost type="error" @click="$emit('confirm')"
+          >Confirm</n-button
+        >
       </div>
     </div>
   </n-modal>
@@ -22,7 +24,7 @@ import { Warning } from '@vicons/ionicons5'
 import { onMounted } from '@vue/runtime-core'
 import { ref } from '@vue/reactivity'
 
-const emit = defineEmits(['close', 'delete'])
+const emit = defineEmits(['close', 'confirm'])
 const showModal = ref<boolean>(false)
 
 const updateModalShow = (show: boolean) => {

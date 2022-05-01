@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'
-import { chunk, indexOf, difference, map } from 'lodash'
+import { chunk, indexOf, difference, map, filter, intersection } from 'lodash'
 const { fastGlob, fileSystem } = useElectron()
 import { wrapingQueue } from '/@/queue'
 
@@ -25,6 +25,10 @@ interface ViewerStoreState {
     errWrap: number
   }
   pullList: any[]
+  filter: {
+    onlyDockings: boolean
+    portals: string[]
+  }
 }
 
 export const useViewerStore = defineStore('viewer', {
@@ -40,7 +44,11 @@ export const useViewerStore = defineStore('viewer', {
       curWrap: 0,
       errWrap: 0
     },
-    pullList: []
+    pullList: [],
+    filter: {
+      onlyDockings: false,
+      portals: []
+    }
   }),
   actions: {
     SET_PORTAL_PANEL_POSITION(position: 'left' | 'right') {
@@ -67,6 +75,11 @@ export const useViewerStore = defineStore('viewer', {
       const files = await fastGlob.glob(pathPattern)
 
       this.folderFiles = files
+    },
+    async ClearDockings() {
+      const appStore = useAppStore()
+      await appStore.SaveToDB({ key: 'dockings', data: [] })
+      await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
     },
     async PurgeFiles(purgeList: any[]) {
       const newFileList = difference(this.folderFiles, purgeList)
@@ -114,6 +127,28 @@ export const useViewerStore = defineStore('viewer', {
   getters: {
     folderFilesCount(): number {
       return this.folderFiles.length
+    },
+    showFilesCount(): number {
+      return this.showFiles.length
+    },
+    showFiles(): string[] {
+      let dockings = this.dockings
+      if (this.filter.portals.length) {
+        dockings = filter(dockings, (docking) => {
+          const res = intersection(docking.portals, this.filter.portals)
+          console.log(res)
+          if (res.length) return docking
+          return false
+        })
+      }
+      if (this.filter.onlyDockings) {
+        const res = map(
+          filter(dockings, (i: any) => i.portals.length),
+          'target'
+        )
+        return res
+      }
+      return this.folderFiles
     },
     dockings(): Docking[] {
       const appStore = useAppStore()

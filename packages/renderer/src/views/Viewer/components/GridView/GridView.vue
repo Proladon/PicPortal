@@ -1,5 +1,5 @@
 <template>
-  <section class="grid-view">
+  <n-scrollbar class="grid-view">
     <div v-if="loading" class="w-full"></div>
     <div
       v-if="pngs.length && !loading"
@@ -13,22 +13,21 @@
         @click="selectItem($event, item)"
       />
     </div>
-
-    <div class="pagination-container">
-      <n-pagination
-        v-model:page="page"
-        :page-count="pngs.length"
-        show-quick-jumper
-      />
-    </div>
-  </section>
+  </n-scrollbar>
+  <div class="pagination-container">
+    <n-pagination
+      v-model:page="page"
+      :page-count="pngs.length"
+      show-quick-jumper
+    />
+  </div>
 </template>
 
 <script lang="ts" setup>
 import GridItem from './components/GridItem.vue'
-import { computed, ref } from '@vue/reactivity'
+import { ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
-import { NPagination } from 'naive-ui'
+import { NScrollbar, NPagination } from 'naive-ui/es'
 import useViewer from '/@/use/useViewer'
 import { chunk, map } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
@@ -43,15 +42,23 @@ const imgSize = ref(150)
 const chunkFiles = async () => {
   loading.value = true
   await viewerStore.GetFolderAllFiles({})
-  const files = map(folderFiles.value, (path) => ({ path: path }))
+  const files = map(showFiles.value, (path) => ({ path: path }))
   const filesChunkList = chunk(files, perPage.value)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
   pngs.value = newData
   loading.value = false
 }
 
-const { loading, pngs, page, perPage, folderFiles, mainFolder, selectItem } =
-  useViewer(20, chunkFiles)
+const {
+  loading,
+  pngs,
+  page,
+  perPage,
+  folderFiles,
+  mainFolder,
+  selectItem,
+  showFiles
+} = useViewer(20, chunkFiles)
 
 // --- Watch ---
 watch(mainFolder, async () => {

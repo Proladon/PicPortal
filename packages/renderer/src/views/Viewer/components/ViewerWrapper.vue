@@ -1,12 +1,12 @@
 <template>
   <section class="viewer-wrapper">
-    <HandleBar />
-    <router-view class="flex-1"></router-view>
+    <ViewerHandlebar />
+    <router-view></router-view>
   </section>
 </template>
 
 <script lang="ts" setup>
-import HandleBar from './Handlebar.vue'
+import ViewerHandlebar from './ViewerHandlebar/ViewerHandlebar.vue'
 </script>
 
 <style lang="postcss" scoped>
