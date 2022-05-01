@@ -120,9 +120,8 @@ import { usePortalPaneStore } from '/@/store/portalPaneStore'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
-  groupId: String,
   mode: String,
-  portal: Object
+  data: Object
 })
 const { browserDialog } = useElectron()
 const message = useMessage()
@@ -204,8 +203,7 @@ const updateDBData = async (data: unknown): Promise<void> => {
 }
 
 // => 新增 PortalTag
-const createPortal = async (e): Promise<void> => {
-  e.preventDefault()
+const createPortal = async (): Promise<void> => {
   const portals = dataClone(portalsData.value)
   const groupIndex = findIndex(portals, { id: props.groupId })
   if (tab.value == 'manual') {
@@ -232,16 +230,15 @@ const createPortal = async (e): Promise<void> => {
 }
 
 // => 更新 PortalTag
-const updatePortal = async (e) => {
-  e.preventDefault()
+const updatePortal = async () => {
   await formRef.value.validate(async (errors: any) => {
     if (errors) return
 
     const portals = dataClone(portalsData.value)
-    const portal = await newPortal(props.portal.portal.id)
-    const groupIndex = findIndex(portals, { id: props.portal.groupId })
+    const portal = await newPortal(props.data.portal.id)
+    const groupIndex = findIndex(portals, { id: props.data.groupId })
     const portalIndex = findIndex(portals[groupIndex].childs, {
-      id: props.portal.portal.id
+      id: props.data.portal.id
     })
     portals[groupIndex].childs[portalIndex] = portal
     await updateDBData(portals)
@@ -267,12 +264,12 @@ const drop = (e) => {
 
 onMounted(() => {
   showModal.value = true
-  if (props.mode === 'edit' && props.portal) {
-    const portal = props.portal
-    formData.name = portal.portal.name
-    formData.bg = portal.portal.bg
-    formData.fg = portal.portal.fg
-    formData.link = portal.portal.link
+  if (props.mode === 'edit' && props.data.portal) {
+    const portal = props.data.portal
+    formData.name = portal.name
+    formData.bg = portal.bg
+    formData.fg = portal.fg
+    formData.link = portal.link
   }
 })
 </script>

@@ -21,11 +21,11 @@
         </n-button>
       </template>
       <section class="py-2">
-        <div class="portal-tag-option" @click="editPortalTag(groupId, data)">
+        <div class="portal-tag-option" @click="editPortal(groupId, data)">
           <n-icon><BuildOutline /></n-icon>
           <span>Edit</span>
         </div>
-        <div class="portal-tag-option" @click="deletePortalTag(groupId, data)">
+        <div class="portal-tag-option" @click="deletePortal(groupId, data)">
           <n-icon><TrashBinOutline /></n-icon>
           <span>Delete</span>
         </div>
@@ -34,7 +34,7 @@
 
     <PortalTagModal
       mode="edit"
-      :portal="selectPortal"
+      :data="selectPortal"
       v-if="showPortalTagModal"
       @close="showPortalTagModal = false"
     />
@@ -51,6 +51,7 @@ import { findIndex, find } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { dataClone } from '/@/utils/data'
+
 // --- Props ---
 const props = defineProps({
   groupId: String,
@@ -101,8 +102,8 @@ const activePortal = async () => {
   }
 }
 
-// => 刪除protalTag
-const deletePortalTag = async (groupId: string, portal: Portal) => {
+// => 刪除protal
+const deletePortal = async (groupId: string, portal: Portal) => {
   const portals = dataClone(portalsData.value) as PortalGroup[]
   const group: PortalGroup | undefined = find(portals, { id: groupId })
   if (!group) return
@@ -117,8 +118,8 @@ const deletePortalTag = async (groupId: string, portal: Portal) => {
   if (exist >= 0) await portalPaneStore.RemoveActivePortal(exist)
 }
 
-// => 編輯更新protalTag
-const editPortalTag = async (groupId, portal) => {
+// => 編輯更新protal
+const editPortal = async (groupId, portal) => {
   selectPortal.value = { groupId, portal }
   showPortalTagModal.value = true
   showPopOver.value = false
@@ -130,7 +131,7 @@ const updatePopOver = (show: boolean) => {
 }
 
 watch(props, () => {
-  const portal = props.data
+  const portal: Portal = props.data
   styles.borderColor = portal.bg
 
   const activePortalsRef = activePortals.value
@@ -154,7 +155,7 @@ watch(activePortals, () => {
 
 // --- Mounted ---
 onMounted(() => {
-  const portal = props.data
+  const portal: Portal = props.data
   styles.borderColor = portal.bg
 
   const activePortalsRef = activePortals.value

@@ -15,6 +15,7 @@ const useViewer = (
   const appStore = useAppStore()
   const viewerStore = useViewerStore()
   const portalPaneStore = usePortalPaneStore()
+
   const loading = ref(false)
   const pngs = ref<unknown>([])
   const perPage = ref(perPageDefault)
@@ -52,8 +53,8 @@ const useViewer = (
       target = rowImgs[index].path
     }
 
-    const dockingsRef = dataClone(dockings.value)
-    const activedPortalsRef: activePortals[] = dataClone(activePortals.value)
+    const dockingsRef: any = dataClone(dockings.value)
+    const activedPortalsRef: any = dataClone(activePortals.value)
 
     const isExist = findIndex(dockingsRef, { target: target })
 

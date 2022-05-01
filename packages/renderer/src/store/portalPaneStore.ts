@@ -33,7 +33,7 @@ export const usePortalPaneStore = defineStore('portalPane', {
       return appStore.dbData.portals
     },
     flattenPortals() {
-      const portals = this.portals
+      const portals: any = this.portals
       const childs = map(portals, 'childs')
       const flattenChilds = flatten(childs)
       return flattenChilds

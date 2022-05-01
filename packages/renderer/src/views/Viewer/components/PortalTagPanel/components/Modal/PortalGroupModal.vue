@@ -39,7 +39,7 @@ const portalPaneStore = usePortalPaneStore()
 // --- Data ---
 const showModal = ref(false)
 
-const formRef = ref(null)
+const formRef = ref<any>(null)
 const formData = reactive({
   name: ''
 })
@@ -72,7 +72,7 @@ const newGroup = async (exist = null) => {
   }
 }
 const updatePortalGroup = async (): Promise<void> => {
-  formRef.value.validate(async (errors) => {
+  formRef.value.validate(async (errors: any) => {
     if (errors) return
 
     const portalsRef = dataClone(portalsData.value)
