@@ -96,7 +96,7 @@ const createDBFile = async (filePath: string) => {
   }
   const [, writeErr] = await fileSystem.writeJson(filePath, newProjectData)
   if (writeErr) {
-    notify.error({ content: writeErr, duration: 1500 })
+    notify.error({ content: writeErr })
     return false
   }
   return id
@@ -108,10 +108,7 @@ const createNewProject = async () => {
     const filePath = formData.path!
     const projectId = await createDBFile(filePath)
     if (!projectId)
-      return notify.error({
-        content: 'Generate project id failed',
-        duration: 1500
-      })
+      return notify.error({ content: 'Generate project id failed' })
 
     const newProject = {
       name: formData.name,

@@ -15,13 +15,14 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NIcon, NDropdown } from 'naive-ui/es'
+import { NButton, NIcon, NDropdown, useNotification } from 'naive-ui/es'
 import { Flash } from '@vicons/ionicons5'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed, ref } from '@vue/reactivity'
 import WarningModal from './modal/WarningModal.vue'
 
 const viewerStore = useViewerStore()
+const notify = useNotification()
 const selectedKey = ref('')
 const modalContent = ref('')
 const showWarning = ref(false)
@@ -49,6 +50,7 @@ const handleSelect = (key: string) => {
 const handleWarningConfirm = (key: string) => {
   if (key === 'clear dockings') {
     clearDockings()
+    notify.success({ content: 'All dockings cleared', duration: 2000 })
   }
 }
 

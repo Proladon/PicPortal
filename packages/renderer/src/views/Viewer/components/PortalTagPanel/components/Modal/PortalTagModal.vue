@@ -205,7 +205,7 @@ const updateDBData = async (data: unknown): Promise<void> => {
 // => 新增 PortalTag
 const createPortal = async (): Promise<void> => {
   const portals = dataClone(portalsData.value)
-  const groupIndex = findIndex(portals, { id: props.groupId })
+  const groupIndex = findIndex(portals, { id: props.data?.groupId })
   if (tab.value == 'manual') {
     await formRef.value.validate(async (errors: any) => {
       if (errors) return

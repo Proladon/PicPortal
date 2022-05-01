@@ -102,8 +102,7 @@ const updateModalShow = (show: boolean) => {
 const updateProject = async () => {
   const projects = await userStore.get('projects')
   const project = find(projects, { id: props.project.id })
-  if (!project)
-    return notify.error({ content: 'Project not found', duration: 1500 })
+  if (!project) return notify.error({ content: 'Project not found' })
   project.name = formData.name
   project.color = formData.color
   project.path = formData.path

@@ -122,7 +122,7 @@
 
     <PortalTagModal
       mode="create"
-      :groupId="groupData.id"
+      :data="{ groupId: groupData.id }"
       v-if="showPortalTagModal"
       @close="showPortalTagModal = false"
     />

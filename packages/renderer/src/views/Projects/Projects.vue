@@ -60,7 +60,7 @@ const importProjectData = ref<any>(null)
 const openProject = async (project: any) => {
   console.log(project)
   const [file, fileError] = await fileSystem.checkExist(project.path)
-  if (fileError) return notify.error({ content: fileError, duration: 3000 })
+  if (fileError) return notify.error({ content: fileError })
   if (!file) {
     return notify.error({
       content: 'Can not find project file',
@@ -74,7 +74,7 @@ const openProject = async (project: any) => {
   appStore.SetOpenProject(project)
   // TODO Loading
   const [dbData, dbError] = await appStore.ConnectProjectDB()
-  if (dbError) return notify.error({ content: dbError, duration: 3000 })
+  if (dbError) return notify.error({ content: dbError })
   await appStore.SyncDBData({ dbData })
   router.push({ name: 'GridView' })
 }

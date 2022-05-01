@@ -1,6 +1,6 @@
 <template>
   <n-collapse-transition :show="showing">
-    <div class="py-2 flex whitespace-nowrap items-center">
+    <div class="py-2 flex whitespace-nowrap items-center gap-[10px]">
       <n-checkbox v-model:checked="onlyDockings">Only Dockings</n-checkbox>
 
       <n-select
@@ -9,6 +9,13 @@
         filterable
         placeholder="Filter Portals"
         :options="availablePortals"
+      />
+      <n-select
+        v-model:value="selectedFileTypes"
+        multiple
+        filterable
+        placeholder="Filter Files Types"
+        :options="availableFileTypes"
       />
     </div>
   </n-collapse-transition>
@@ -52,6 +59,15 @@ const selectedPortals = computed({
   }
 })
 
+const selectedFileTypes = computed({
+  get() {
+    return viewerStore.filter.fileTypes
+  },
+  set(data: string[]) {
+    viewerStore.filter.fileTypes = data
+  }
+})
+
 const showing = computed({
   get(): boolean {
     return props.show
@@ -67,6 +83,13 @@ const availablePortals = computed(() => {
     value: portal.id
   }))
 })
+const availableFileTypes = [
+  { label: 'png', value: 'png' },
+  { label: 'jpg', value: 'jpg' },
+  { label: 'jpeg', value: 'jpeg' },
+  { label: 'webp', value: 'webp' },
+  { label: 'gif', value: 'gif' }
+]
 </script>
 
 <style lang="postcss" scoped></style>

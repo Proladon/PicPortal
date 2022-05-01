@@ -28,6 +28,7 @@ interface ViewerStoreState {
   filter: {
     onlyDockings: boolean
     portals: string[]
+    fileTypes: string[]
   }
 }
 
@@ -47,7 +48,8 @@ export const useViewerStore = defineStore('viewer', {
     pullList: [],
     filter: {
       onlyDockings: false,
-      portals: []
+      portals: [],
+      fileTypes: []
     }
   }),
   actions: {
@@ -133,10 +135,23 @@ export const useViewerStore = defineStore('viewer', {
     },
     showFiles(): string[] {
       let dockings = this.dockings
+      let files = this.folderFiles
+      if (this.filter.fileTypes.length) {
+        if (this.filter.onlyDockings) {
+          dockings = filter(dockings, (docking) => {
+            const extensions = docking.target.split('.').pop()
+            return this.filter.fileTypes.includes(extensions) || false
+          })
+        } else {
+          files = filter(files, (file) => {
+            const extensions = file.split('.').pop()
+            return this.filter.fileTypes.includes(extensions) || false
+          })
+        }
+      }
       if (this.filter.portals.length) {
         dockings = filter(dockings, (docking) => {
           const res = intersection(docking.portals, this.filter.portals)
-          console.log(res)
           if (res.length) return docking
           return false
         })
@@ -148,7 +163,7 @@ export const useViewerStore = defineStore('viewer', {
         )
         return res
       }
-      return this.folderFiles
+      return files
     },
     dockings(): Docking[] {
       const appStore = useAppStore()
