@@ -77,6 +77,7 @@ import { computed, ref } from 'vue'
 import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
+import { getFileName } from '/@/utils/file'
 
 // ANCHOR Use
 const { browserDialog } = useElectron()
@@ -102,9 +103,8 @@ const choseMainFolder = async () => {
     })
 
     if (res.filePaths.length) {
-      const chunk = res.filePaths[0].split('\\')
       const folder = {
-        name: chunk[chunk.length - 1],
+        name: getFileName(res.filePaths[0]),
         path: res.filePaths[0].replaceAll('\\', '/')
       }
       console.log(folder)

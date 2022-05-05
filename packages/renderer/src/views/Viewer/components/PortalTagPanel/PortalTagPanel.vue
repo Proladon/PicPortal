@@ -1,6 +1,6 @@
 <template>
   <div class="tree-view">
-    <section class="flex flex-col min-w-[180px] w-full h-full">
+    <section class="flex flex-col min-w-[180px] full">
       <div
         class="flex justify-between items-center py-2 mb-5 px-[15px] rounded-md"
       >
@@ -23,9 +23,6 @@
             @click="showPortalGroupModal = true"
             ><Folder
           /></n-icon>
-        </n-button>
-        <n-button text>
-          <n-icon size="20" class="cursor-pointer"><Search /></n-icon>
         </n-button>
       </div>
 

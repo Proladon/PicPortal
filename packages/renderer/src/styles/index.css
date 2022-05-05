@@ -5,6 +5,7 @@
 @import url('./ui-rewrite/n-pagination.css');
 @import url('./ui-rewrite/n-button.css');
 @import url('./ui-rewrite/n-notification.css');
+@import url('./utils.css');
 
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;700&display=swap');
 * {

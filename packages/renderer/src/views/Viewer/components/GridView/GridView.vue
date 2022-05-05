@@ -1,8 +1,12 @@
 <template>
-  <n-scrollbar class="grid-view">
-    <div v-if="loading" class="w-full"></div>
+  <n-spin v-if="loading" class="w-full h-full grid place-content-center" />
+  <n-empty
+    v-if="!pngs.length && !loading"
+    description="No images found"
+    class="full grid-center-items"
+  />
+  <n-scrollbar v-if="pngs.length && !loading" class="grid-view">
     <div
-      v-if="pngs.length && !loading"
       class="list-container"
       :style="`grid-template-columns: repeat(auto-fit, minmax(${imgSize}px, 1fr));`"
     >
@@ -14,7 +18,7 @@
       />
     </div>
   </n-scrollbar>
-  <div class="pagination-container">
+  <div v-if="pngs.length && !loading" class="pagination-container">
     <n-pagination
       v-model:page="page"
       :page-count="pngs.length"
@@ -27,7 +31,7 @@
 import GridItem from './components/GridItem.vue'
 import { ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
-import { NScrollbar, NPagination } from 'naive-ui/es'
+import { NScrollbar, NPagination, NEmpty, NSpin } from 'naive-ui/es'
 import useViewer from '/@/use/useViewer'
 import { chunk, map } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
@@ -73,16 +77,11 @@ onMounted(async () => {
 })
 </script>
 
-<!-- <style lang="postcss">
-:deep(.vue3-virtual-list-item-container ){
-  @apply grid;
-}
-</style> -->
-
 <style lang="postcss" scoped>
-:deep(.vue3-virtual-list-item-container) {
-  @apply grid;
+:deep(.n-scrollbar-content) {
+  @apply h-full;
 }
+
 .grid-view {
   @apply relative overflow-y-auto h-full flex flex-col justify-between;
 }

@@ -5,7 +5,7 @@
         <router-link
           :to="{ name: lastViewerType }"
           class="nav-btn"
-          :class="{ 'nav--actived': $route.name === 'Editor' }"
+          :class="{ 'nav--actived': viewerTypes.includes($route.name) }"
         >
           <img :src="hh" alt="info" />
         </router-link>
@@ -65,12 +65,13 @@ import {
   InformationCircle,
   SettingsSharp
 } from '@vicons/ionicons5'
-import { NIcon, NPopover } from 'naive-ui'
+import { NIcon, NPopover } from 'naive-ui/es'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed } from '@vue/reactivity'
 
 const viewerStore = useViewerStore()
 const lastViewerType = computed(() => viewerStore.lastViewerType)
+const viewerTypes = ['GridView', 'VirtualGrid', 'VirtualList', 'FocusView']
 </script>
 
 <style lang="postcss" scoped>
@@ -80,7 +81,7 @@ const lastViewerType = computed(() => viewerStore.lastViewerType)
   @apply bg-gray-600;
 }
 .nav-btn {
-  @apply hover:bg-border px-3 py-2;
+  @apply px-3 py-2;
 
   img {
     filter: grayscale(1);
@@ -88,6 +89,22 @@ const lastViewerType = computed(() => viewerStore.lastViewerType)
 }
 
 .nav--actived {
-  @apply bg-[var(--border-1)];
+  @apply relative;
+}
+.nav--actived::after {
+  /* @apply bg-[var(--border-1)]; */
+  content: '';
+  @apply absolute left-0 h-auto top-0 bottom-0 w-[4px] bg-emerald-300;
+  @apply transition duration-300 ease-in;
+  animation: expand 0.3s;
+}
+
+@keyframes expand {
+  0% {
+    @apply w-0;
+  }
+  100% {
+    @apply w-[4px];
+  }
 }
 </style>

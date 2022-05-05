@@ -20,6 +20,7 @@ import { Flash } from '@vicons/ionicons5'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed, ref } from '@vue/reactivity'
 import WarningModal from './modal/WarningModal.vue'
+import { h } from 'vue'
 
 const viewerStore = useViewerStore()
 const notify = useNotification()
@@ -29,13 +30,16 @@ const showWarning = ref(false)
 
 const options = computed(() => [
   {
-    label: 'Clear all dockings',
+    label: 'Clear dockings',
     key: 'clear dockings',
+    icon: () => h(NIcon, { size: '14' }, { default: () => h(Flash) }),
     disabled: viewerStore.dockings.length ? false : true
   }
   // {
-  //   label: 'Clear Portals',
-  //   key: 'the beverly hills hotel, los angeles'
+  //   label: 'Replace Portals',
+  //   key: 'Replace specify portals',
+  //   icon: () => h(NIcon, { size: '14' }, { default: () => h(Flash) }),
+  //   disabled: viewerStore.dockings.length ? false : true
   // }
 ])
 

@@ -1,0 +1,10 @@
+.flex-center-items {
+  @apply grid place-content-center;
+}
+.grid-center-items {
+  @apply flex justify-center items-center;
+}
+
+.full {
+  @apply w-full h-full;
+}
