@@ -20,11 +20,7 @@
   </div>
 
   <div v-if="showPortalSearch" class="flex mb-[12px]">
-    <n-button
-      text
-      class="pr-[5px]"
-      @click=";(showPortalSearch = false), (portalNameSearch = '')"
-    >
+    <n-button text class="pr-[5px]" @click="resetSearch">
       <n-icon size="20"><ChevronBack /></n-icon>
     </n-button>
     <n-input placeholder="Search Portal" v-model:value="searchPortalName" />
@@ -43,7 +39,6 @@ import { NIcon, NButton, NInput } from 'naive-ui/es'
 import { EnterSharp, Folder, Search, ChevronBack } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
 import { useViewerStore } from '/@/store/viewerStore'
-import { filter } from 'lodash-es'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 
 // ANCHOR Use
@@ -67,6 +62,11 @@ const changePortalPanelPosition = () => {
     viewerStore.SET_PORTAL_PANEL_POSITION('left')
   else if (portalPanelPosition.value === 'left')
     viewerStore.SET_PORTAL_PANEL_POSITION('right')
+}
+
+const resetSearch = () => {
+  portalPaneStore.searchPortalName = ''
+  showPortalSearch.value = false
 }
 </script>
 
