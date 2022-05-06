@@ -1,66 +1,77 @@
 <template>
-  <div class="controls-pane">
-    <div class="flex gap-5 flex-wrap">
-      <div class="activated-count">
+  <div class="controls-block">
+    <div class="flex items-center flex-wrap gap-2">
+      <span>Mode:</span>
+      <n-radio-group
+        v-model:value="dockingMode"
+        :on-update:value="changeDockingMode"
+      >
+        <n-radio-button value="append">
+          <n-icon><Layers /></n-icon>
+        </n-radio-button>
+        <n-radio-button value="override">
+          <n-icon><CopySharp /></n-icon>
+        </n-radio-button>
+      </n-radio-group>
+    </div>
+    <div class="activated-count">
+      <div class="flex gap-5 flex-wrap items-center">
         <NBadge
           :color="portalsCountBadgeBg"
           show-zero
           :value="activatedPortalsCount"
         ></NBadge>
-        Activated
+        Portals
       </div>
-      <div class="flex flex-wrap gap-2">
-        <NButton class="controls-btn" @click="resetAvtivatedPortals">
-          Clear</NButton
-        >
-        <n-radio-group
-          v-model:value="dockingMode"
-          :on-update:value="changeDockingMode"
-        >
-          <n-radio-button
-            v-for="mode in ['append', 'override']"
-            :key="mode"
-            :value="mode"
-          >
-            {{ mode }}
-          </n-radio-button>
-        </n-radio-group>
-      </div>
+      <NButton
+        size="small"
+        :disabled="!activatedPortalsCount"
+        @click="resetAvtivatedPortals"
+      >
+        Clear
+      </NButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from '@vue/reactivity'
-import { NButton, NBadge, NRadioGroup, NRadioButton } from 'naive-ui'
+import { NIcon, NButton, NBadge, NRadioGroup, NRadioButton } from 'naive-ui'
+import { Layers, CopySharp } from '@vicons/ionicons5'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
+import { useNotification } from 'naive-ui/es'
 
+// ANCHOR Use
 const portalPaneStore = usePortalPaneStore()
+const notify = useNotification()
+// ANCHOR Data
 const dockingMode = ref('append')
-
+// ANCHOR Computed
 const activatedPortalsCount = computed(
   () => portalPaneStore.activePortals.length
 )
-
 const portalsCountBadgeBg = computed(() => {
   if (activatedPortalsCount.value) return '#91B4C0'
   return 'gray'
 })
-
+// ANCHOR Methods
 const resetAvtivatedPortals = async () => {
   await portalPaneStore.ResetActivePortal()
 }
-
 const changeDockingMode = (mode: 'append' | 'override') => {
   portalPaneStore.SetDockingMode(mode)
   dockingMode.value = mode
+  notify.success({
+    content: `Docking mode changed: ${mode}`,
+    duration: 2000
+  })
 }
 </script>
 
 <style lang="postcss" scoped>
-.controls-pane {
+.controls-block {
   /* @apply border-border border-1 m-5 rounded-md p-2; */
-  @apply px-[15px] mb-5 flex gap-5 justify-center flex-col;
+  @apply mb-5 flex gap-5 justify-center flex-col;
 }
 
 .activated-count {

@@ -1,7 +1,8 @@
+import { useMessage } from 'naive-ui/es'
 import { watch } from '@vue/runtime-core'
 import { computed, ref } from '@vue/reactivity'
 import { dataClone } from '/@/utils/data'
-import { map, findIndex, chunk, uniq } from 'lodash-es'
+import { map, findIndex, uniq } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
 import { usePortalPaneStore } from '../store/portalPaneStore'
@@ -14,6 +15,7 @@ const useViewer = (
   const appStore = useAppStore()
   const viewerStore = useViewerStore()
   const portalPaneStore = usePortalPaneStore()
+  const message = useMessage()
 
   const loading = ref(false)
   const pngs = ref<unknown>([])
@@ -51,7 +53,10 @@ const useViewer = (
     const ignore = ['I', 'path', 'svg']
     const htmlTarget = e.target.tagName
     if (ignore.includes(htmlTarget)) return
-    if (!activePortals.value.length) return
+    if (!activePortals.value.length) {
+      message.warning('請先至少啟用一個 Portal')
+      return
+    }
 
     let target = row.path
 

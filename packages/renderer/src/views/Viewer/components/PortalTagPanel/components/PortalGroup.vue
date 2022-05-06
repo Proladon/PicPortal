@@ -1,5 +1,5 @@
 <template>
-  <div class="portal-group">
+  <div class="portal-group" v-if="groupPortals.length">
     <section class="group-header">
       <div class="flex flex-1 items-center gap-2" @click="expandGroup">
         <n-badge color="#91B4C0" dot v-if="groupActivedPortalsCount" />
@@ -166,6 +166,7 @@ const showPortalGroupModal = ref(false)
 // --- Computed ---
 const portalsData = computed(() => portalPaneStore.portals)
 const activePortals = computed(() => portalPaneStore.activePortals)
+const searchPortalName = computed(() => portalPaneStore.searchPortalName)
 const groupActivedPortalsCount = computed(() => {
   const groupId = props.groupData.id
   const activeds = activePortals.value
@@ -173,7 +174,14 @@ const groupActivedPortalsCount = computed(() => {
 })
 
 const groupPortals = computed({
-  get: () => props.groupData.childs,
+  get: () => {
+    const search = searchPortalName.value
+    if (search)
+      return filter(props.groupData.childs, (portal: Portal) =>
+        portal.name.includes(search)
+      )
+    return props.groupData.childs
+  },
   set: async (newData) => {
     const portalsRef = portalsData.value
     const groupIndex = findIndex(portalsRef, { id: props.groupData.id })

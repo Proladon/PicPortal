@@ -53,16 +53,8 @@ const chunkFiles = async () => {
   loading.value = false
 }
 
-const {
-  loading,
-  pngs,
-  page,
-  perPage,
-  folderFiles,
-  mainFolder,
-  selectItem,
-  showFiles
-} = useViewer(20, chunkFiles)
+const { loading, pngs, page, perPage, mainFolder, selectItem, showFiles } =
+  useViewer(20, chunkFiles)
 
 // --- Watch ---
 watch(mainFolder, async () => {

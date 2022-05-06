@@ -1,16 +1,18 @@
 import { defineStore } from 'pinia'
 import { useAppStore } from '/@/store/appStore'
-import { map, flatten } from 'lodash-es'
+import { map, flatten, filter } from 'lodash-es'
 
 interface PortalPaneStoreState {
   activePortals: ActivePortalRef[]
   dockingMode: 'append' | 'override'
+  searchPortalName: string
 }
 
 export const usePortalPaneStore = defineStore('portalPane', {
   state: (): PortalPaneStoreState => ({
     activePortals: [],
-    dockingMode: 'append'
+    dockingMode: 'append',
+    searchPortalName: ''
   }),
   actions: {
     AddActivedPortal(portal: ActivePortalRef) {
