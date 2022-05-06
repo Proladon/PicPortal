@@ -1,9 +1,9 @@
 <template>
-  <n-spin v-if="loading" class="w-full h-full grid place-content-center" />
+  <n-spin v-if="loading" class="full grid-center-items" />
   <n-empty
     v-if="!pngs.length && !loading"
     description="No images found"
-    class="full grid-center-items"
+    class="full flex-center-items"
   />
   <n-scrollbar v-if="pngs.length && !loading" class="grid-view">
     <div

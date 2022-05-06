@@ -1,7 +1,7 @@
-.flex-center-items {
+.grid-center-items {
   @apply grid place-content-center;
 }
-.grid-center-items {
+.flex-center-items {
   @apply flex justify-center items-center;
 }
 

@@ -1,6 +1,6 @@
 <template>
   <footer class="status-bar">
-    <div class="flex items-center justify-center">
+    <div class="h-full flex-center-items">
       <n-popover trigger="hover">
         <template #trigger>
           <button
@@ -45,17 +45,22 @@
       </n-popover>
     </div>
 
-    <div class="w-[250px] flex gap-5 px-5 items-center justify-center">
-      <n-progress
-        :processing="wrapingStatus"
-        type="line"
-        status="success"
-        :percentage="(curWrap / totalWrap) * 100"
-      >
-        <span>{{ curWrap }} / {{ totalWrap }}</span>
-      </n-progress>
+    <div class="h-full flex">
+      <div class="w-[250px] flex gap-5 px-5 items-center justify-center">
+        <n-progress
+          :processing="wrapingStatus"
+          type="line"
+          status="success"
+          :percentage="(curWrap / totalWrap) * 100"
+        >
+          <span>{{ curWrap }} / {{ totalWrap }}</span>
+        </n-progress>
 
-      <span class="text-rose-300">{{ errWrap }}</span>
+        <span class="text-rose-300">{{ errWrap }}</span>
+      </div>
+      <div class="btn open-project-btn">
+        <n-icon size="20"><HelpCircle /></n-icon>
+      </div>
     </div>
   </footer>
 
@@ -71,8 +76,8 @@
 
 <script lang="ts" setup>
 import WarningModal from './WarningModal.vue'
-import { NIcon, NPopover, NProgress } from 'naive-ui'
-import { Folder, Cube, DocumentOutline } from '@vicons/ionicons5'
+import { NIcon, NPopover, NProgress } from 'naive-ui/es'
+import { Folder, Cube, DocumentOutline, HelpCircle } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
 import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'
