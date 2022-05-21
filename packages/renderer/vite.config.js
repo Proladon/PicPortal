@@ -7,7 +7,6 @@ import { defineConfig } from 'vite'
 import { loadAndSetEnv } from '../../scripts/loadAndSetEnv.mjs'
 import vue from '@vitejs/plugin-vue'
 import WindiCSS from 'vite-plugin-windicss'
-import path from 'path-browserify'
 
 const PACKAGE_ROOT = __dirname
 
@@ -24,8 +23,7 @@ export default defineConfig({
   root: PACKAGE_ROOT,
   resolve: {
     alias: {
-      '/@/': join(PACKAGE_ROOT, 'src') + '/',
-      path: 'path-browserify'
+      '/@/': join(PACKAGE_ROOT, 'src') + '/'
     }
   },
   plugins: [vue(), WindiCSS()],

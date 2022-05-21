@@ -6,4 +6,19 @@ import 'virtual:windi.css'
 import '/@/styles/index.css'
 import 'viewerjs/dist/viewer.css'
 import { createPinia } from 'pinia'
-createApp(App).use(createPinia()).use(router).use(VueViewer).mount('#app')
+import { createI18n } from 'vue-i18n'
+import messages from '/@/locale'
+
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en', // set locale
+  fallbackLocale: 'en', // set fallback locale
+  messages
+})
+
+const app = createApp(App)
+app.use(createPinia())
+app.use(router)
+app.use(VueViewer)
+app.use(i18n)
+app.mount('#app')

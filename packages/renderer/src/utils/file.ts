@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'path-browserify'
 
 export const getFileName = (filePath: string): string => {
   if (!filePath) return ''

@@ -24,7 +24,7 @@
           <n-color-picker v-model:value="formData.color" :show-alpha="true" />
         </n-form-item>
       </n-form>
-      <n-button block @click="createNewProject">創建</n-button>
+      <n-button block type="primary" @click="createNewProject">創建</n-button>
     </div>
   </n-modal>
 </template>

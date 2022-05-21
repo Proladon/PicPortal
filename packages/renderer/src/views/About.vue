@@ -23,6 +23,7 @@
       <img src="../../assets/about/tools/vite.svg" alt="vite" />
       <img src="../../assets/about/tools/vue.svg" alt="vue" />
       <img src="../../assets/about/tools/typescript.svg" alt="ts" />
+      <img src="../../assets/about/tools/electron.png" alt="ts" />
     </section>
   </div>
 </template>
@@ -53,7 +54,7 @@ import { onMounted } from '@vue/runtime-core'
 .logo-list {
   @apply flex gap-5;
   > img {
-    @apply w-[30px];
+    @apply w-[40px];
   }
 }
 </style>

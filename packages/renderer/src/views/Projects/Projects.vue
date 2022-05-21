@@ -14,7 +14,9 @@
       </div>
     </n-scrollbar>
     <section class="btn-container">
-      <n-button ghost @click="importProject">開啟專案</n-button>
+      <n-button ghost type="primary" @click="importProject">{{
+        translate('projects.import')
+      }}</n-button>
     </section>
   </main>
 
@@ -43,12 +45,14 @@ import { useElectron } from '/@/use/electron'
 import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid/async'
 import { useAppStore } from '/@/store/appStore'
+import useLocale from '/@/use/locale'
 
 // ANCHOR Use
 const { fileSystem, userStore } = useElectron()
 const router = useRouter()
 const notify = useNotification()
 const appStore = useAppStore()
+const { translate } = useLocale()
 // ANCHOR Data
 const projectsList = ref([])
 const showCreateProjectModal = ref(false)
@@ -58,7 +62,6 @@ const importProjectData = ref<any>(null)
 // --- Methods ---
 
 const openProject = async (project: any) => {
-  console.log(project)
   const [file, fileError] = await fileSystem.checkExist(project.path)
   if (fileError) return notify.error({ content: fileError })
   if (!file) {

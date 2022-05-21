@@ -3,17 +3,24 @@
     <div class="modal-body">
       <div class="header">
         <n-icon size="24"><Warning /></n-icon>
-        <p>Warning</p>
+        <p>{{ translate('projects.deleteProject.title') }}</p>
       </div>
       <div class="py-[15px]">
         <p>
-          Confirm Delete Project
-          <span class="text-emerald-300">{{ project.name }}</span> ?
+          <span class="mr-[3px]">{{
+            translate('projects.deleteProject.content')
+          }}</span>
+          <!-- Confirm Delete Project -->
+          <span class="text-emerald-300"> {{ project.name }}</span> ?
         </p>
       </div>
       <div class="flex justify-end gap-[10px]">
-        <n-button @click="updateModalShow(false)">Cancel</n-button>
-        <n-button ghost type="error" @click="$emit('delete')">Delete</n-button>
+        <n-button @click="updateModalShow(false)">
+          {{ translate('common.cancel') }}
+        </n-button>
+        <n-button ghost type="error" @click="$emit('delete')">
+          {{ translate('common.delete') }}
+        </n-button>
       </div>
     </div>
   </n-modal>
@@ -24,8 +31,11 @@ import { NModal, NButton, NIcon } from 'naive-ui/es'
 import { Warning } from '@vicons/ionicons5'
 import { onMounted } from '@vue/runtime-core'
 import { ref } from '@vue/reactivity'
+import useLocale from '/@/use/locale'
 
 const emit = defineEmits(['close', 'delete'])
+const { translate } = useLocale()
+
 defineProps({
   project: {
     type: Object,
