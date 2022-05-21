@@ -1,6 +1,6 @@
 <template>
   <main class="projects">
-    <h1>Projects</h1>
+    <h1>{{ translate('projects.pageTitle') }}</h1>
     <n-scrollbar>
       <div class="project-list">
         <ProjectCard
@@ -66,7 +66,7 @@ const openProject = async (project: any) => {
   if (fileError) return notify.error({ content: fileError })
   if (!file) {
     return notify.error({
-      content: 'Can not find project file',
+      content: translate('projects.notify.notFoundProject'),
       duration: 3000
     })
     // const projects = await userStore.get('projects')

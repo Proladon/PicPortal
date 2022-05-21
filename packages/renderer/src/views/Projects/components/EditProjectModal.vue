@@ -3,7 +3,7 @@
     <div class="p-[20px] bg-primary-bg">
       <p class="title">
         <n-icon><Pencil /></n-icon>
-        <span>Edit Project</span>
+        <span>{{ translate('projects.editProject.title') }}</span>
       </p>
       <n-form
         ref="formRef"
@@ -12,13 +12,20 @@
         :show-label="false"
       >
         <n-form-item path="name">
-          <n-input v-model:value="formData.name" placeholder="Project Name" />
+          <n-input
+            v-model:value="formData.name"
+            :placeholder="
+              translate('projects.createProject.placeholder.projectName')
+            "
+          />
         </n-form-item>
         <n-form-item path="path">
           <n-input
             :disabled="importMode"
             v-model:value="formData.path"
-            placeholder="Choose a folder"
+            :placeholder="
+              translate('projects.createProject.placeholder.projectPath')
+            "
           />
           <n-button v-if="!importMode" @click="browseFolder">
             <n-icon><FolderOpenOutline /></n-icon>
@@ -29,7 +36,11 @@
         </n-form-item>
       </n-form>
       <n-button block @click="handleConfirm" type="primary">
-        {{ importMode ? 'Import' : 'Update' }}
+        {{
+          importMode
+            ? translate('projects.editProject.import')
+            : translate('projects.editProject.update')
+        }}
       </n-button>
     </div>
   </n-modal>
@@ -52,6 +63,7 @@ import { find } from 'lodash-es'
 import { useElectron } from '/@/use/electron'
 import { saveProjectDialog } from '/@/utils/browserDialog'
 import { useNotification } from 'naive-ui'
+import useLocale from '/@/use/locale'
 
 const emit = defineEmits(['refresh', 'close', 'created'])
 const props = defineProps({
@@ -72,6 +84,7 @@ const props = defineProps({
 // ANCHOR Use
 const { userStore } = useElectron()
 const notify = useNotification()
+const { translate } = useLocale()
 // ANCHOR Data
 const formRef = ref<any>(null)
 const showModal = ref<boolean>(false)
@@ -102,13 +115,16 @@ const updateModalShow = (show: boolean) => {
 const updateProject = async () => {
   const projects = await userStore.get('projects')
   const project = find(projects, { id: props.project.id })
-  if (!project) return notify.error({ content: 'Project not found' })
+  if (!project)
+    return notify.error({
+      content: translate('projects.notify.notFoundProject')
+    })
   project.name = formData.name
   project.color = formData.color
   project.path = formData.path
   await userStore.set('projects', projects)
   notify.success({
-    content: 'Project updated !',
+    content: translate('projects.notify.updateSuccess'),
     duration: 1500
   })
   emit('refresh')
@@ -126,7 +142,7 @@ const importProject = async () => {
 
   await userStore.set('projects', projects)
   notify.success({
-    content: 'Project Import !',
+    content: translate('projects.notify.importSuccess'),
     duration: 1500
   })
   emit('refresh')

@@ -32,7 +32,7 @@
         secondary
         size="small"
         @click.stop="showDeleteModal = true"
-        >delete</n-button
+        >{{ translate('common.delete') }}</n-button
       >
     </div>
   </div>
@@ -45,7 +45,7 @@
   >
     <div class="flex flex-col justify-center items-center">
       <n-icon size="50"><Add /></n-icon>
-      <p>New Project</p>
+      <p>{{ translate('projects.newProject') }}</p>
     </div>
   </n-button>
 
@@ -72,9 +72,11 @@ import { Add, Pencil } from '@vicons/ionicons5'
 import { useElectron } from '/@/use/electron'
 import { ref } from '@vue/reactivity'
 import { useNotification } from 'naive-ui'
+import useLocale from '/@/use/locale'
 
 const { userStore } = useElectron()
 const notify = useNotification()
+const { translate } = useLocale()
 
 const props = defineProps({
   newBtnCard: {
@@ -100,7 +102,10 @@ const deleteProject = async () => {
     return false
   })
   await userStore.set('projects', filterProjects)
-  notify.success({ content: 'Project Deleted', duration: 1500 })
+  notify.success({
+    content: translate('projects.notify.deleteSuccess'),
+    duration: 1500
+  })
   emit('refresh')
 }
 </script>

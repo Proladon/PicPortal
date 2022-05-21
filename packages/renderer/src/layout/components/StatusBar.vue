@@ -59,7 +59,7 @@
         <span class="text-rose-300">{{ errWrap }}</span>
       </div>
       <div class="btn open-project-btn">
-        <n-icon size="20"><HelpCircle /></n-icon>
+        <n-icon size="20"><Book /></n-icon>
       </div>
     </div>
   </footer>
@@ -77,7 +77,13 @@
 <script lang="ts" setup>
 import WarningModal from './WarningModal.vue'
 import { NIcon, NPopover, NProgress } from 'naive-ui/es'
-import { Folder, Cube, DocumentOutline, HelpCircle } from '@vicons/ionicons5'
+import {
+  Folder,
+  Cube,
+  DocumentOutline,
+  HelpCircle,
+  Book
+} from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
 import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'

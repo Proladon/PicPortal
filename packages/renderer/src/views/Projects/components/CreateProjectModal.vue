@@ -1,7 +1,7 @@
 <template>
   <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
     <div class="p-[20px] bg-primary-bg">
-      <p>New Project</p>
+      <p>{{ translate('projects.createProject.title') }}</p>
       <n-form
         ref="formRef"
         :model="formData"
@@ -9,12 +9,20 @@
         :show-label="false"
       >
         <n-form-item path="name">
-          <n-input v-model:value="formData.name" placeholder="Project Name" />
+          <n-input
+            v-model:value="formData.name"
+            :placeholder="
+              translate('projects.createProject.placeholder.projectName')
+            "
+          />
         </n-form-item>
         <n-form-item path="path">
+          <!-- TODO default save dialog file name -->
           <n-input
             v-model:value="formData.path"
-            placeholder="Choose a folder"
+            :placeholder="
+              translate('projects.createProject.placeholder.projectPath')
+            "
           />
           <n-button @click="browseFolder">
             <n-icon><FolderOpenOutline /></n-icon>
@@ -24,7 +32,9 @@
           <n-color-picker v-model:value="formData.color" :show-alpha="true" />
         </n-form-item>
       </n-form>
-      <n-button block type="primary" @click="createNewProject">創建</n-button>
+      <n-button block type="primary" @click="createNewProject">{{
+        translate('projects.createProject.create')
+      }}</n-button>
     </div>
   </n-modal>
 </template>
@@ -46,12 +56,14 @@ import { nanoid } from 'nanoid/async'
 import { onMounted } from '@vue/runtime-core'
 import { useElectron } from '/@/use/electron'
 import { saveProjectDialog } from '/@/utils/browserDialog'
+import useLocale from '/@/use/locale'
 
 const emit = defineEmits(['refresh', 'close', 'created'])
 
 // ANCHOR Use
 const { fileSystem, userStore } = useElectron()
 const notify = useNotification()
+const { translate } = useLocale()
 // ANCHOR Data
 const formRef = ref<any>(null)
 const showModal = ref<boolean>(false)
@@ -86,7 +98,9 @@ const updateModalShow = (show: boolean) => {
 const createDBFile = async (filePath: string) => {
   const [, createErr] = await fileSystem.createFile(filePath)
   if (createErr) {
-    console.log(createErr)
+    notify.error({
+      content: `createDBFile: ${createErr}`
+    })
     return false
   }
   const id = await nanoid(10)
@@ -96,7 +110,7 @@ const createDBFile = async (filePath: string) => {
   }
   const [, writeErr] = await fileSystem.writeJson(filePath, newProjectData)
   if (writeErr) {
-    notify.error({ content: writeErr })
+    notify.error({ content: `createDBFile: ${writeErr}` })
     return false
   }
   return id
@@ -121,6 +135,10 @@ const createNewProject = async () => {
     if (!projects) return await userStore.set('projects', [newProject])
     projects.push(newProject)
     await userStore.set('projects', projects)
+    notify.success({
+      content: translate('projects.notify.createSuccess'),
+      duration: 1500
+    })
     emit('refresh')
     updateModalShow(false)
   })

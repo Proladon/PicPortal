@@ -11,7 +11,7 @@ import messages from '/@/locale'
 
 const i18n = createI18n({
   legacy: false,
-  locale: 'en', // set locale
+  locale: 'tw', // set locale
   fallbackLocale: 'en', // set fallback locale
   messages
 })
