@@ -1,43 +1,45 @@
 <template>
   <div class="navbar">
-    <n-popover trigger="hover" placement="right">
-      <template #trigger>
-        <router-link
-          :to="{ name: lastViewerType }"
-          class="nav-btn"
-          :class="{ 'nav--actived': viewerTypes.includes($route.name) }"
-        >
-          <img :src="hh" alt="info" />
-        </router-link>
-      </template>
-      Viewer
-    </n-popover>
+    <div class="nav-list">
+      <n-popover trigger="hover" placement="right">
+        <template #trigger>
+          <router-link
+            :to="{ name: lastViewerType }"
+            class="nav-btn"
+            :class="{ 'nav--actived': viewerTypes.includes($route.name) }"
+          >
+            <img :src="hh" alt="info" />
+          </router-link>
+        </template>
+        Viewer
+      </n-popover>
 
-    <n-popover trigger="hover" placement="right">
-      <template #trigger>
-        <router-link
-          :to="{ name: 'Projects' }"
-          class="nav-btn"
-          :class="{ 'nav--actived': $route.name === 'Projects' }"
-        >
-          <img :src="RecordIcon" alt="" />
-        </router-link>
-      </template>
-      Projects
-    </n-popover>
+      <n-popover trigger="hover" placement="right">
+        <template #trigger>
+          <router-link
+            :to="{ name: 'Projects' }"
+            class="nav-btn"
+            :class="{ 'nav--actived': $route.name === 'Projects' }"
+          >
+            <img :src="RecordIcon" alt="" />
+          </router-link>
+        </template>
+        Projects
+      </n-popover>
 
-    <n-popover trigger="hover" placement="right">
-      <template #trigger>
-        <router-link
-          to="/about"
-          class="nav-btn"
-          :class="{ 'nav--actived': $route.name === 'About' }"
-        >
-          <img class="h-full w-full" :src="InfoIcon" alt="info" />
-        </router-link>
-      </template>
-      About
-    </n-popover>
+      <n-popover trigger="hover" placement="right">
+        <template #trigger>
+          <router-link
+            to="/about"
+            class="nav-btn"
+            :class="{ 'nav--actived': $route.name === 'About' }"
+          >
+            <img class="h-full w-full" :src="InfoIcon" alt="info" />
+          </router-link>
+        </template>
+        About
+      </n-popover>
+    </div>
 
     <n-popover trigger="hover" placement="right">
       <template #trigger>
@@ -77,9 +79,14 @@ const viewerTypes = ['GridView', 'VirtualGrid', 'VirtualList', 'FocusView']
 <style lang="postcss" scoped>
 .navbar {
   width: 50px;
-  @apply flex flex-col flex-shrink-0 items-center py-5 gap-7;
+  @apply flex flex-col justify-between items-center py-5 flex-shrink-0;
   @apply bg-gray-600;
 }
+
+.nav-list {
+  @apply flex flex-col gap-7;
+}
+
 .nav-btn {
   @apply px-3 py-2;
 

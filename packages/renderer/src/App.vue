@@ -8,8 +8,16 @@
 import { onMounted } from '@vue/runtime-core'
 import { useRouter } from 'vue-router'
 import Provider from '/@/components/Provider.vue'
+import { useElectron } from '/@/use/electron'
+import useLocale from '/@/use/locale'
+const { userStore } = useElectron()
+
 const router = useRouter()
-onMounted(() => {
+const { changeLocale } = useLocale()
+
+onMounted(async () => {
+  const settings = await userStore.get('settings')
+  if (settings) changeLocale(settings.general.locale)
   router.push('/projects')
 })
 </script>
