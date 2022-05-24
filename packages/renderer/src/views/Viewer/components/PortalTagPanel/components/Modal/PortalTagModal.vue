@@ -10,11 +10,16 @@
         class="mb-[10px] h-[220px]"
       >
         <!-- Manual Tab -->
-        <n-tab-pane name="manual" tab="Manual">
+        <n-tab-pane
+          name="manual"
+          :tab="translate('portalPane.portalModal.mode.manual')"
+        >
           <n-form :model="formData" :rules="formRules" ref="formRef">
             <n-form-item path="name" :show-label="false">
               <n-input
-                placeholder="Portal Name"
+                :placeholder="
+                  translate('portalPane.portalModal.placeholder.name')
+                "
                 v-model:value="formData.name"
               />
             </n-form-item>
@@ -22,21 +27,31 @@
               <n-input
                 type="text"
                 v-model:value="formData.link"
-                placeholder="Portal Link"
+                :placeholder="
+                  translate('portalPane.portalModal.placeholder.link')
+                "
               />
               <n-button @click="browseFolder">
                 <n-icon><FolderOpenOutline /></n-icon>
               </n-button>
             </n-form-item>
-            <n-color-picker v-model:value="formData.bg" :show-alpha="false" />
-            <n-color-picker v-model:value="formData.fg" :show-alpha="false" />
+            <n-color-picker
+              placeholder="背景顏色"
+              v-model:value="formData.bg"
+              :show-alpha="false"
+            />
+            <n-color-picker
+              placeholder="文字顏色"
+              v-model:value="formData.fg"
+              :show-alpha="false"
+            />
           </n-form>
         </n-tab-pane>
         <!-- Drop Tab -->
         <n-tab-pane
           v-if="mode === 'create'"
           name="drop"
-          tab="Drop"
+          :tab="translate('portalPane.portalModal.mode.drop')"
           class="flex flex-col h-full"
         >
           <n-button
@@ -78,14 +93,14 @@
         class="mt-[50px]"
         block
         @click="createPortal"
-        >Add</n-button
+        >{{ translate('common.create') }}</n-button
       >
       <n-button
         v-if="mode === 'edit'"
         class="mt-[50px]"
         block
         @click="updatePortal"
-        >Update</n-button
+        >{{ translate('common.update') }}</n-button
       >
     </div>
   </n-modal>
@@ -117,6 +132,7 @@ import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/file'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
+import useLocale from '/@/use/locale'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -127,6 +143,7 @@ const { browserDialog } = useElectron()
 const message = useMessage()
 const appStore = useAppStore()
 const portalPanelStore = usePortalPaneStore()
+const { translate } = useLocale()
 
 const tab = ref<'manual' | 'drop'>('manual')
 const dropList = ref<string[]>([])
@@ -150,10 +167,10 @@ const modalTitle = computed(() => {
   let title = ''
   switch (props.mode) {
     case 'create':
-      title = 'Create Portal'
+      title = translate('portalPane.portalModal.title.create')
       break
     case 'edit':
-      title = 'Update Portal'
+      title = translate('portalPane.portalModal.title.edit')
       break
   }
   return title

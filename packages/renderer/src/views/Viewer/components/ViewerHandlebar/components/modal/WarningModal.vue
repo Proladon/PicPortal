@@ -3,14 +3,18 @@
     <div class="modal-body">
       <div class="header">
         <n-icon size="24"><Warning /></n-icon>
-        <p>Warning</p>
+        <p>{{ translate('common.warning') }}</p>
       </div>
       <div class="py-[15px]">
         <p>{{ content }}</p>
       </div>
       <div class="flex justify-end gap-[10px]">
-        <n-button @click="updateModalShow(false)">Cancel</n-button>
-        <n-button ghost type="error" @click="confirm">Confirm</n-button>
+        <n-button @click="updateModalShow(false)">{{
+          translate('common.cancel')
+        }}</n-button>
+        <n-button ghost type="error" @click="confirm">{{
+          translate('common.confirm')
+        }}</n-button>
       </div>
     </div>
   </n-modal>
@@ -21,6 +25,7 @@ import { NModal, NButton, NIcon } from 'naive-ui/es'
 import { Warning } from '@vicons/ionicons5'
 import { onMounted } from '@vue/runtime-core'
 import { ref } from '@vue/reactivity'
+import useLocale from '/@/use/locale'
 
 const props = defineProps({
   keyRef: {
@@ -33,6 +38,9 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['close', 'confirm'])
+
+const { translate } = useLocale()
+
 const showModal = ref<boolean>(false)
 
 const updateModalShow = (show: boolean) => {

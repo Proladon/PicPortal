@@ -23,11 +23,11 @@
       <section class="py-2">
         <div class="portal-tag-option" @click="editPortal(groupId, data)">
           <n-icon><BuildOutline /></n-icon>
-          <span>Edit</span>
+          <span>{{ translate('common.edit') }}</span>
         </div>
         <div class="portal-tag-option" @click="deletePortal(groupId, data)">
           <n-icon><TrashBinOutline /></n-icon>
-          <span>Delete</span>
+          <span>{{ translate('common.delete') }}</span>
         </div>
       </section>
     </n-popover>
@@ -51,6 +51,7 @@ import { findIndex, find } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { dataClone } from '/@/utils/data'
+import useLocale from '/@/use/locale'
 
 // --- Props ---
 const props = defineProps({
@@ -60,6 +61,7 @@ const props = defineProps({
 
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
+const { translate } = useLocale()
 // --- Data ---
 const actived = ref(false)
 const showPopOver = ref(false)

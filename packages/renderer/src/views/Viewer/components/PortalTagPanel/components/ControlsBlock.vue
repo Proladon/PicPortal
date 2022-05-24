@@ -1,7 +1,7 @@
 <template>
   <div class="controls-block">
     <div class="flex items-center flex-wrap gap-2">
-      <span>Mode:</span>
+      <span>{{ translate('portalPane.mode.label') }}：</span>
       <n-radio-group
         v-model:value="dockingMode"
         :on-update:value="changeDockingMode"
@@ -28,7 +28,7 @@
         :disabled="!activatedPortalsCount"
         @click="resetAvtivatedPortals"
       >
-        Clear
+        {{ translate('portalPane.controls.clear') }}
       </NButton>
     </div>
   </div>
@@ -40,10 +40,12 @@ import { NIcon, NButton, NBadge, NRadioGroup, NRadioButton } from 'naive-ui'
 import { Layers, CopySharp } from '@vicons/ionicons5'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { useNotification } from 'naive-ui/es'
+import useLocale from '/@/use/locale'
 
 // ANCHOR Use
 const portalPaneStore = usePortalPaneStore()
 const notify = useNotification()
+const { translate } = useLocale()
 // ANCHOR Data
 const dockingMode = ref('append')
 // ANCHOR Computed
@@ -62,7 +64,9 @@ const changeDockingMode = (mode: 'append' | 'override') => {
   portalPaneStore.SetDockingMode(mode)
   dockingMode.value = mode
   notify.success({
-    content: `Docking mode changed: ${mode}`,
+    content: `${translate('portalPane.notify.modeChange')}: ${translate(
+      `portalPane.mode.${mode}`
+    )}`,
     duration: 2000
   })
 }

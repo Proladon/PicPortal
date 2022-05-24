@@ -7,8 +7,12 @@
   >
     <div class="handle-item">
       <n-icon><RocketSharp /></n-icon>
-      <span v-if="!wrapingStatus" class="ml-2 text-gray-300">START !</span>
-      <span v-if="wrapingStatus" class="ml-2 text-gray-300">WRAPING ...</span>
+      <span v-if="!wrapingStatus" class="ml-2 text-gray-300">{{
+        translate('viewer.warpingBtn.label')
+      }}</span>
+      <span v-if="wrapingStatus" class="ml-2 text-gray-300">{{
+        translate('viewer.warpingBtn.warping')
+      }}</span>
     </div>
   </n-tag>
 </template>
@@ -22,9 +26,11 @@ import { forEach, find } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/data'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
+import useLocale from '/@/use/locale'
 
 const viewerStore = useViewerStore()
 const portalPaneStore = usePortalPaneStore()
+const { translate } = useLocale()
 // --- Computed ---
 const dockings = computed(() => viewerStore.dockings)
 const flattenPortals = computed(() => portalPaneStore.flattenPortals)

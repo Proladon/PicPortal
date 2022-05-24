@@ -1,20 +1,26 @@
 <template>
   <n-collapse-transition :show="showing">
     <div class="py-2 flex whitespace-nowrap items-center gap-[10px]">
-      <n-checkbox v-model:checked="onlyDockings">Only Dockings</n-checkbox>
+      <n-checkbox v-model:checked="onlyDockings">
+        {{ translate('viewer.viewerFilter.onlyDockings') }}
+      </n-checkbox>
 
       <n-select
         v-model:value="selectedPortals"
         multiple
         filterable
-        placeholder="Filter Portals"
+        :placeholder="
+          translate('viewer.viewerFilter.filterPortals.placeholder')
+        "
         :options="availablePortals"
       />
       <n-select
         v-model:value="selectedFileTypes"
         multiple
         filterable
-        placeholder="Filter Files Types"
+        :placeholder="
+          translate('viewer.viewerFilter.filterFilesTypes.placeholder')
+        "
         :options="availableFileTypes"
       />
     </div>
@@ -27,6 +33,7 @@ import { NCollapseTransition, NCheckbox, NSelect } from 'naive-ui/es'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { useViewerStore } from '/@/store/viewerStore'
 import { map } from 'lodash-es'
+import useLocale from '/@/use/locale'
 
 const props = defineProps({
   show: {
@@ -39,6 +46,8 @@ const emit = defineEmits(['update:show'])
 
 const viewerStore = useViewerStore()
 const portalPaneStore = usePortalPaneStore()
+const { translate } = useLocale()
+
 const onlyDockings = computed({
   get() {
     return viewerStore.filter.onlyDockings

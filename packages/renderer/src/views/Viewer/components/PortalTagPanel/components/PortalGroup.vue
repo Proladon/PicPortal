@@ -37,7 +37,7 @@
               <n-icon>
                 <ListSharp />
               </n-icon>
-              <span>List View</span>
+              <span>{{ translate('portalPane.portalGroup.view.list') }}</span>
             </div>
             <div
               class="portal-group-popover-item"
@@ -46,14 +46,14 @@
               <n-icon>
                 <Grid />
               </n-icon>
-              <span>Grid View</span>
+              <span>{{ translate('portalPane.portalGroup.view.grid') }}</span>
             </div>
             <n-divider class="!my-2" />
             <div class="portal-group-popover-item">
               <n-icon>
                 <ColorFill />
               </n-icon>
-              <span>Sync Color</span>
+              <span>{{ translate('portalPane.portalGroup.syncColor') }}</span>
             </div>
 
             <div
@@ -63,7 +63,7 @@
               <n-icon>
                 <PencilSharp />
               </n-icon>
-              <span>Rename</span>
+              <span>{{ translate('portalPane.portalGroup.rename') }}</span>
             </div>
 
             <div
@@ -73,7 +73,7 @@
               <n-icon>
                 <TrashBinOutline />
               </n-icon>
-              <span>Delete</span>
+              <span>{{ translate('common.delete') }}</span>
             </div>
           </section>
         </n-popover>
@@ -150,13 +150,14 @@ import { filter, findIndex } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
-
+import useLocale from '/@/use/locale'
 // --- Data ---
 const props = defineProps({
   groupData: Object
 })
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
+const { translate } = useLocale()
 const listView = ref('list')
 const expand = ref(false)
 const showPopOver = ref(false)

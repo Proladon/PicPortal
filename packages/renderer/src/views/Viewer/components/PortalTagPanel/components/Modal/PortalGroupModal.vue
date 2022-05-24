@@ -5,14 +5,19 @@
 
       <n-form :model="formData" :rules="formRules" ref="formRef">
         <n-form-item path="name">
-          <n-input placeholder="Group Name" v-model:value="formData.name" />
+          <n-input
+            :placeholder="
+              translate('portalPane.portalGroupModal.placeholder.name')
+            "
+            v-model:value="formData.name"
+          />
         </n-form-item>
-        <n-button v-if="mode === 'edit'" @click="updatePortalGroup"
-          >Update</n-button
-        >
-        <n-button v-if="mode === 'create'" @click="createPortalGroup"
-          >Create</n-button
-        >
+        <n-button v-if="mode === 'edit'" @click="updatePortalGroup">{{
+          translate('common.update')
+        }}</n-button>
+        <n-button v-if="mode === 'create'" @click="createPortalGroup">{{
+          translate('common.create')
+        }}</n-button>
       </n-form>
     </div>
   </n-modal>
@@ -27,6 +32,7 @@ import { findIndex } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
+import useLocale from '/@/use/locale'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -36,6 +42,7 @@ const props = defineProps({
 
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
+const { translate } = useLocale()
 // --- Data ---
 const showModal = ref(false)
 
@@ -51,8 +58,10 @@ const formRules = {
 const portalsData = computed(() => portalPaneStore.portals)
 const modalTitle = computed(() => {
   const mode = props.mode
-  if (mode === 'edit') return 'Update Portal Group'
-  if (mode === 'create') return 'Create Portal Group'
+  if (mode === 'edit')
+    return translate('portalPane.portalGroupModal.title.edit')
+  if (mode === 'create')
+    return translate('portalPane.portalGroupModal.title.create')
 })
 
 // --- Methods ---

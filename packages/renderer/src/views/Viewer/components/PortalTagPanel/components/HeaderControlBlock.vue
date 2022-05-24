@@ -23,7 +23,10 @@
     <n-button text class="pr-[5px]" @click="resetSearch">
       <n-icon size="20"><ChevronBack /></n-icon>
     </n-button>
-    <n-input placeholder="Search Portal" v-model:value="searchPortalName" />
+    <n-input
+      :placeholder="translate('portalPane.search.placeholder')"
+      v-model:value="searchPortalName"
+    />
   </div>
 
   <PortalGroupModal
@@ -40,10 +43,12 @@ import { EnterSharp, Folder, Search, ChevronBack } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
 import { useViewerStore } from '/@/store/viewerStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
+import useLocale from '/@/use/locale'
 
 // ANCHOR Use
 const viewerStore = useViewerStore()
 const portalPaneStore = usePortalPaneStore()
+const { translate } = useLocale()
 // ANCHOR Data
 const showPortalSearch = ref<boolean>(false)
 const showPortalGroupModal = ref<boolean>(false)
