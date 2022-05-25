@@ -67,6 +67,7 @@
   <WarningModal
     v-if="showWarningModal"
     title="Warning"
+    :content="translate('statusbar.warning.content')"
     @close="showWarningModal = false"
     @confirm="choseMainFolder"
   >
@@ -75,7 +76,7 @@
 </template>
 
 <script lang="ts" setup>
-import WarningModal from './WarningModal.vue'
+import WarningModal from '/@/components/Modal/WarningModal.vue'
 import { NIcon, NPopover, NProgress } from 'naive-ui/es'
 import {
   Folder,
@@ -89,11 +90,13 @@ import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
 import { getFileName } from '/@/utils/file'
+import useLocale from '/@/use/locale'
 
 // ANCHOR Use
 const { browserDialog } = useElectron()
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
+const { translate } = useLocale()
 
 const showWarningModal = ref(false)
 
@@ -108,6 +111,7 @@ const wrapingStatus = computed(() => viewerStore.wrap.wraping)
 
 // --- Methods---
 const choseMainFolder = async () => {
+  showWarningModal.value = false
   try {
     const res = await browserDialog.open({
       properties: ['openDirectory']
@@ -118,7 +122,6 @@ const choseMainFolder = async () => {
         name: getFileName(res.filePaths[0]),
         path: res.filePaths[0].replaceAll('\\', '/')
       }
-      console.log(folder)
       await appStore.SaveToDB({ key: 'mainFolder', data: folder })
       await appStore.SaveToDB({ key: 'dockings', data: [] })
       await appStore.SyncDBDataToState({

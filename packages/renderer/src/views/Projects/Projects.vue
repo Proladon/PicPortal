@@ -1,6 +1,5 @@
 <template>
   <main class="projects">
-    <h1>{{ translate('projects.pageTitle') }}</h1>
     <n-scrollbar>
       <div class="project-list">
         <ProjectCard
@@ -14,9 +13,9 @@
       </div>
     </n-scrollbar>
     <section class="btn-container">
-      <n-button ghost type="primary" @click="importProject">{{
-        translate('projects.import')
-      }}</n-button>
+      <n-button ghost type="primary" @click="importProject">
+        {{ translate('projects.import') }}
+      </n-button>
     </section>
   </main>
 

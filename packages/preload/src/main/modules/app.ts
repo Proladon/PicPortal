@@ -1,4 +1,5 @@
 import { ipcMain, BrowserWindow, app } from 'electron'
+import gitTagVersion from 'git-tag-version'
 
 const ipc = ipcMain
 
@@ -18,6 +19,10 @@ const appWindow = () => {
     const isMaximized = win.isMaximized()
     if (isMaximized) win.unmaximize()
     else if (!isMaximized) win.maximize()
+  })
+
+  ipc.handle('Get-App-Version', (e) => {
+    return gitTagVersion()
   })
 }
 

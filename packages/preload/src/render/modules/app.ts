@@ -12,6 +12,11 @@ const appWindow = {
   maximum() {
     ipcRenderer.invoke('Window-Maximum')
   },
+
+  getAppVersion() {
+    const version = ipcRenderer.invoke('Get-App-Version')
+    return version
+  }
 }
 
 export default appWindow

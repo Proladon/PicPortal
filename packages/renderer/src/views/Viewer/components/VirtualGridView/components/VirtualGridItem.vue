@@ -25,7 +25,6 @@
 <script setup lang="ts">
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
-import { useStore } from 'vuex'
 import { NTag } from 'naive-ui'
 import { find, map, findIndex, pull, filter } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
