@@ -1,5 +1,5 @@
 <template>
-  <div class="portal-group" v-if="groupPortals.length">
+  <div class="portal-group" v-if="showPortalGroup">
     <section class="group-header">
       <div class="flex flex-1 items-center gap-2" @click="expandGroup">
         <n-badge color="#91B4C0" dot v-if="groupActivedPortalsCount" />
@@ -193,6 +193,10 @@ const groupPortals = computed({
     })
     await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
   }
+})
+const showPortalGroup = computed(() => {
+  if (searchPortalName.value && !groupPortals.value.length) return false
+  return true
 })
 
 // --- Methods ---
