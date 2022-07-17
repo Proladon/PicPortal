@@ -1,4 +1,4 @@
-# PicPortal
+<h1 align="center">PicPortal</h1>
 
 ![preview](https://i.imgur.com/qJXKAhT.png)
 
