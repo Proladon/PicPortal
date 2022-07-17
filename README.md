@@ -1,5 +1,7 @@
 # Picnel.io-3
 
+![preview](https://i.imgur.com/qJXKAhT.png)
+
 [中文 Readme](https://github.com/Proladon/Picnel.io-3/blob/master/README-TW.md)
 > ⚠️ ⚠️ ⚠️ WARNING: This project is fully in early development !
 
