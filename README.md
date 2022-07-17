@@ -1,4 +1,4 @@
-# Picnel.io-3
+# PicPortal
 
 ![preview](https://i.imgur.com/qJXKAhT.png)
 
