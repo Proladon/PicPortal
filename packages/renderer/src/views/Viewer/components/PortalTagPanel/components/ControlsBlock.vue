@@ -67,7 +67,7 @@ const changeDockingMode = (mode: 'append' | 'override') => {
     content: `${translate('portalPane.notify.modeChange')}: ${translate(
       `portalPane.mode.${mode}`
     )}`,
-    duration: 2000
+    duration: 2000,
   })
 }
 </script>
