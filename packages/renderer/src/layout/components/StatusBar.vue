@@ -21,7 +21,7 @@
           <button
             v-show="projectName"
             class="btn main-folder-btn"
-            @click="showWarningModal = true"
+            @click="changeMainFolder"
           >
             <n-icon>
               <folder />
@@ -70,9 +70,7 @@
     :content="translate('statusbar.warning.content')"
     @close="showWarningModal = false"
     @confirm="choseMainFolder"
-  >
-    <div>Changing Mainfolder will lose all of the current dockings !</div>
-  </WarningModal>
+  />
 </template>
 
 <script lang="ts" setup>
@@ -83,7 +81,7 @@ import {
   Cube,
   DocumentOutline,
   HelpCircle,
-  Book
+  Book,
 } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
 import { useElectron } from '/@/use/electron'
@@ -114,23 +112,31 @@ const choseMainFolder = async () => {
   showWarningModal.value = false
   try {
     const res = await browserDialog.open({
-      properties: ['openDirectory']
+      properties: ['openDirectory'],
     })
 
     if (res.filePaths.length) {
       const folder = {
         name: getFileName(res.filePaths[0]),
-        path: res.filePaths[0].replaceAll('\\', '/')
+        path: res.filePaths[0].replaceAll('\\', '/'),
       }
       await appStore.SaveToDB({ key: 'mainFolder', data: folder })
       await appStore.SaveToDB({ key: 'dockings', data: [] })
       await appStore.SyncDBDataToState({
-        syncKeys: ['mainFolder', 'dockings']
+        syncKeys: ['mainFolder', 'dockings'],
       })
     }
   } catch (error) {
     console.log(error)
   }
+}
+
+const changeMainFolder = () => {
+  if (mainFolder.value.name) {
+    showWarningModal.value = true
+    return
+  }
+  choseMainFolder()
 }
 </script>
 
