@@ -7,7 +7,7 @@
     @mouseleave="showBtn = false"
     @click="$emit('open', project)"
   >
-    <div class="h-full flex flex-col">
+    <div class="flex flex-col h-full overflow-hidden">
       <div class="flex mb-[20px]">
         <div class="bar" :style="`background: ${project.color}`"></div>
         <p class="project-name">
@@ -16,10 +16,14 @@
           </n-ellipsis>
         </p>
       </div>
-      <div class="project-path">{{ project.path }}</div>
+      <n-scrollbar>
+        <div class="project-path h-full">
+          {{ project.path }}
+        </div>
+      </n-scrollbar>
     </div>
 
-    <div v-if="showBtn || selected" class="flex justify-between">
+    <div v-show="showBtn || selected" class="flex justify-between pt-[10px]">
       <n-button
         size="small"
         @click.stop=";(showEditModal = true), (selected = true)"
@@ -65,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NEllipsis, NIcon } from 'naive-ui/es'
+import { NButton, NEllipsis, NIcon, NScrollbar } from 'naive-ui/es'
 import EditProjectModal from './EditProjectModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { Add, Pencil } from '@vicons/ionicons5'
@@ -81,12 +85,12 @@ const { translate } = useLocale()
 const props = defineProps({
   newBtnCard: {
     type: Boolean,
-    default: false
+    default: false,
   },
   project: {
     type: Object,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 })
 const emit = defineEmits(['open', 'newProject', 'refresh'])
 
@@ -104,7 +108,7 @@ const deleteProject = async () => {
   await userStore.set('projects', filterProjects)
   notify.success({
     content: translate('projects.notify.deleteSuccess'),
-    duration: 1500
+    duration: 1500,
   })
   emit('refresh')
 }

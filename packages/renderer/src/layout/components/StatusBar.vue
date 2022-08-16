@@ -76,13 +76,7 @@
 <script lang="ts" setup>
 import WarningModal from '/@/components/Modal/WarningModal.vue'
 import { NIcon, NPopover, NProgress } from 'naive-ui/es'
-import {
-  Folder,
-  Cube,
-  DocumentOutline,
-  HelpCircle,
-  Book,
-} from '@vicons/ionicons5'
+import { Folder, Cube, DocumentOutline, Book } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
 import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'
