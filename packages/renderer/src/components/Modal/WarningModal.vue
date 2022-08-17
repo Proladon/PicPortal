@@ -24,27 +24,19 @@
 import { NModal, NButton, NIcon } from 'naive-ui/es'
 import { Warning } from '@vicons/ionicons5'
 import { onMounted } from '@vue/runtime-core'
-import { ref } from '@vue/reactivity'
+import { useModal } from '/@/use/modal'
 import useLocale from '/@/use/locale'
 
 const emit = defineEmits(['close', 'confirm'])
+
 defineProps({
   content: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 const { translate } = useLocale()
-const showModal = ref<boolean>(false)
-
-const updateModalShow = (show: boolean) => {
-  if (!show) {
-    setTimeout(() => {
-      emit('close')
-    }, 300)
-  }
-  showModal.value = show
-}
+const { updateModalShow, showModal } = useModal(emit)
 
 onMounted(() => {
   showModal.value = true
