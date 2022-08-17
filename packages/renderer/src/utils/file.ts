@@ -11,3 +11,8 @@ export const getFileName = (filePath: string): string => {
   }
   return ''
 }
+
+export const localFile = (filePath: string): string => {
+  if (!filePath) return ''
+  return `local-resource://${filePath}`
+}

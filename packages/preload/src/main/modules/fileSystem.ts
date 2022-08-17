@@ -15,6 +15,8 @@ const fileSystem = () => {
 
   ipc.handle('Copy-File', async (e, filePath: string, destPath: string) => {
     try {
+      const exist = await fs.pathExists(destPath)
+      if (exist) return [null, 'FILE_EXIST']
       const res: any = await fs.copy(filePath, destPath)
       return [res, null]
     } catch (error) {
@@ -24,8 +26,9 @@ const fileSystem = () => {
 
   ipc.handle('Move-File', async (e, filePath: string, destPath: string) => {
     try {
+      const exist = await fs.pathExists(destPath)
+      if (exist) return [null, 'FILE_EXIST']
       const res: any = await fs.move(filePath, destPath)
-      console.log('move', res)
       return [res, null]
     } catch (error) {
       return [null, error]

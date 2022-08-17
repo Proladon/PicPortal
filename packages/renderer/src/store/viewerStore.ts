@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'
-import { chunk, indexOf, difference, map, filter, intersection } from 'lodash'
+import { difference, map, filter, intersection } from 'lodash'
 const { fastGlob, fileSystem } = useElectron()
 import { wrapingQueue } from '/@/queue'
 
@@ -23,6 +23,7 @@ interface ViewerStoreState {
     totalWrap: number
     curWrap: number
     errWrap: number
+    filesExist: any[]
   }
   pullList: any[]
   filter: {
@@ -34,7 +35,7 @@ interface ViewerStoreState {
 
 export const useViewerStore = defineStore('viewer', {
   state: (): ViewerStoreState => ({
-    loading: false,
+    loading: false, // viewer loading
     lastViewerType: 'GridView',
     portalPanelPosition: 'right',
     folderFiles: [],
@@ -43,14 +44,15 @@ export const useViewerStore = defineStore('viewer', {
       wraping: false,
       totalWrap: 0,
       curWrap: 0,
-      errWrap: 0
+      errWrap: 0,
+      filesExist: [],
     },
-    pullList: [],
+    pullList: [], // files need to pull after portal
     filter: {
       onlyDockings: false,
       portals: [],
-      fileTypes: []
-    }
+      fileTypes: [],
+    },
   }),
   actions: {
     SET_PORTAL_PANEL_POSITION(position: 'left' | 'right') {
@@ -90,32 +92,28 @@ export const useViewerStore = defineStore('viewer', {
     async Wraping({
       mode,
       filePath,
-      destPath
+      destPath,
     }: {
       mode: 'copy' | 'move'
       filePath: string
       destPath: string
     }) {
-      if (mode === 'copy') {
-        const task = async () => {
-          const [, err] = await fileSystem.copyFile(filePath, destPath)
-          if (err) {
-            console.log('copy', err)
-            return Promise.reject(new Error(err))
-          }
+      const task = async (mode: 'move' | 'copy') => {
+        const func = mode === 'copy' ? 'copyFile' : 'moveFile'
+        const [, err] = await fileSystem[func](filePath, destPath)
+        if (err) {
+          if (err === 'FILE_EXIST')
+            this.wrap.filesExist.push({
+              mode: mode,
+              filePath,
+              destPath,
+            })
+          return Promise.reject(new Error(err))
         }
-        wrapingQueue.add(task)
       }
-      if (mode === 'move') {
-        const task = async () => {
-          const [, err] = await fileSystem.moveFile(filePath, destPath)
-          if (err) {
-            console.log('move', err)
-            return Promise.reject(new Error(err))
-          }
-        }
-        wrapingQueue.add(task)
-      }
+
+      if (mode === 'copy') wrapingQueue.add(() => task('copy'))
+      if (mode === 'move') wrapingQueue.add(() => task('move'))
     },
     StartWraping() {
       this.wrap.totalWrap = 0
@@ -124,7 +122,7 @@ export const useViewerStore = defineStore('viewer', {
       this.wrap.totalWrap = wrapingQueue.size
       this.wrap.wraping = true
       wrapingQueue.start()
-    }
+    },
   },
   getters: {
     folderFilesCount(): number {
@@ -169,8 +167,8 @@ export const useViewerStore = defineStore('viewer', {
       const appStore = useAppStore()
       if (!appStore.dbData) return []
       return appStore.dbData.dockings
-    }
-  }
+    },
+  },
 })
 
 let count = 0
