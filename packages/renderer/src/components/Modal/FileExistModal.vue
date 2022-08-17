@@ -29,7 +29,12 @@
         >
           重新命名
         </n-button>
-        <n-button class="option-btn" secondary type="info">
+        <n-button
+          class="option-btn"
+          secondary
+          type="info"
+          @click="renameFileWithNumber(data.mode)"
+        >
           檔名 +(1)
         </n-button>
         <n-button class="option-btn" secondary @click="updateModalShow(false)">
@@ -116,6 +121,30 @@ const renameFile = async (mode: 'move' | 'copy') => {
     if (err === 'FILE_EXIST') fileExistError.value = true
     return
   }
+  notify.success({
+    content: '操作成功',
+  })
+  updateModalShow(false)
+}
+
+const renameFileWithNumber = async (mode: 'move' | 'copy') => {
+  if (renameError.value) return
+  const filePath = props.data.filePath
+  let count = 1
+  let pass = false
+
+  const func = mode === 'copy' ? 'copyFile' : 'moveFile'
+  while (!pass) {
+    const destPath = `${getFileDir(props.data.destPath)}/${
+      newFileName.value
+    }(${count})${fileExt.value}`
+    const [, err] = await fileSystem[func](filePath, destPath)
+    if (err) {
+      if (err === 'FILE_EXIST') count++
+    }
+    if (!err) pass = true
+  }
+
   notify.success({
     content: '操作成功',
   })
