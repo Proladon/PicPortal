@@ -61,6 +61,7 @@
     "fast-glob": "^3.2.11",
     "fs-extra": "^10.1.0",
     "gitart-vue-dialog": "^1.1.0",
+    "hotkeys-js": "^3.9.4",
     "lodash-es": "^4.17.21",
     "lowdb": "^3.0.0",
     "nanoid": "^3.3.3",
