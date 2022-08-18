@@ -23,20 +23,25 @@
     v-if="showFileExistModal"
     @close="handleFileExistModalClose"
   />
+
+  <OpenProjectModal v-if="showOpenProjectModal" />
 </template>
 
 <script setup lang="ts">
+import OpenProjectModal from '/@/views/Viewer/components/OpenProjectModal.vue'
 import FileExistModal from '/@/components/Modal/FileExistModal.vue'
 import PortalTagPanel from './components/PortalTagPanel/PortalTagPanel.vue'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed, ref } from '@vue/reactivity'
-import { watchEffect } from 'vue'
+import { onMounted, watchEffect } from 'vue'
+import { useAppStore } from '/@/store/appStore'
 
+const appStore = useAppStore()
 const viewerStore = useViewerStore()
 const portalPanelPosition = computed(() => viewerStore.portalPanelPosition)
-
+const showOpenProjectModal = ref<boolean>(false)
 const showFileExistModal = ref<boolean>(false)
 const filesExistCount = computed(() => viewerStore.wrap.filesExist.length)
 const filesExist = computed(() => viewerStore.wrap.filesExist[0] || {})
@@ -54,6 +59,12 @@ const handleFileExistModalClose = () => {
   viewerStore.wrap.filesExist.shift()
   showFileExistModal.value = false
 }
+
+onMounted(() => {
+  console.log(appStore.openProject)
+  console.log(!appStore.openProject)
+  if (!appStore.openProject) showOpenProjectModal.value = true
+})
 </script>
 
 <style scoped lang="postcss">
