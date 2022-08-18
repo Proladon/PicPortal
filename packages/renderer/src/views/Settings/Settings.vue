@@ -3,15 +3,15 @@
     <div class="pane left">
       <n-menu v-model:value="activeTab" :options="menuOptions" />
     </div>
-    <div class="pane right">
-      <n-form v-if="config">
-        <n-form-item :label="translate('settings.general.language')">
-          <n-select
-            v-model:value="formData.general.locale"
-            :options="locales"
-          />
-        </n-form-item>
-      </n-form>
+    <div class="pane right" v-if="formData.general">
+      <GeneralSettings
+        v-if="activeTab === 'general'"
+        v-model:model="formData.general"
+      />
+      <HotKeysSettings
+        v-if="activeTab === 'hotkeys'"
+        v-model:model="formData.general"
+      />
     </div>
   </div>
 
@@ -25,6 +25,8 @@
 <script setup lang="ts">
 import { NForm, NFormItem, NSelect, NButton, NMenu } from 'naive-ui/es'
 import SaveDialog from './components/SaveDialog.vue'
+import GeneralSettings from './GeneralSettings/GeneralSettings.vue'
+import HotKeysSettings from './HotKeysSettings/HotKeysSettings.vue'
 import { reactive, ref, computed } from '@vue/reactivity'
 import { useElectron } from '/@/use/electron'
 import useLocale from '/@/use/locale'
@@ -33,25 +35,15 @@ import { isEqual } from 'lodash-es'
 import { watch } from '@vue/runtime-core'
 import { dataClone } from '/@/utils/data'
 
-const { translate, changeLocale, locale } = useLocale()
+const { translate, changeLocale } = useLocale()
 const { userStore } = useElectron()
 
 const activeTab = ref('general')
 const showSave = ref(false)
+const loading = ref(false)
 const menuOptions = ref()
 const formData = reactive({})
 const config = ref<any>(null)
-
-const locales = [
-  {
-    label: 'English',
-    value: 'en'
-  },
-  {
-    label: '繁體中文',
-    value: 'tw'
-  }
-]
 
 watch(
   formData,
@@ -66,8 +58,12 @@ const generateMenu = () => {
   const menu = [
     {
       label: translate('settings.general.title'),
-      key: 'general'
-    }
+      key: 'general',
+    },
+    {
+      label: 'HotKeys',
+      key: 'hotkeys',
+    },
   ]
   menuOptions.value = menu
 }
@@ -84,18 +80,20 @@ const reset = () => {
 }
 
 const syncConfig = async () => {
+  // loading.value = true
   const settings = await userStore.get('settings')
 
   if (!settings)
     await userStore.set('settings', {
       general: {
-        locale: 'en'
-      }
+        locale: 'en',
+      },
     })
   changeLocale(settings.general.locale)
   Object.assign(formData, dataClone(settings))
   config.value = dataClone(settings)
   generateMenu()
+  // loading.value = false
 }
 
 onMounted(async () => {
