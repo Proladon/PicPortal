@@ -19,7 +19,7 @@
           <div class="preview-path">{{ data.destPath }}</div>
         </div>
       </div>
-
+      <!-- TODO 接下來皆是選項 -->
       <div v-if="!rename" class="flex justify-between gap-[20px]">
         <n-button
           class="option-btn"
