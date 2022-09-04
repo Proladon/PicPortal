@@ -61,8 +61,6 @@ const handleFileExistModalClose = () => {
 }
 
 onMounted(() => {
-  console.log(appStore.openProject)
-  console.log(!appStore.openProject)
   if (!appStore.openProject) showOpenProjectModal.value = true
 })
 </script>

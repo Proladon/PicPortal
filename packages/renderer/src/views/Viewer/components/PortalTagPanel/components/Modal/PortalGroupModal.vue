@@ -37,7 +37,7 @@ import useLocale from '/@/use/locale'
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  group: Object
+  group: Object,
 })
 
 const appStore = useAppStore()
@@ -48,10 +48,10 @@ const showModal = ref(false)
 
 const formRef = ref<any>(null)
 const formData = reactive({
-  name: ''
+  name: '',
 })
 const formRules = {
-  name: { required: true }
+  name: { required: true },
 }
 
 // --- Computed ---
@@ -77,7 +77,7 @@ const newGroup = async (exist = null) => {
   return {
     group: formData.name,
     id: exist ? exist.id : await nanoid(10),
-    childs: exist ? exist.childs : []
+    childs: exist ? exist.childs : [],
   }
 }
 const updatePortalGroup = async (): Promise<void> => {
@@ -92,7 +92,7 @@ const updatePortalGroup = async (): Promise<void> => {
 
     const [, saveError] = await appStore.SaveToDB({
       key: 'portals',
-      data: portalsRef
+      data: portalsRef,
     })
     if (saveError) alert(saveError)
 
@@ -104,13 +104,13 @@ const updatePortalGroup = async (): Promise<void> => {
 
 const createPortalGroup = async (): Promise<void> => {
   if (!formData.name) return
-  const portalsRef = portalsData.value
+  const portalsRef = dataClone(portalsData.value)
   const group = await newGroup()
   portalsRef.push(group)
 
   const [, saveError] = await appStore.SaveToDB({
     key: 'portals',
-    data: portalsRef
+    data: portalsRef,
   })
   if (saveError) alert(saveError)
 
