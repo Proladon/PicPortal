@@ -48,7 +48,7 @@ import {
   NIcon,
   NInput,
   NColorPicker,
-  useNotification
+  useNotification,
 } from 'naive-ui/es'
 import { FolderOpenOutline } from '@vicons/ionicons5'
 import { reactive, ref } from '@vue/reactivity'
@@ -70,19 +70,19 @@ const showModal = ref<boolean>(false)
 const formData = reactive({
   name: null,
   path: null,
-  color: null
+  color: null,
 })
 const formRules = {
   name: {
     required: true,
     trigger: 'change',
-    message: 'Project Name is required'
+    message: 'Project Name is required',
   },
   path: {
     required: true,
     trigger: 'change',
-    message: 'Project Path is required'
-  }
+    message: 'Project Path is required',
+  },
 }
 // ANCHOR Methods
 const updateModalShow = (show: boolean) => {
@@ -99,14 +99,16 @@ const createDBFile = async (filePath: string) => {
   const [, createErr] = await fileSystem.createFile(filePath)
   if (createErr) {
     notify.error({
-      content: `createDBFile: ${createErr}`
+      content: `createDBFile: ${createErr}`,
     })
     return false
   }
   const id = await nanoid(10)
   const newProjectData = {
     id,
-    mainFolder: ''
+    mainFolder: '',
+    dockings: [],
+    portals: [],
   }
   const [, writeErr] = await fileSystem.writeJson(filePath, newProjectData)
   if (writeErr) {
@@ -128,7 +130,7 @@ const createNewProject = async () => {
       name: formData.name,
       id: projectId,
       path: filePath,
-      color: formData.color
+      color: formData.color,
     }
 
     const projects = await userStore.get('projects')
@@ -137,7 +139,7 @@ const createNewProject = async () => {
     await userStore.set('projects', projects)
     notify.success({
       content: translate('projects.notify.createSuccess'),
-      duration: 1500
+      duration: 1500,
     })
     emit('refresh')
     updateModalShow(false)

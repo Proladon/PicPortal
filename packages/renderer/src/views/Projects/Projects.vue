@@ -1,16 +1,18 @@
 <template>
   <main class="projects">
     <n-scrollbar>
-      <div class="project-list">
-        <ProjectCard
-          v-for="(project, index) in projectsList"
-          :key="index"
-          :project="project"
-          @open="openProject"
-          @refresh="refreshProjects"
-        />
-        <ProjectCard newBtnCard @newProject="showCreateProjectModal = true" />
-      </div>
+      <n-spin :show="loading">
+        <div class="project-list">
+          <ProjectCard
+            v-for="(project, index) in projectsList"
+            :key="index"
+            :project="project"
+            @open="openProject"
+            @refresh="refreshProjects"
+          />
+          <ProjectCard newBtnCard @newProject="showCreateProjectModal = true" />
+        </div>
+      </n-spin>
     </n-scrollbar>
     <section class="btn-container">
       <n-button ghost type="primary" @click="importProject">
@@ -37,7 +39,7 @@
 import ProjectCard from './components/ProjectCard.vue'
 import CreateProjectModal from './components/CreateProjectModal.vue'
 import EditProjectModal from './components/EditProjectModal.vue'
-import { NScrollbar, NButton, useNotification } from 'naive-ui/es'
+import { NScrollbar, NButton, useNotification, NSpin } from 'naive-ui/es'
 import { onMounted, ref } from '@vue/runtime-core'
 import { importProjectDialog } from '/@/utils/browserDialog'
 import { useElectron } from '/@/use/electron'
@@ -53,6 +55,7 @@ const notify = useNotification()
 const appStore = useAppStore()
 const { translate } = useLocale()
 // ANCHOR Data
+const loading = ref<boolean>(false)
 const projectsList = ref([])
 const showCreateProjectModal = ref(false)
 const showImportProjectEditModal = ref(false)
@@ -66,7 +69,7 @@ const openProject = async (project: any) => {
   if (!file) {
     return notify.error({
       content: translate('projects.notify.notFoundProject'),
-      duration: 3000
+      duration: 3000,
     })
     // const projects = await userStore.get('projects')
     // const filterProjects = projects.filter((p: any) => p.id !== project.id)
@@ -91,7 +94,7 @@ const importProject = async () => {
     id: await nanoid(10),
     name: null,
     path: filePath,
-    color: null
+    color: null,
   }
   showImportProjectEditModal.value = true
 }
@@ -103,9 +106,11 @@ const getProjects = async () => {
 
 // => 重新整理專案列表
 const refreshProjects = async () => {
+  loading.value = true
   const projects = await getProjects()
   if (!projects) await userStore.set('projects', [])
   projectsList.value = projects
+  loading.value = false
 }
 
 // --- Mounted ---

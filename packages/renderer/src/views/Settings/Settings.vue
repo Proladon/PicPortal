@@ -1,19 +1,25 @@
 <template>
-  <div class="settings">
-    <div class="pane left">
-      <n-menu v-model:value="activeTab" :options="menuOptions" />
+  <n-spin :show="loading" class="w-full h-full">
+    <div class="settings">
+      <div class="pane left">
+        <n-menu v-model:value="activeTab" :options="menuOptions" />
+      </div>
+      <div class="pane right" v-if="formData.general">
+        <GeneralSettings
+          v-if="activeTab === 'general'"
+          v-model:model="formData.general"
+        />
+        <ViewerSettings
+          v-if="activeTab === 'viewer'"
+          v-model:model="formData.viewer"
+        />
+        <HotKeysSettings
+          v-if="activeTab === 'hotkeys'"
+          v-model:model="formData.general"
+        />
+      </div>
     </div>
-    <div class="pane right" v-if="formData.general">
-      <GeneralSettings
-        v-if="activeTab === 'general'"
-        v-model:model="formData.general"
-      />
-      <HotKeysSettings
-        v-if="activeTab === 'hotkeys'"
-        v-model:model="formData.general"
-      />
-    </div>
-  </div>
+  </n-spin>
 
   <SaveDialog
     v-if="showSave"
@@ -23,10 +29,11 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItem, NSelect, NButton, NMenu } from 'naive-ui/es'
+import { NMenu, NSpin } from 'naive-ui/es'
 import SaveDialog from './components/SaveDialog.vue'
 import GeneralSettings from './GeneralSettings/GeneralSettings.vue'
 import HotKeysSettings from './HotKeysSettings/HotKeysSettings.vue'
+import ViewerSettings from './ViewerSettings/ViewerSettings.vue'
 import { reactive, ref, computed } from '@vue/reactivity'
 import { useElectron } from '/@/use/electron'
 import useLocale from '/@/use/locale'
@@ -61,9 +68,13 @@ const generateMenu = () => {
       key: 'general',
     },
     {
-      label: 'HotKeys',
-      key: 'hotkeys',
+      label: 'Viewer',
+      key: 'viewer',
     },
+    // {
+    //   label: 'HotKeys',
+    //   key: 'hotkeys',
+    // },
   ]
   menuOptions.value = menu
 }
@@ -80,7 +91,7 @@ const reset = () => {
 }
 
 const syncConfig = async () => {
-  // loading.value = true
+  loading.value = true
   const settings = await userStore.get('settings')
 
   if (!settings)
@@ -88,12 +99,15 @@ const syncConfig = async () => {
       general: {
         locale: 'en',
       },
+      viewer: {
+        portalPanelPosition: 'right',
+      },
     })
   changeLocale(settings.general.locale)
   Object.assign(formData, dataClone(settings))
   config.value = dataClone(settings)
   generateMenu()
-  // loading.value = false
+  loading.value = false
 }
 
 onMounted(async () => {

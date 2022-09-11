@@ -24,6 +24,10 @@ interface ViewerStoreState {
     curWrap: number
     errWrap: number
     filesExist: any[]
+    sameOperation: {
+      enable: boolean
+      action: null | 'skip' | 'plusNum'
+    }
   }
   pullList: any[]
   filter: {
@@ -46,6 +50,10 @@ export const useViewerStore = defineStore('viewer', {
       curWrap: 0,
       errWrap: 0,
       filesExist: [],
+      sameOperation: {
+        enable: false,
+        action: null,
+      },
     },
     pullList: [], // files need to pull after portal
     filter: {
@@ -66,9 +74,12 @@ export const useViewerStore = defineStore('viewer', {
     },
     async GetFolderAllFiles({ fileTypes }: { fileTypes?: string[] }) {
       const appStore = useAppStore()
-      const mainFolderPath = appStore.projectMainFolder.path
+      let mainFolderPath = appStore.projectMainFolder.path
       if (!mainFolderPath) return
       if (!fileTypes) fileTypes = ['png', 'jpg', 'jpeg', 'gif', 'webp']
+
+      mainFolderPath = mainFolderPath.replaceAll('(', '\\(')
+      mainFolderPath = mainFolderPath.replaceAll(')', '\\)')
 
       let pathPattern
       if (fileTypes.length === 1)
@@ -121,6 +132,8 @@ export const useViewerStore = defineStore('viewer', {
       this.wrap.errWrap = 0
       this.wrap.totalWrap = wrapingQueue.size
       this.wrap.wraping = true
+      this.wrap.sameOperation.enable = false
+      this.wrap.sameOperation.action = null
       wrapingQueue.start()
     },
   },

@@ -19,9 +19,15 @@
           <div class="preview-path">{{ data.destPath }}</div>
         </div>
       </div>
+      <div class="py-[10px]">
+        <n-checkbox v-model:checked="viewerStore.wrap.sameOperation.enable">
+          以下 {{ viewerStore.wrap.filesExist.length }} 個檔案皆同樣操作
+        </n-checkbox>
+      </div>
       <!-- TODO 接下來皆是選項 -->
       <div v-if="!rename" class="flex justify-between gap-[20px]">
         <n-button
+          :disabled="viewerStore.wrap.sameOperation.enable"
           class="option-btn"
           secondary
           type="primary"
@@ -37,7 +43,7 @@
         >
           檔名 +(1)
         </n-button>
-        <n-button class="option-btn" secondary @click="updateModalShow(false)">
+        <n-button class="option-btn" secondary @click="handleSkip">
           忽略
         </n-button>
       </div>
@@ -65,15 +71,24 @@
 </template>
 
 <script setup lang="ts">
-import { NModal, NButton, NIcon, NInput, useNotification } from 'naive-ui/es'
+import {
+  NModal,
+  NCheckbox,
+  NButton,
+  NIcon,
+  NInput,
+  useNotification,
+} from 'naive-ui/es'
 import { Warning } from '@vicons/ionicons5'
 import { computed, onMounted, ref } from '@vue/runtime-core'
 import { useModal } from '/@/use/modal'
 import useLocale from '/@/use/locale'
 import { localFile, getFileName, getFileDir, getFileExt } from '/@/utils/file'
 import { useElectron } from '/@/use/electron'
+import { useViewerStore } from '/@/store/viewerStore'
 
 const notify = useNotification()
+const viewerStore = useViewerStore()
 const { translate } = useLocale()
 const { fileSystem } = useElectron()
 const emit = defineEmits(['close', 'confirm'])
@@ -128,6 +143,9 @@ const renameFile = async (mode: 'move' | 'copy') => {
 }
 
 const renameFileWithNumber = async (mode: 'move' | 'copy') => {
+  if (viewerStore.wrap.sameOperation.enable) {
+    viewerStore.wrap.sameOperation.action = 'plusNum'
+  }
   if (renameError.value) return
   const filePath = props.data.filePath
   let count = 1
@@ -151,9 +169,22 @@ const renameFileWithNumber = async (mode: 'move' | 'copy') => {
   updateModalShow(false)
 }
 
+const handleSkip = () => {
+  if (viewerStore.wrap.sameOperation.enable) {
+    viewerStore.wrap.sameOperation.action = 'skip'
+  }
+  updateModalShow(false)
+}
+
 onMounted(() => {
-  showModal.value = true
   newFileName.value = getFileName(props.data.destPath)
+  if (viewerStore.wrap.sameOperation.enable) {
+    const action = viewerStore.wrap.sameOperation.action
+    if (action === 'plusNum') renameFileWithNumber(props.data.mode)
+    else if (action === 'skip') updateModalShow(false)
+    return
+  }
+  showModal.value = true
 })
 </script>
 
