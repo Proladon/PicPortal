@@ -1,6 +1,10 @@
 import { ipcRenderer } from 'electron'
 
 const fileSystem = {
+  openFolder(folderPath: string) {
+    const res = ipcRenderer.invoke('Open-Folder', folderPath)
+    return res
+  },
   createFile(file: string) {
     const res = ipcRenderer.invoke('Create-File', file)
     return res

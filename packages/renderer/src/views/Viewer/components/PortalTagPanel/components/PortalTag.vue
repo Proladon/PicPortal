@@ -21,6 +21,10 @@
         </n-button>
       </template>
       <section class="py-2">
+        <div class="portal-tag-option" @click="openPortalFolder(data)">
+          <n-icon><BuildOutline /></n-icon>
+          <span>{{ translate('portalPane.portalTag.openFolder') }}</span>
+        </div>
         <div class="portal-tag-option" @click="editPortal(groupId, data)">
           <n-icon><BuildOutline /></n-icon>
           <span>{{ translate('common.edit') }}</span>
@@ -52,12 +56,15 @@ import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { dataClone } from '/@/utils/data'
 import useLocale from '/@/use/locale'
+import { useElectron } from '/@/use/electron'
 
 // --- Props ---
 const props = defineProps({
   groupId: String,
-  data: Object
+  data: Object,
 })
+
+const { fileSystem } = useElectron()
 
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
@@ -70,7 +77,7 @@ const selectPortal = ref<any>(null)
 const styles = reactive({
   borderColor: '',
   background: '',
-  color: ''
+  color: '',
 })
 
 // --- Computed ---
@@ -94,7 +101,7 @@ const activePortal = async () => {
     if (exist < 0)
       portalPaneStore.AddActivedPortal({
         id: portal.id,
-        group: groupId
+        group: groupId,
       })
   } else {
     styles.borderColor = portal.bg
@@ -125,6 +132,12 @@ const editPortal = async (groupId, portal) => {
   selectPortal.value = { groupId, portal }
   showPortalTagModal.value = true
   showPopOver.value = false
+}
+
+const openPortalFolder = async (portal: Portal) => {
+  const [res, err] = await fileSystem.openFolder(portal.link)
+  console.log(res)
+  console.log(err)
 }
 
 // => 更新popover顯示狀態

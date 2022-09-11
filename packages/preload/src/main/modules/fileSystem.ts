@@ -1,9 +1,18 @@
-import { ipcMain } from 'electron'
+import { ipcMain, shell } from 'electron'
 import fs from 'fs-extra'
 
 const ipc = ipcMain
 
 const fileSystem = () => {
+  ipc.handle('Open-Folder', async (e, folderPath: string) => {
+    try {
+      await shell.openPath(folderPath)
+      return ['ok', null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
   ipc.handle('Create-File', async (e, file) => {
     try {
       const res: any = await fs.ensureFile(file)

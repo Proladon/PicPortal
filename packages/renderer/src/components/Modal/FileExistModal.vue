@@ -24,7 +24,6 @@
           以下 {{ viewerStore.wrap.filesExist.length }} 個檔案皆同樣操作
         </n-checkbox>
       </div>
-      <!-- TODO 接下來皆是選項 -->
       <div v-if="!rename" class="flex justify-between gap-[20px]">
         <n-button
           :disabled="viewerStore.wrap.sameOperation.enable"
