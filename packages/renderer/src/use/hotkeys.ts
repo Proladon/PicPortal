@@ -1,9 +1,15 @@
 import hotkeys from 'hotkeys-js'
 
 export const useHotkeys = () => {
-  const registerHotkey = () => {
+  const registerHotkey = ({
+    bind,
+    handler,
+  }: {
+    bind: string
+    handler: CallableFunction
+  }) => {
     console.log('registerHotkey')
-    hotkeys('f3', function (event, handler) {
+    hotkeys(bind, function (event, handler) {
       event.preventDefault()
       alert('you pressed F3!')
     })
