@@ -22,8 +22,8 @@ import {
   NNotificationProvider,
   NMessageProvider,
   NDialogProvider,
-  darkTheme
-} from 'naive-ui/es'
+  darkTheme,
+} from 'naive-ui'
 </script>
 
 <style lang="postcss" scoped></style>

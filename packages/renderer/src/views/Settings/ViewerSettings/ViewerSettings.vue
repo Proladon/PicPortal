@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItem, NButtonGroup, NButton } from 'naive-ui/es'
+import { NForm, NFormItem, NButtonGroup, NButton } from 'naive-ui'
 import { computed } from 'vue'
 import useLocale from '/@/use/locale'
 

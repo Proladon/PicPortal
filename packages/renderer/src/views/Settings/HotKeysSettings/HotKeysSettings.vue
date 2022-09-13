@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItem, NInput, NButton, NMenu } from 'naive-ui/es'
+import { NForm, NFormItem, NInput, NButton, NMenu } from 'naive-ui'
 </script>
 
 <style scoped lang="postcss"></style>

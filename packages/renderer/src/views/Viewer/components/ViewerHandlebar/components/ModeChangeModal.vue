@@ -36,7 +36,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref } from '@vue/reactivity'
 import { useRouter } from 'vue-router'
-import { NModal, NIcon, NButton } from 'naive-ui/es'
+import { NModal, NIcon, NButton } from 'naive-ui'
 import { AppsSharp, ListSharp, ImageOutline } from '@vicons/ionicons5'
 import { useViewerStore } from '/@/store/viewerStore'
 import { onMounted } from '@vue/runtime-core'
@@ -44,7 +44,7 @@ import { onMounted } from '@vue/runtime-core'
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  group: Object
+  group: Object,
 })
 
 const showModal = ref(false)

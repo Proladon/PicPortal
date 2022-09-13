@@ -77,7 +77,7 @@ import {
   NIcon,
   NInput,
   useNotification,
-} from 'naive-ui/es'
+} from 'naive-ui'
 import { Warning } from '@vicons/ionicons5'
 import { computed, onMounted, ref } from '@vue/runtime-core'
 import { useModal } from '/@/use/modal'

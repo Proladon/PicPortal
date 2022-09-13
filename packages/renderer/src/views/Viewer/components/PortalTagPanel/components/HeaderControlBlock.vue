@@ -5,7 +5,7 @@
         size="20"
         :class="[
           { transform: portalPanelPosition === 'right' },
-          { 'rotate-180': portalPanelPosition === 'right' }
+          { 'rotate-180': portalPanelPosition === 'right' },
         ]"
         class="cursor-pointer"
         ><EnterSharp
@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
-import { NIcon, NButton, NInput } from 'naive-ui/es'
+import { NIcon, NButton, NInput } from 'naive-ui'
 import { EnterSharp, Folder, Search, ChevronBack } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
 import { useViewerStore } from '/@/store/viewerStore'
@@ -59,7 +59,7 @@ const searchPortalName = computed({
   set: (value: string) => {
     if (!value) portalPaneStore.searchPortalName = ''
     portalPaneStore.searchPortalName = value.trim()
-  }
+  },
 })
 // ANCHOR Methods
 const changePortalPanelPosition = () => {

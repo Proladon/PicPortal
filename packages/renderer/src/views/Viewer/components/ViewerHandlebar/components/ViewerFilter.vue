@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { computed } from '@vue/reactivity'
-import { NCollapseTransition, NCheckbox, NSelect } from 'naive-ui/es'
+import { NCollapseTransition, NCheckbox, NSelect } from 'naive-ui'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { useViewerStore } from '/@/store/viewerStore'
 import { map } from 'lodash-es'
@@ -38,8 +38,8 @@ import useLocale from '/@/use/locale'
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:show'])
@@ -55,7 +55,7 @@ const onlyDockings = computed({
   set(show: boolean) {
     if (!show) viewerStore.filter.portals = []
     viewerStore.filter.onlyDockings = show
-  }
+  },
 })
 const selectedPortals = computed({
   get() {
@@ -65,7 +65,7 @@ const selectedPortals = computed({
     if (data.length) viewerStore.filter.onlyDockings = true
     else if (!data.length) viewerStore.filter.onlyDockings = false
     viewerStore.filter.portals = data
-  }
+  },
 })
 
 const selectedFileTypes = computed({
@@ -74,7 +74,7 @@ const selectedFileTypes = computed({
   },
   set(data: string[]) {
     viewerStore.filter.fileTypes = data
-  }
+  },
 })
 
 const showing = computed({
@@ -83,13 +83,13 @@ const showing = computed({
   },
   set(v: boolean) {
     emit('update:show', v)
-  }
+  },
 })
 
 const availablePortals = computed(() => {
   return map(portalPaneStore.flattenPortals, (portal: Portal) => ({
     label: portal.name,
-    value: portal.id
+    value: portal.id,
   }))
 })
 const availableFileTypes = [
@@ -97,7 +97,7 @@ const availableFileTypes = [
   { label: 'jpg', value: 'jpg' },
   { label: 'jpeg', value: 'jpeg' },
   { label: 'webp', value: 'webp' },
-  { label: 'gif', value: 'gif' }
+  { label: 'gif', value: 'gif' },
 ]
 </script>
 

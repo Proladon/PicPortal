@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { NModal, NButton, NIcon } from 'naive-ui/es'
+import { NModal, NButton, NIcon } from 'naive-ui'
 import { Warning } from '@vicons/ionicons5'
 import { onMounted } from '@vue/runtime-core'
 import { ref } from '@vue/reactivity'
@@ -39,8 +39,8 @@ const { translate } = useLocale()
 defineProps({
   project: {
     type: Object,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 })
 const showModal = ref<boolean>(false)
 

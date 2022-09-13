@@ -48,7 +48,7 @@
 <script lang="ts" setup>
 import avatar from '/@/assets/Oreki.png'
 import { LogoGithub } from '@vicons/ionicons5'
-import { NIcon, NAlert, NScrollbar } from 'naive-ui/es'
+import { NIcon, NAlert, NScrollbar } from 'naive-ui'
 import { ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useElectron } from '/@/use/electron'

@@ -23,7 +23,7 @@ import ViewModeSwitcher from './components/ViewModeSwitcher.vue'
 import WrapingButton from './components/WrapingButton.vue'
 import ViewerFilter from './components/ViewerFilter.vue'
 import QuickActions from './components/QuickActions.vue'
-import { NButton, NIcon } from 'naive-ui/es'
+import { NButton, NIcon } from 'naive-ui'
 import { Filter } from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
 

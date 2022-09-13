@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { NAlert, NButton } from 'naive-ui/es'
+import { NAlert, NButton } from 'naive-ui'
 import useLocale from '/@/use/locale'
 
 defineEmits(['cancel', 'save'])

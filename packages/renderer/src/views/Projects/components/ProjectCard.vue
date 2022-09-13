@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NEllipsis, NIcon, NScrollbar } from 'naive-ui/es'
+import { NButton, NEllipsis, NIcon, NScrollbar } from 'naive-ui'
 import EditProjectModal from './EditProjectModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { Add, Pencil } from '@vicons/ionicons5'

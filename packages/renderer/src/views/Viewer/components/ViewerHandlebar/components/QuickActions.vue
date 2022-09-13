@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NIcon, NDropdown, useNotification } from 'naive-ui/es'
+import { NButton, NIcon, NDropdown, useNotification } from 'naive-ui'
 import { Flash } from '@vicons/ionicons5'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed, ref } from '@vue/reactivity'
@@ -36,8 +36,8 @@ const options = () => [
     label: translate('viewer.quickActions.clearDockings.label'),
     key: 'clear dockings',
     icon: () => h(NIcon, { size: '14' }, { default: () => h(Flash) }),
-    disabled: viewerStore.dockings.length ? false : true
-  }
+    disabled: viewerStore.dockings.length ? false : true,
+  },
   // {
   //   label: 'Replace Portals',
   //   key: 'Replace specify portals',

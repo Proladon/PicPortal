@@ -65,9 +65,9 @@ import {
   Albums,
   AppsSharp,
   InformationCircle,
-  SettingsSharp
+  SettingsSharp,
 } from '@vicons/ionicons5'
-import { NIcon, NPopover } from 'naive-ui/es'
+import { NIcon, NPopover } from 'naive-ui'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed } from '@vue/reactivity'
 

@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItem, NSelect } from 'naive-ui/es'
+import { NForm, NFormItem, NSelect } from 'naive-ui'
 import { computed } from 'vue'
 import useLocale from '/@/use/locale'
 import { localeConfig } from '/@/config/general'

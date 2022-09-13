@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { NTag, NIcon } from 'naive-ui/es'
+import { NTag, NIcon } from 'naive-ui'
 import { RocketSharp } from '@vicons/ionicons5'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed } from '@vue/reactivity'
@@ -55,7 +55,7 @@ const wraping = async () => {
       await viewerStore.Wraping({
         mode: count === dock.portals.length ? 'move' : 'copy',
         filePath: src,
-        destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src)
+        destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src),
       })
     })
     waitRemove.push(src)

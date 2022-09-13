@@ -31,7 +31,7 @@
 import GridItem from './components/GridItem.vue'
 import { ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
-import { NScrollbar, NPagination, NEmpty, NSpin } from 'naive-ui/es'
+import { NScrollbar, NPagination, NEmpty, NSpin } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
 import { chunk, map } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'

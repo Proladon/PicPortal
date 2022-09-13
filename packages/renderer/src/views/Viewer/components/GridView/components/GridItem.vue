@@ -12,7 +12,7 @@
               :color="{
                 color: portal.bg,
                 textColor: portal.fg,
-                borderColor: portal.bg
+                borderColor: portal.bg,
               }"
             >
               {{ portal.name }}
@@ -29,7 +29,7 @@
       @click="
         viewerApi({
           options: { navbar: false },
-          images: [`local-resource://${img}`]
+          images: [`local-resource://${img}`],
         })
       "
     >
@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
-import { NButton, NTag, NPopover, NIcon } from 'naive-ui/es'
+import { NButton, NTag, NPopover, NIcon } from 'naive-ui'
 import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull, compact } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
@@ -53,8 +53,8 @@ import { useViewerStore } from '/@/store/viewerStore'
 
 const props = defineProps({
   img: {
-    type: String
-  }
+    type: String,
+  },
 })
 
 const appStore = useAppStore()
@@ -85,7 +85,7 @@ const removePortal = async (portal: any) => {
   if (portalsRef.length) {
     await appStore.DeepSaveToDB({
       key: `[dockings][${targetIndex}][portals]`,
-      data: portalsRef
+      data: portalsRef,
     })
     await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   }

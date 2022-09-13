@@ -1,4 +1,4 @@
-import { useMessage } from 'naive-ui/es'
+import { useMessage } from 'naive-ui'
 import { watch } from '@vue/runtime-core'
 import { computed, ref } from '@vue/reactivity'
 import { dataClone } from '/@/utils/data'
@@ -78,7 +78,7 @@ const useViewer = (
       } else if (dockingMode.value.toLowerCase() === 'override') {
         const dockingsData = {
           target,
-          portals: map(activedPortalsRef, 'id')
+          portals: map(activedPortalsRef, 'id'),
         }
         dockingsRef[isExist] = dockingsData
       }
@@ -86,7 +86,7 @@ const useViewer = (
     if (isExist < 0) {
       const dockingsData = {
         target,
-        portals: map(activedPortalsRef, 'id')
+        portals: map(activedPortalsRef, 'id'),
       }
       dockingsRef.push(dockingsData)
     }
@@ -108,7 +108,7 @@ const useViewer = (
     mainFolder,
     selectItem,
     chunkFiles,
-    showFiles
+    showFiles,
   }
 }
 

@@ -39,7 +39,7 @@
 import ProjectCard from './components/ProjectCard.vue'
 import CreateProjectModal from './components/CreateProjectModal.vue'
 import EditProjectModal from './components/EditProjectModal.vue'
-import { NScrollbar, NButton, useNotification, NSpin } from 'naive-ui/es'
+import { NScrollbar, NButton, useNotification, NSpin } from 'naive-ui'
 import { onMounted, ref } from '@vue/runtime-core'
 import { importProjectDialog } from '/@/utils/browserDialog'
 import { useElectron } from '/@/use/electron'

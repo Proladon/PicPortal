@@ -39,7 +39,7 @@ import { computed, ref } from '@vue/reactivity'
 import { NIcon, NButton, NBadge, NRadioGroup, NRadioButton } from 'naive-ui'
 import { Layers, CopySharp } from '@vicons/ionicons5'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
-import { useNotification } from 'naive-ui/es'
+import { useNotification } from 'naive-ui'
 import useLocale from '/@/use/locale'
 
 // ANCHOR Use

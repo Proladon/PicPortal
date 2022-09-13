@@ -25,7 +25,7 @@
 
 <script lang="ts" setup>
 import { computed, reactive, ref } from '@vue/reactivity'
-import { NModal, NButton, NForm, NFormItem, NInput } from 'naive-ui/es'
+import { NModal, NButton, NForm, NFormItem, NInput } from 'naive-ui'
 import { nanoid } from 'nanoid/async'
 import { onMounted } from '@vue/runtime-core'
 import { findIndex } from 'lodash-es'

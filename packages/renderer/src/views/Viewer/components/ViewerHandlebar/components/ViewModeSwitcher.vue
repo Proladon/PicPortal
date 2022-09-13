@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import ModeChangeModal from './ModeChangeModal.vue'
-import { NTag, NIcon } from 'naive-ui/es'
+import { NTag, NIcon } from 'naive-ui'
 import { BrowsersOutline } from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
 

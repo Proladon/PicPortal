@@ -49,7 +49,7 @@ import {
   NInput,
   NColorPicker,
   useNotification,
-} from 'naive-ui/es'
+} from 'naive-ui'
 import { FolderOpenOutline } from '@vicons/ionicons5'
 import { reactive, ref } from '@vue/reactivity'
 import { nanoid } from 'nanoid/async'

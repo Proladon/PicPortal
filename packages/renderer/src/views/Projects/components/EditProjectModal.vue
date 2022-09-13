@@ -54,8 +54,8 @@ import {
   NButton,
   NIcon,
   NInput,
-  NColorPicker
-} from 'naive-ui/es'
+  NColorPicker,
+} from 'naive-ui'
 import { FolderOpenOutline, Pencil } from '@vicons/ionicons5'
 import { reactive, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
@@ -69,16 +69,16 @@ const emit = defineEmits(['refresh', 'close', 'created'])
 const props = defineProps({
   importMode: {
     type: Boolean,
-    default: false
+    default: false,
   },
   project: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   projects: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 })
 
 // ANCHOR Use
@@ -91,15 +91,19 @@ const showModal = ref<boolean>(false)
 const formData = reactive<{ [key: string]: any }>({
   name: null,
   path: null,
-  color: null
+  color: null,
 })
 const formRules = {
   name: {
     required: true,
     trigger: 'change',
-    message: 'Please input project name'
+    message: 'Please input project name',
   },
-  path: { required: true, trigger: 'change', message: 'Please choose a folder' }
+  path: {
+    required: true,
+    trigger: 'change',
+    message: 'Please choose a folder',
+  },
 }
 // ANCHOR Methods
 const updateModalShow = (show: boolean) => {
@@ -117,7 +121,7 @@ const updateProject = async () => {
   const project = find(projects, { id: props.project.id })
   if (!project)
     return notify.error({
-      content: translate('projects.notify.notFoundProject')
+      content: translate('projects.notify.notFoundProject'),
     })
   project.name = formData.name
   project.color = formData.color
@@ -125,7 +129,7 @@ const updateProject = async () => {
   await userStore.set('projects', projects)
   notify.success({
     content: translate('projects.notify.updateSuccess'),
-    duration: 1500
+    duration: 1500,
   })
   emit('refresh')
   updateModalShow(false)
@@ -137,13 +141,13 @@ const importProject = async () => {
     id: props.project.id,
     name: formData.name,
     color: formData.color,
-    path: formData.path
+    path: formData.path,
   })
 
   await userStore.set('projects', projects)
   notify.success({
     content: translate('projects.notify.importSuccess'),
-    duration: 1500
+    duration: 1500,
   })
   emit('refresh')
   updateModalShow(false)

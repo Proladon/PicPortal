@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { NModal, NButton, NIcon } from 'naive-ui/es'
+import { NModal, NButton, NIcon } from 'naive-ui'
 import { Warning } from '@vicons/ionicons5'
 import { onMounted } from '@vue/runtime-core'
 import { useModal } from '/@/use/modal'

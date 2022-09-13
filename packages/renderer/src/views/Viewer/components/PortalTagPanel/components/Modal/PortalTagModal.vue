@@ -123,8 +123,8 @@ import {
   NScrollbar,
   NTooltip,
   NTag,
-  useMessage
-} from 'naive-ui/es'
+  useMessage,
+} from 'naive-ui'
 import { findIndex } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
 import { useElectron } from '/@/use/electron'
@@ -137,7 +137,7 @@ import useLocale from '/@/use/locale'
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  data: Object
+  data: Object,
 })
 const { browserDialog } = useElectron()
 const message = useMessage()
@@ -153,13 +153,13 @@ const formData = reactive({
   name: '',
   link: '',
   bg: '',
-  fg: ''
+  fg: '',
 })
 const formRules = {
   name: { required: true },
   bg: { required: false },
   fg: { required: false },
-  link: { required: true }
+  link: { required: true },
 }
 
 // ANCHOR --- Computed ---
@@ -197,7 +197,7 @@ const updateModalShow = (show: boolean) => {
 
 const browseFolder = async (): Promise<void> => {
   const res = await browserDialog.open({
-    properties: ['openDirectory']
+    properties: ['openDirectory'],
   })
   formData.link = res.filePaths[0]
 }
@@ -208,7 +208,7 @@ const newPortal = async (exist = null) => {
     id: exist || (await nanoid(10)),
     bg: formData.bg,
     fg: formData.fg,
-    link: formData.link
+    link: formData.link,
   }
 }
 
@@ -236,7 +236,7 @@ const createPortal = async (): Promise<void> => {
         id: await nanoid(10),
         bg: '',
         fg: '',
-        link: folder
+        link: folder,
       }
       portals[groupIndex].childs.push(portal)
     }
@@ -255,7 +255,7 @@ const updatePortal = async () => {
     const portal = await newPortal(props.data.portal.id)
     const groupIndex = findIndex(portals, { id: props.data.groupId })
     const portalIndex = findIndex(portals[groupIndex].childs, {
-      id: props.data.portal.id
+      id: props.data.portal.id,
     })
     portals[groupIndex].childs[portalIndex] = portal
     await updateDBData(portals)

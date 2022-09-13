@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import Draggable from 'vuedraggable'
 import PortalGroup from './PortalGroup.vue'
-import { NScrollbar } from 'naive-ui/es'
+import { NScrollbar } from 'naive-ui'
 import { computed } from '@vue/reactivity'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
@@ -31,7 +31,7 @@ const portals = computed({
     const [, error] = await appStore.SaveToDB({ key: 'portals', data: newData })
     await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
     if (error) alert(error)
-  }
+  },
 })
 </script>
 

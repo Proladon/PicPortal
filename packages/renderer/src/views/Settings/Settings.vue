@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { NMenu, NSpin } from 'naive-ui/es'
+import { NMenu, NSpin } from 'naive-ui'
 import SaveDialog from './components/SaveDialog.vue'
 import GeneralSettings from './GeneralSettings/GeneralSettings.vue'
 import HotKeysSettings from './HotKeysSettings/HotKeysSettings.vue'
