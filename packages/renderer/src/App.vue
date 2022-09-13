@@ -5,7 +5,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useHotkeys } from '/@/use/hotkeys'
 import { onMounted } from '@vue/runtime-core'
 import { useRouter } from 'vue-router'
 import Provider from '/@/components/Provider.vue'
@@ -13,7 +12,6 @@ import { useElectron } from '/@/use/electron'
 import useLocale from '/@/use/locale'
 const { userStore } = useElectron()
 
-const { registerHotkey } = useHotkeys()
 const router = useRouter()
 const { changeLocale } = useLocale()
 
@@ -21,8 +19,6 @@ onMounted(async () => {
   const settings = await userStore.get('settings')
   if (settings) changeLocale(settings.general.locale)
   router.push('/projects')
-
-  registerHotkey()
 })
 </script>
 
