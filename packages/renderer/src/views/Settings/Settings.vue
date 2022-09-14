@@ -15,7 +15,7 @@
         />
         <HotKeysSettings
           v-if="activeTab === 'hotkeys'"
-          v-model:model="formData.general"
+          v-model:model="formData.hotkeys"
         />
       </div>
     </div>
@@ -71,17 +71,17 @@ const generateMenu = () => {
       label: 'Viewer',
       key: 'viewer',
     },
-    // {
-    //   label: 'HotKeys',
-    //   key: 'hotkeys',
-    // },
+    {
+      label: 'HotKeys',
+      key: 'hotkeys',
+    },
   ]
   menuOptions.value = menu
 }
 
 const save = async () => {
   await userStore.set('settings', dataClone(formData))
-  await syncConfig()
+  await syncUserConfig()
   showSave.value = false
 }
 
@@ -90,8 +90,7 @@ const reset = () => {
   Object.assign(formData, dataClone(data))
 }
 
-const syncConfig = async () => {
-  loading.value = true
+const syncUserConfig = async () => {
   const settings = await userStore.get('settings')
 
   if (!settings)
@@ -102,16 +101,20 @@ const syncConfig = async () => {
       viewer: {
         portalPanelPosition: 'right',
       },
+      hotkeys: {},
     })
   changeLocale(settings.general.locale)
+
+  // const cloneSettings =
   Object.assign(formData, dataClone(settings))
   config.value = dataClone(settings)
-  generateMenu()
-  loading.value = false
 }
 
 onMounted(async () => {
-  await syncConfig()
+  loading.value = true
+  await syncUserConfig()
+  generateMenu()
+  loading.value = false
 })
 </script>
 
