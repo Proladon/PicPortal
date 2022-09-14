@@ -2,7 +2,7 @@
   <div>
     <n-input
       readonly
-      v-model:value="keys"
+      v-model:value="syncModel"
       placeholder="press key"
       :on-focus="initEvents"
       :on-blur="destroyEvents"
@@ -13,23 +13,56 @@
 <script setup lang="ts">
 import { NInput } from 'naive-ui'
 import { ref } from 'vue'
+import { get } from 'lodash-es'
+import { computed } from '@vue/reactivity'
+
+const emit = defineEmits(['update:model'])
+const props = defineProps({
+  model: {
+    type: String,
+  },
+})
 
 const keys = ref('')
 const holdingKeys = ref([])
+const holdingCount = ref(0)
+
+const syncModel = computed({
+  get() {
+    return props.model
+  },
+  set(value) {
+    return emit('update:model', value)
+  },
+})
+
+const keyMap = {
+  Control: 'ctl',
+  Escape: 'esc',
+  ArrowRight: 'right',
+  ArrowLeft: 'left',
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+}
 
 const keydownHandler = (e) => {
   if (!e.repeat) {
-    keys.value = ''
-    keys.value = e.key
-    holdingKeys.value.push(e.key)
-    console.log(`${e.key} [event: keydown]`)
+    let key = get(keyMap, e.key, e.key)
+    if (key === 'Tab') return
+    if (key === ' ') key = 'space'
+    syncModel.value = ''
+    holdingCount.value++
+    holdingKeys.value.push(key.toUpperCase())
   }
 }
 
 const keyupHandler = (e) => {
-  console.log(`${e.key} [event: keyup]`)
-  keys.value = holdingKeys.value.join('+')
-  holdingKeys.value = []
+  syncModel.value = holdingKeys.value.join('+')
+  holdingCount.value--
+  if (!holdingCount.value) {
+    holdingKeys.value = []
+    // emit('update', keys.value)
+  }
 }
 
 const initEvents = (e) => {

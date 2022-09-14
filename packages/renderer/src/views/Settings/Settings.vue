@@ -15,7 +15,7 @@
         />
         <HotKeysSettings
           v-if="activeTab === 'hotkeys'"
-          v-model:model="formData.general"
+          v-model:model="formData.hotkeys"
         />
       </div>
     </div>
@@ -101,12 +101,13 @@ const syncUserConfig = async () => {
       viewer: {
         portalPanelPosition: 'right',
       },
+      hotkeys: {},
     })
   changeLocale(settings.general.locale)
 
-  const cloneSettings = dataClone(settings)
-  Object.assign(formData, cloneSettings)
-  config.value = cloneSettings
+  // const cloneSettings =
+  Object.assign(formData, dataClone(settings))
+  config.value = dataClone(settings)
 }
 
 onMounted(async () => {
