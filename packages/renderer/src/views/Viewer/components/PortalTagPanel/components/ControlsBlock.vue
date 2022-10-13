@@ -58,8 +58,9 @@ const portalsCountBadgeBg = computed(() => {
 })
 // ANCHOR Methods
 const resetAvtivatedPortals = async () => {
-  await portalPaneStore.ResetActivePortal()
+  portalPaneStore.ResetActivePortal()
 }
+
 const changeDockingMode = (mode: 'append' | 'override') => {
   portalPaneStore.SetDockingMode(mode)
   dockingMode.value = mode
