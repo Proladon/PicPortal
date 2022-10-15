@@ -21,6 +21,7 @@ export default {
       list: 'List View',
       grid: 'Grid View',
     },
+    randomColor: 'Random Color',
     syncColor: 'Sync Color',
     rename: 'Rename',
   },

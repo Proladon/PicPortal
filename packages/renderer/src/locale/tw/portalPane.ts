@@ -21,6 +21,7 @@ export default {
       list: '列表檢視',
       grid: '網格檢視',
     },
+    randomColor: '隨機顏色',
     syncColor: '同步顏色',
     rename: '重新命名',
   },
