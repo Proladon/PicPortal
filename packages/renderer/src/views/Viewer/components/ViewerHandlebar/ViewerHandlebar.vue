@@ -12,6 +12,9 @@
       >
         <n-icon size="20"><Filter /></n-icon>
       </n-button>
+      <n-button @click="handleRefresh">
+        <n-icon size="20"><Refresh /></n-icon>
+      </n-button>
     </div>
 
     <ViewerFilter class="right-fixed" v-model:show="showFilter" />
@@ -24,10 +27,16 @@ import WrapingButton from './components/WrapingButton.vue'
 import ViewerFilter from './components/ViewerFilter.vue'
 import QuickActions from './components/QuickActions.vue'
 import { NButton, NIcon } from 'naive-ui'
-import { Filter } from '@vicons/ionicons5'
+import { Filter, Refresh } from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
+import { useViewerStore } from '/@/store/viewerStore'
 
 const showFilter = ref(false)
+const viewerStore = useViewerStore()
+
+const handleRefresh = () => {
+  viewerStore.signal.refresh = true
+}
 </script>
 
 <style lang="postcss" scoped>

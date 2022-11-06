@@ -3,7 +3,8 @@ import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'
 import { difference, map, filter, intersection } from 'lodash'
 const { fastGlob, fileSystem } = useElectron()
-import { wrapingQueue } from '/@/queue'
+import { wrapingQueue, filesExistQueue } from '/@/queue'
+import PQueue from 'p-queue'
 
 export type ViewerTypes =
   | 'GridView'
@@ -14,6 +15,9 @@ export type PortalPanelPosition = 'left' | 'right'
 
 interface ViewerStoreState {
   loading: boolean
+  signal: {
+    refresh: boolean
+  }
   lastViewerType: ViewerTypes
   portalPanelPosition: PortalPanelPosition
   folderFiles: any[]
@@ -40,6 +44,9 @@ interface ViewerStoreState {
 export const useViewerStore = defineStore('viewer', {
   state: (): ViewerStoreState => ({
     loading: false, // viewer loading
+    signal: {
+      refresh: false,
+    },
     lastViewerType: 'GridView',
     portalPanelPosition: 'right',
     folderFiles: [],
@@ -126,15 +133,20 @@ export const useViewerStore = defineStore('viewer', {
       if (mode === 'copy') wrapingQueue.add(() => task('copy'))
       if (mode === 'move') wrapingQueue.add(() => task('move'))
     },
-    StartWraping() {
+    PushToFileExistQueue(task: any) {
+      filesExistQueue.add(task)
+    },
+    StartWraping(type: 'normal' | 'fileExist') {
+      let usingQueue = wrapingQueue
+      if (type === 'fileExist') usingQueue = filesExistQueue
       this.wrap.totalWrap = 0
       this.wrap.curWrap = 0
       this.wrap.errWrap = 0
-      this.wrap.totalWrap = wrapingQueue.size
+      this.wrap.totalWrap = usingQueue.size
       this.wrap.wraping = true
       this.wrap.sameOperation.enable = false
       this.wrap.sameOperation.action = null
-      wrapingQueue.start()
+      usingQueue.start()
     },
   },
   getters: {
@@ -144,6 +156,7 @@ export const useViewerStore = defineStore('viewer', {
     showFilesCount(): number {
       return this.showFiles.length
     },
+    // files with filters
     showFiles(): string[] {
       let dockings = this.dockings
       let files = this.folderFiles
@@ -196,13 +209,32 @@ wrapingQueue.on('idle', async () => {
   const viewerStore = useViewerStore()
   const appStore = useAppStore()
   await appStore.DBPullDockings(viewerStore.pullList)
-  viewerStore.wrap.wraping = false
   await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   wrapingQueue.pause()
+  viewerStore.wrap.wraping = false
+  viewerStore.signal.refresh = true
 })
 
 wrapingQueue.on('error', (error) => {
   console.error('queue error', error)
   const viewerStore = useViewerStore()
   viewerStore.wrap.errWrap += 1
+})
+
+let fileExistCount = 0
+filesExistQueue.on('completed', () => {
+  fileExistCount += 1
+  const viewerStore = useViewerStore()
+  viewerStore.wrap.curWrap = fileExistCount
+})
+
+filesExistQueue.on('idle', async () => {
+  fileExistCount = 0
+  const viewerStore = useViewerStore()
+  const appStore = useAppStore()
+  await appStore.DBPullDockings(viewerStore.pullList)
+  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
+  filesExistQueue.pause()
+  viewerStore.wrap.wraping = false
+  viewerStore.signal.refresh = true
 })

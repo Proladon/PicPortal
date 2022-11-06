@@ -47,11 +47,15 @@ const filesExistCount = computed(() => viewerStore.wrap.filesExist.length)
 const filesExist = computed(() => viewerStore.wrap.filesExist[0] || {})
 
 watchEffect(() => {
+  console.log('watch filesExistCount', filesExistCount.value)
   if (filesExistCount.value > 0) {
     setTimeout(() => {
       showFileExistModal.value = true
     }, 400)
-  } else showFileExistModal.value = false
+  } else {
+    showFileExistModal.value = false
+    viewerStore.StartWraping('fileExist')
+  }
 })
 
 const handleFileExistModalClose = () => {

@@ -66,6 +66,7 @@ watch(mainFolder, async () => {
 onMounted(async () => {
   await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
+  viewerStore.signal.refresh = false
 })
 </script>
 

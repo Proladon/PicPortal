@@ -62,7 +62,7 @@ const wraping = async () => {
   })
   viewerStore.UpdatePullList(waitRemove)
   viewerStore.PurgeFiles(waitRemove)
-  viewerStore.StartWraping()
+  viewerStore.StartWraping('normal')
 }
 </script>
 

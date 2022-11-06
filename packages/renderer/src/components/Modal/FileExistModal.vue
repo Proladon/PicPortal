@@ -139,21 +139,19 @@ const renameFile = async (mode: 'move' | 'copy') => {
   const destPath = `${getFileDir(props.data.destPath)}/${newFileName.value}${
     fileExt.value
   }`
-
   const func = mode === 'copy' ? 'copyFile' : 'moveFile'
-
-  const [, err] = await fileSystem[func](filePath, destPath)
-  if (err) {
-    console.log(err)
-    notify.error({
-      content: err,
-    })
-    if (err === 'FILE_EXIST') fileExistError.value = true
-    return
+  const task = async () => {
+    const [, err] = await fileSystem[func](filePath, destPath)
+    if (err) {
+      console.log(err)
+      notify.error({
+        content: err,
+      })
+      if (err === 'FILE_EXIST') fileExistError.value = true
+      return
+    }
   }
-  notify.success({
-    content: '操作成功',
-  })
+  viewerStore.PushToFileExistQueue(task)
   updateModalShow(false)
 }
 
@@ -163,24 +161,23 @@ const renameFileWithNumber = async (mode: 'move' | 'copy') => {
   }
   if (renameError.value) return
   const filePath = props.data.filePath
-  let count = 1
-  let pass = false
-
-  const func = mode === 'copy' ? 'copyFile' : 'moveFile'
-  while (!pass) {
-    const destPath = `${getFileDir(props.data.destPath)}/${
-      newFileName.value
-    }(${count})${fileExt.value}`
-    const [, err] = await fileSystem[func](filePath, destPath)
-    if (err) {
-      if (err === 'FILE_EXIST') count++
+  const dirPath = props.data.destPath
+  const task = async () => {
+    let count = 1
+    let pass = false
+    const func = mode === 'copy' ? 'copyFile' : 'moveFile'
+    while (!pass) {
+      const destPath = `${getFileDir(dirPath)}/${newFileName.value}(${count})${
+        fileExt.value
+      }`
+      const [, err] = await fileSystem[func](filePath, destPath)
+      if (err) {
+        if (err === 'FILE_EXIST') count++
+      }
+      if (!err) pass = true
     }
-    if (!err) pass = true
   }
-
-  notify.success({
-    content: '操作成功',
-  })
+  viewerStore.PushToFileExistQueue(task)
   updateModalShow(false)
 }
 
@@ -196,16 +193,16 @@ const handleDelete = async () => {
     viewerStore.wrap.sameOperation.action = 'delete'
   }
   const filePath = props.data.filePath
-  const [, err] = await fileSystem.deleteFile(filePath)
-  if (err) {
-    notify.error({
-      content: err,
-    })
-    return
+  const task = async () => {
+    const [, err] = await fileSystem.deleteFile(filePath)
+    if (err) {
+      notify.error({
+        content: err,
+      })
+      return
+    }
   }
-  notify.success({
-    content: '操作成功',
-  })
+  viewerStore.PushToFileExistQueue(task)
   updateModalShow(false)
 }
 
@@ -214,19 +211,20 @@ const handleOverride = async () => {
     viewerStore.wrap.sameOperation.action = 'override'
   }
   const filePath = props.data.filePath
-  const destPath = `${getFileDir(props.data.destPath)}/${newFileName.value}${
-    fileExt.value
-  }`
-  const [, err] = await fileSystem.overrideFile(filePath, destPath)
-  if (err) {
-    notify.error({
-      content: err,
-    })
-    return
+  const dirPath = props.data.destPath
+  const task = async () => {
+    const destPath = `${getFileDir(dirPath)}/${newFileName.value}${
+      fileExt.value
+    }`
+    const [, err] = await fileSystem.overrideFile(filePath, destPath)
+    if (err) {
+      notify.error({
+        content: err,
+      })
+      return
+    }
   }
-  notify.success({
-    content: '操作成功',
-  })
+  viewerStore.PushToFileExistQueue(task)
   updateModalShow(false)
 }
 

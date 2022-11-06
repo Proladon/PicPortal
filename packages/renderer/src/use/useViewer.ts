@@ -1,4 +1,4 @@
-import { useMessage } from 'naive-ui'
+import { useMessage, useNotification } from 'naive-ui'
 import { watch } from '@vue/runtime-core'
 import { computed, ref } from '@vue/reactivity'
 import { dataClone } from '/@/utils/data'
@@ -16,6 +16,7 @@ const useViewer = (
   const viewerStore = useViewerStore()
   const portalPaneStore = usePortalPaneStore()
   const message = useMessage()
+  const notify = useNotification()
 
   const loading = ref(false)
   const pngs = ref<unknown>([])
@@ -30,23 +31,43 @@ const useViewer = (
   const wrapingStatus = computed(() => viewerStore.wrap.wraping)
   const dockingMode = computed(() => portalPaneStore.dockingMode)
   const showFiles = computed(() => viewerStore.showFiles)
-  const showFilesCount = computed(() => viewerStore.showFilesCount)
+  const refreshSignal = computed(() => viewerStore.signal.refresh)
 
-  watch(showFilesCount, async () => {
-    console.log('showFiles')
-    if (wrapingStatus.value) return
-    await chunkFiles()
+  watch(refreshSignal, async () => {
+    if (refreshSignal.value) {
+      console.log('refresh')
+      await chunkFiles()
+      viewerStore.signal.refresh = false
+      // notify.success({
+      //   title: 'Refresh done',
+      //   duration: 1000,
+      // })
+    }
   })
-  watch(filesCount, async () => {
-    console.log('filesCount')
-    if (wrapingStatus.value) return
-    await chunkFiles()
-  })
-  watch(wrapingStatus, async () => {
-    console.log('wrapingStatus')
-    if (wrapingStatus.value) return
-    await chunkFiles()
-  })
+
+  watch(
+    viewerStore.filter,
+    async () => {
+      viewerStore.signal.refresh = true
+    },
+    { deep: true }
+  )
+
+  // watch(showFiles, async () => {
+  //   console.log('showFiles')
+  //   if (wrapingStatus.value) return
+  //   await chunkFiles()
+  // })
+  // watch(filesCount, async () => {
+  //   console.log('filesCount')
+  //   if (wrapingStatus.value) return
+  //   await chunkFiles()
+  // })
+  // watch(wrapingStatus, async () => {
+  //   console.log('wrapingStatus')
+  //   if (wrapingStatus.value) return
+  //   await chunkFiles()
+  // })
 
   // docking protals
   const selectItem = async (e: any, row: any): Promise<void> => {
