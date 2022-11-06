@@ -17,6 +17,14 @@ const fileSystem = {
     const res = ipcRenderer.invoke('Move-File', filePath, destPath)
     return res
   },
+  deleteFile(filePath: string) {
+    const res = ipcRenderer.invoke('Delete-File', filePath)
+    return res
+  },
+  overrideFile(filePath: string, destPath: string) {
+    const res = ipcRenderer.invoke('Override-File', filePath, destPath)
+    return res
+  },
   checkExist(filePath: string) {
     const res = ipcRenderer.invoke('Check-Exist', filePath)
     return res

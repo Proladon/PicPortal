@@ -44,6 +44,26 @@ const fileSystem = () => {
     }
   })
 
+  ipc.handle('Delete-File', async (e, filePath: string) => {
+    try {
+      const exist = await fs.pathExists(filePath)
+      if (!exist) return ['ok', null]
+      await fs.remove(filePath)
+      return ['ok', null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
+  ipc.handle('Override-File', async (e, filePath: string, destPath: string) => {
+    try {
+      await fs.move(filePath, destPath, { overwrite: true })
+      return ['ok', null]
+    } catch (error) {
+      return [null, error]
+    }
+  })
+
   ipc.handle('Check-Exist', async (e, filePath) => {
     try {
       const res: any = await fs.pathExists(filePath)

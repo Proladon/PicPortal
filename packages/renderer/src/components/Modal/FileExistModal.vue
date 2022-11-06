@@ -24,7 +24,7 @@
           以下 {{ viewerStore.wrap.filesExist.length }} 個檔案皆同樣操作
         </n-checkbox>
       </div>
-      <div v-if="!rename" class="flex justify-between gap-[20px]">
+      <div v-if="!rename" class="grid grid-cols-5 gap-[20px]">
         <n-button
           :disabled="viewerStore.wrap.sameOperation.enable"
           class="option-btn"
@@ -41,6 +41,22 @@
           @click="renameFileWithNumber(data.mode)"
         >
           檔名 +(1)
+        </n-button>
+        <n-button
+          class="option-btn"
+          type="error"
+          secondary
+          @click="handleDelete"
+        >
+          刪除檔案
+        </n-button>
+        <n-button
+          class="option-btn"
+          type="warning"
+          secondary
+          @click="handleOverride"
+        >
+          覆蓋
         </n-button>
         <n-button class="option-btn" secondary @click="handleSkip">
           忽略
@@ -175,11 +191,52 @@ const handleSkip = () => {
   updateModalShow(false)
 }
 
+const handleDelete = async () => {
+  if (viewerStore.wrap.sameOperation.enable) {
+    viewerStore.wrap.sameOperation.action = 'delete'
+  }
+  const filePath = props.data.filePath
+  const [, err] = await fileSystem.deleteFile(filePath)
+  if (err) {
+    notify.error({
+      content: err,
+    })
+    return
+  }
+  notify.success({
+    content: '操作成功',
+  })
+  updateModalShow(false)
+}
+
+const handleOverride = async () => {
+  if (viewerStore.wrap.sameOperation.enable) {
+    viewerStore.wrap.sameOperation.action = 'override'
+  }
+  const filePath = props.data.filePath
+  const destPath = `${getFileDir(props.data.destPath)}/${newFileName.value}${
+    fileExt.value
+  }`
+  const [, err] = await fileSystem.overrideFile(filePath, destPath)
+  if (err) {
+    notify.error({
+      content: err,
+    })
+    return
+  }
+  notify.success({
+    content: '操作成功',
+  })
+  updateModalShow(false)
+}
+
 onMounted(() => {
   newFileName.value = getFileName(props.data.destPath)
   if (viewerStore.wrap.sameOperation.enable) {
     const action = viewerStore.wrap.sameOperation.action
     if (action === 'plusNum') renameFileWithNumber(props.data.mode)
+    else if (action === 'delete') handleDelete()
+    else if (action === 'override') handleOverride()
     else if (action === 'skip') updateModalShow(false)
     return
   }

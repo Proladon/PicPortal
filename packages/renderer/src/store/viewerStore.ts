@@ -26,7 +26,7 @@ interface ViewerStoreState {
     filesExist: any[]
     sameOperation: {
       enable: boolean
-      action: null | 'skip' | 'plusNum'
+      action: null | 'skip' | 'plusNum' | 'delete' | 'override'
     }
   }
   pullList: any[]
