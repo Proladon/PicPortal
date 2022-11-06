@@ -11,7 +11,7 @@
       :style="`grid-template-columns: repeat(auto-fit, minmax(${imgSize}px, 1fr));`"
     >
       <GridItem
-        v-for="item in pngs[page - 1].src"
+        v-for="item in itemsList"
         :key="item"
         :img="item.path"
         @click="selectItem($event, item)"
@@ -29,11 +29,11 @@
 
 <script lang="ts" setup>
 import GridItem from './components/GridItem.vue'
-import { ref } from '@vue/reactivity'
+import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { NScrollbar, NPagination, NEmpty, NSpin } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
-import { chunk, map } from 'lodash-es'
+import { chunk, map, get } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
 
@@ -42,12 +42,18 @@ const viewerStore = useViewerStore()
 // --- Data ---
 const imgSize = ref(150)
 
+const itemsList = computed(() => {
+  const list = get(pngs.value[page.value - 1], 'src')
+  if (!list) return get(pngs.value[0], 'src', [])
+  return list
+})
+
 // --- Methods ---
 const chunkFiles = async () => {
   loading.value = true
   await viewerStore.GetFolderAllFiles({})
   const files = map(showFiles.value, (path) => ({ path: path }))
-  const filesChunkList = chunk(files, perPage.value)
+  const filesChunkList = chunk(files, viewerStore.gridView.perPage)
   const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
   pngs.value = newData
   loading.value = false

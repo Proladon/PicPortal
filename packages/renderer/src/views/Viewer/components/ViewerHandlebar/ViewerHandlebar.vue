@@ -15,6 +15,10 @@
       <n-button @click="handleRefresh">
         <n-icon size="20"><Refresh /></n-icon>
       </n-button>
+      <n-input-number
+        v-model:value="viewerStore.gridView.perPage"
+        @change="viewerStore.signal.refresh = true"
+      />
     </div>
 
     <ViewerFilter class="right-fixed" v-model:show="showFilter" />
@@ -26,7 +30,7 @@ import ViewModeSwitcher from './components/ViewModeSwitcher.vue'
 import WrapingButton from './components/WrapingButton.vue'
 import ViewerFilter from './components/ViewerFilter.vue'
 import QuickActions from './components/QuickActions.vue'
-import { NButton, NIcon } from 'naive-ui'
+import { NButton, NIcon, NInputNumber } from 'naive-ui'
 import { Filter, Refresh } from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
 import { useViewerStore } from '/@/store/viewerStore'

@@ -39,6 +39,9 @@ interface ViewerStoreState {
     portals: string[]
     fileTypes: string[]
   }
+  gridView: {
+    perPage: number
+  }
 }
 
 export const useViewerStore = defineStore('viewer', {
@@ -67,6 +70,9 @@ export const useViewerStore = defineStore('viewer', {
       onlyDockings: false,
       portals: [],
       fileTypes: [],
+    },
+    gridView: {
+      perPage: 20,
     },
   }),
   actions: {

@@ -9,6 +9,7 @@
         v-model:value="selectedPortals"
         multiple
         filterable
+        clearable
         :placeholder="
           translate('viewer.viewerFilter.filterPortals.placeholder')
         "
@@ -18,6 +19,7 @@
         v-model:value="selectedFileTypes"
         multiple
         filterable
+        clearable
         :placeholder="
           translate('viewer.viewerFilter.filterFilesTypes.placeholder')
         "
