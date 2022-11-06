@@ -49,6 +49,15 @@
               <span>{{ translate('portalPane.portalGroup.view.grid') }}</span>
             </div>
             <n-divider class="!my-2" />
+            <div
+              class="portal-group-popover-item"
+              @click="randomGroupPortalColor(groupData.id)"
+            >
+              <n-icon>
+                <ColorFill />
+              </n-icon>
+              <span>{{ translate('portalPane.portalGroup.randomColor') }}</span>
+            </div>
             <div class="portal-group-popover-item">
               <n-icon>
                 <ColorFill />
@@ -98,7 +107,7 @@
       :animation="300"
       :class="{
         'list-view': listView === 'list',
-        'grid-view': listView === 'grid'
+        'grid-view': listView === 'grid',
       }"
     >
       <template #item="{ element }">
@@ -141,19 +150,19 @@ import {
   PencilSharp,
   ColorFill,
   ListSharp,
-  Grid
+  Grid,
 } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
 import PortalTag from './PortalTag.vue'
 import PortalTagModal from './Modal/PortalTagModal.vue'
-import { filter, findIndex } from 'lodash-es'
+import { filter, findIndex, find, random } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
 // --- Data ---
 const props = defineProps({
-  groupData: Object
+  groupData: Object,
 })
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
@@ -189,10 +198,10 @@ const groupPortals = computed({
 
     await appStore.DeepSaveToDB({
       key: `[portals][${groupIndex}][childs]`,
-      data: newData
+      data: newData,
     })
     await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
-  }
+  },
 })
 const showPortalGroup = computed(() => {
   if (searchPortalName.value && !groupPortals.value.length) return false
@@ -226,7 +235,7 @@ const deleteGroup = async (groupId: any) => {
   // TODO background task
   for (let t = 0; t < needDelete.length; t++) {
     const index = findIndex(activePortals.value, {
-      group: needDelete[t].group
+      group: needDelete[t].group,
     })
     portalPaneStore.RemoveActivePortal(index)
   }
@@ -234,6 +243,19 @@ const deleteGroup = async (groupId: any) => {
 
 const updatePopOver = (show: boolean) => {
   showPopOver.value = show
+}
+
+const randomGroupPortalColor = async (groupId: string) => {
+  const protals: PortalGroup[] = dataClone(portalsData.value)
+  const groupIndex = findIndex(protals, { id: groupId })
+  if (groupIndex < 0) return
+  protals[groupIndex].childs.forEach((portal: Portal) => {
+    portal.bg = `rgb(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)})`
+    portal.fg = `rgb(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)})`
+  })
+  await appStore.SaveToDB({ key: 'portals', data: protals })
+  await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
+  updatePopOver(false)
 }
 </script>
 
