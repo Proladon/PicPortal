@@ -8,12 +8,18 @@ export const DBQueue = new PQueue({ concurrency: 1 })
 interface AppStoreState {
   openProject: null | Project
   dbData: null | DBData
+  commander: {
+    portal: boolean
+  }
 }
 
 export const useAppStore = defineStore('app', {
   state: (): AppStoreState => ({
     openProject: null,
-    dbData: null
+    dbData: null,
+    commander: {
+      portal: false,
+    },
   }),
   actions: {
     SetOpenProject(project: Project) {
@@ -58,7 +64,7 @@ export const useAppStore = defineStore('app', {
     },
 
     async SyncDBDataToState({
-      syncKeys
+      syncKeys,
     }: {
       syncKeys: Array<'project' | 'portals' | 'mainFolder' | 'dockings'>
     }) {
@@ -68,7 +74,7 @@ export const useAppStore = defineStore('app', {
         if (getError) return alert(getError)
         this.dbData[key] = getRes
       }
-    }
+    },
   },
   getters: {
     projectName(): string {
@@ -76,6 +82,6 @@ export const useAppStore = defineStore('app', {
     },
     projectMainFolder(): MainFolder | Record<string, never> {
       return this.dbData?.mainFolder || {}
-    }
-  }
+    },
+  },
 })

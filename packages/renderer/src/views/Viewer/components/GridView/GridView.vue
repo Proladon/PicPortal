@@ -44,6 +44,7 @@ const imgSize = computed(() => viewerStore.gridView.imgSize)
 const itemsList = computed(() => {
   const list = get(pngs.value[page.value - 1], 'src')
   if (!list) return get(pngs.value[0], 'src', [])
+  // FIXME set page to 0
   return list
 })
 

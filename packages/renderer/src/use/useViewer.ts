@@ -34,7 +34,7 @@ const useViewer = (
   const refreshSignal = computed(() => viewerStore.signal.refresh)
 
   watch(refreshSignal, async () => {
-    if (refreshSignal.value) {
+    if (refreshSignal.value && !viewerStore.wrap.wraping) {
       console.log('refresh')
       await chunkFiles()
       viewerStore.signal.refresh = false
