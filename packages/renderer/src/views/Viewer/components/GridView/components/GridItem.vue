@@ -26,7 +26,12 @@
     <n-button text class="magnifier" @click="openViewer(img)">
       <NIcon size="20"><ExpandOutline /></NIcon>
     </n-button>
-    <img class="!w-full" :src="`local-resource://${img}`" loading="lazy" />
+    <img
+      class="!w-full"
+      :style="`width: ${imgSize}px; height: ${imgSize}px`"
+      :src="`local-resource://${img}`"
+      loading="lazy"
+    />
   </div>
 </template>
 
@@ -57,6 +62,7 @@ const target = ref<any>(null)
 
 const dockings = computed(() => viewerStore.dockings)
 const flattenPortals = computed(() => portalPanelStore.flattenPortals)
+const imgSize = computed(() => viewerStore.gridView.imgSize)
 
 // => 移除圖片上的 portal
 const removePortal = async (portal: any) => {
@@ -123,7 +129,7 @@ onMounted(() => {
   }
 }
 img {
-  @apply h-[150px] w-[150px] object-cover rounded-md;
+  @apply object-cover rounded-md;
 }
 
 .portals {

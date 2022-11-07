@@ -18,7 +18,7 @@
       />
     </div>
   </n-scrollbar>
-  <div v-if="pngs.length && !loading" class="pagination-container">
+  <div v-if="pngs.length > 1 && !loading" class="pagination-container">
     <n-pagination
       v-model:page="page"
       :page-count="pngs.length"
@@ -39,9 +39,8 @@ import { useViewerStore } from '/@/store/viewerStore'
 
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
-// --- Data ---
-const imgSize = ref(150)
 
+const imgSize = computed(() => viewerStore.gridView.imgSize)
 const itemsList = computed(() => {
   const list = get(pngs.value[page.value - 1], 'src')
   if (!list) return get(pngs.value[0], 'src', [])

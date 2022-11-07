@@ -41,6 +41,7 @@ interface ViewerStoreState {
   }
   gridView: {
     perPage: number
+    imgSize: number
   }
 }
 
@@ -73,6 +74,7 @@ export const useViewerStore = defineStore('viewer', {
     },
     gridView: {
       perPage: 20,
+      imgSize: 150,
     },
   }),
   actions: {
