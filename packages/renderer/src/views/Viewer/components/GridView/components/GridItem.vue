@@ -1,5 +1,5 @@
 <template>
-  <div class="image-item">
+  <div class="image-item" @contextmenu="openViewer(img)">
     <div class="portals" v-if="targetPortals.length">
       <div class="portal-tag-list">
         <NPopover v-for="portal in targetPortals" :key="portal.id">
@@ -23,16 +23,7 @@
       </div>
     </div>
 
-    <n-button
-      text
-      class="magnifier"
-      @click="
-        viewerApi({
-          options: { navbar: false },
-          images: [`local-resource://${img}`],
-        })
-      "
-    >
+    <n-button text class="magnifier" @click="openViewer(img)">
       <NIcon size="20"><ExpandOutline /></NIcon>
     </n-button>
     <img class="!w-full" :src="`local-resource://${img}`" loading="lazy" />
@@ -46,7 +37,7 @@ import { NButton, NTag, NPopover, NIcon } from 'naive-ui'
 import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull, compact } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
-import { api as viewerApi } from 'v-viewer'
+import { openViewer } from '/@/utils/image'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { useViewerStore } from '/@/store/viewerStore'
