@@ -194,6 +194,9 @@ onMounted(() => {
 
 .portal-tag-option {
   @apply flex items-center gap-2 cursor-pointer px-3;
-  @apply hover:bg-[var(--border-1)] hover:text-[var(--primary-bg-1)];
+  @apply hover:(text-dark bg-primary);
+}
+.portal-tag-option:hover span {
+  @apply text-dark;
 }
 </style>

@@ -1,9 +1,24 @@
 :root {
+  
+  --primary: #91b4c0;
+  --secondary: #ccc0b8;
+  /* bg */
   --primary-bg: #272b36;
   --secondary-bg: #333a46;
-  --skyblue: #91b4c0;
+  /* text */
+  --base: #ccc0b8;
+  --dark: #272b36;
+  /* status */
+  --disable: #71717A;
+  --error: #fda4af,
+  --success: #a7f3d0;
+  --warning: #fdba74;
+  --info: #bae6fd;
+
+
+
   --border-1: #ccc0b8;
   --primary-font: #ccc0b8;
-
+  --primary-green: #63e2b7,
   --status-bar-height: '20px';
 }

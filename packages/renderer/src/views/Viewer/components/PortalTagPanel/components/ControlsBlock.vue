@@ -75,7 +75,6 @@ const changeDockingMode = (mode: 'append' | 'override') => {
 
 <style lang="postcss" scoped>
 .controls-block {
-  /* @apply border-border border-1 m-5 rounded-md p-2; */
   @apply mb-5 flex gap-5 justify-center flex-col;
 }
 

@@ -1,14 +1,14 @@
 .n-pagination-item {
-  @apply !text-[var(--border-1)];
+  @apply !text-secondary;
 }
 
 .n-pagination-item--button {
-  @apply !border-[var(--border-1)];
+  @apply !border-secondary;
 }
 
 .n-pagination-item--active {
-  @apply !text-[var(--primary-bg-1)] !bg-[var(--border-1)]  !border-[var(--border-1)];
+  @apply !text-dark !bg-primary  !border-primary;
 }
 .n-pagination-item--disabled {
-  @apply !text-[var(--border-1)] !bg-transparent opacity-30;
+  @apply !text-primary !bg-transparent opacity-30;
 }

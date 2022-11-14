@@ -288,6 +288,9 @@ const randomGroupPortalColor = async (groupId: string) => {
 
 .portal-group-popover-item {
   @apply flex items-center gap-2 cursor-pointer px-3;
-  @apply hover:bg-[var(--border-1)] hover:text-primary-bg;
+  @apply hover:(text-dark bg-primary);
+}
+.portal-group-popover-item:hover span {
+  @apply text-dark;
 }
 </style>

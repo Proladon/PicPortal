@@ -99,7 +99,6 @@ const viewerTypes = ['GridView', 'VirtualGrid', 'VirtualList', 'FocusView']
   @apply relative;
 }
 .nav--actived::after {
-  /* @apply bg-[var(--border-1)]; */
   content: '';
   @apply absolute left-0 h-auto top-0 bottom-0 w-[4px] bg-emerald-300;
   @apply transition duration-300 ease-in;
