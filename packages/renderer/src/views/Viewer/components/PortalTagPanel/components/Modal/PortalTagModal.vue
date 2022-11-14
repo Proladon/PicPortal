@@ -54,19 +54,10 @@
           :tab="translate('portalPane.portalModal.mode.drop')"
           class="flex flex-col h-full"
         >
-          <n-button
-            class="cursor-default h-full"
+          <DropZone
             :class="{ 'drop-zone-collapse': dropList.length }"
-            dashed
-            block
-            @drop="drop"
-            @dragenter.prevent
-            @dragover.prevent
-          >
-            <n-icon size="24" :depth="3">
-              <Archive />
-            </n-icon>
-          </n-button>
+            @drop="onDrop"
+          />
           <n-scrollbar class="mt-[10px]">
             <div class="folder-list">
               <n-tooltip
@@ -133,6 +124,7 @@ import { getFileName } from '/@/utils/file'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
+import DropZone from '/@/components/DropZone.vue'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -264,19 +256,14 @@ const updatePortal = async () => {
   })
 }
 
-const drop = (e) => {
+const onDrop = (files: File[] | null) => {
   const ignore = ['image', 'video', 'audio']
-  // Get every
-  for (let i of e.dataTransfer.items) {
-    if (i.kind !== 'file' || ignore.includes(i.type.split('/')[0])) {
-      // Error not folder
-      message.error('Only support folder !')
-      return
-    } else {
-      dropList.value.push(i.getAsFile().path)
+  if (!files) return
+  for (const f of files) {
+    if (!ignore.includes(f.type.split('/')[0])) {
+      dropList.value.push(f.path)
     }
   }
-  // Check Repeat
 }
 
 onMounted(() => {
