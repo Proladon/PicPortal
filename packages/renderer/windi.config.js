@@ -19,11 +19,6 @@ export default defineConfig({
         success: 'var(--success)',
         warning: 'var(--warning)',
         info: 'var(--info)',
-
-        border: '#CCC0B8',
-        darkBlue: '#333A46',
-        'primary-bg': 'var(--primary-bg)',
-        'secondary-bg': 'var(--secondary-bg)',
       },
       height: {
         statusbar: '30px',

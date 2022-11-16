@@ -41,7 +41,9 @@ import { onMounted } from '@vue/runtime-core'
 import { isEqual } from 'lodash-es'
 import { watch } from '@vue/runtime-core'
 import { dataClone } from '/@/utils/data'
+import { useTheme } from '/@/use/theme'
 
+const { setTheme } = useTheme()
 const { translate, changeLocale } = useLocale()
 const { userStore } = useElectron()
 
@@ -88,6 +90,7 @@ const save = async () => {
 const reset = () => {
   const data = config.value
   Object.assign(formData, dataClone(data))
+  setTheme(formData.general.theme)
 }
 
 const syncUserConfig = async () => {
@@ -97,6 +100,7 @@ const syncUserConfig = async () => {
     await userStore.set('settings', {
       general: {
         locale: 'en',
+        theme: 'picportal',
       },
       viewer: {
         portalPanelPosition: 'right',
@@ -104,6 +108,7 @@ const syncUserConfig = async () => {
       hotkeys: {},
     })
   changeLocale(settings.general.locale)
+  setTheme(settings.general.theme)
 
   // const cloneSettings =
   Object.assign(formData, dataClone(settings))

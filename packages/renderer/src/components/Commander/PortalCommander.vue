@@ -97,7 +97,7 @@ onMounted(() => {
 }
 
 .selected {
-  @apply bg-border text-darkBlue rounded-sm;
+  @apply bg-border text-dark rounded-sm;
 }
 
 .search-input {

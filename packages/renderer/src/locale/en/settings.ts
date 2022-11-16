@@ -2,6 +2,7 @@ export default {
   saveWarning: 'Unsave changes',
   general: {
     title: 'General',
-    language: 'Language'
-  }
+    language: 'Language',
+    theme: 'Theme',
+  },
 }
