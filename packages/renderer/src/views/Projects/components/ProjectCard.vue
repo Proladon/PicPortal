@@ -117,7 +117,7 @@ const deleteProject = async () => {
 <style lang="postcss" scoped>
 .project-card {
   @apply w-[150px] h-[200px] flex flex-col justify-between;
-  @apply bg-gray-600 p-[10px] rounded-[4px] text-left cursor-pointer shadow-xl;
+  @apply bg-tertiary-bg p-[10px] rounded-[4px] text-left cursor-pointer shadow-xl;
   @apply transition duration-500 ease-in-out;
   @apply border border-1  border-transparent hover:( border-emerald-200 );
 }

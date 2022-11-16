@@ -10,6 +10,8 @@ export default defineConfig({
         /* bg */
         'primary-bg': 'var(--primary-bg)',
         'secondary-bg': 'var(--secondary-bg)',
+        'tertiary-bg': 'var(--tertiary-bg)',
+        'variant-bg': 'var(--variant-bg)',
         /* text */
         base: 'var(--base)',
         dark: 'var(--dark)',

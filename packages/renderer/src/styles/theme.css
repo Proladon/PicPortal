@@ -8,6 +8,8 @@
   /* bg */
   --primary-bg: #272b36;
   --secondary-bg: #333a46;
+  --tertiary-bg: #4b5563;
+  --variant-bg: #1f2937;
   /* text */
   --base: #ccc0b8;
   --dark: #272b36;
@@ -20,11 +22,13 @@
 }
 
 [data-theme='naive'] {
-  --primary: #91b4c0;
+  --primary: #63e2b7;
   --secondary: #ccc0b8;
   /* bg */
-  --primary-bg: #101014;
-  --secondary-bg: #18181c;
+  --primary-bg: #18181C;
+  --secondary-bg: #18181C;
+  --tertiary-bg: #262629;
+  --variant-bg: #303033;
   /* text */
   --base: #ffffff;
   --dark: #272b36;

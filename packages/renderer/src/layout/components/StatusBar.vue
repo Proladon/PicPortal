@@ -137,7 +137,7 @@ const changeMainFolder = () => {
 <style lang="postcss" scoped>
 .status-bar {
   @apply flex items-center justify-between;
-  @apply h-statusbar bg-gray-800;
+  @apply h-statusbar bg-variant-bg;
 }
 
 .main-folder-btn,

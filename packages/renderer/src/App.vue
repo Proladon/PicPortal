@@ -13,15 +13,23 @@ import { onMounted } from '@vue/runtime-core'
 import { useRouter } from 'vue-router'
 import PortalCommander from './components/Commander/PortalCommander.vue'
 import { useAppStore } from './store/appStore'
+import { useElectron } from './use/electron'
 import Provider from '/@/components/Provider.vue'
 import useInit from '/@/use/init'
+import { useTheme } from '/@/use/theme'
 
+const { userStore } = useElectron()
+
+const { setTheme } = useTheme()
 const router = useRouter()
 const appStore = useAppStore()
 const { init } = useInit()
 
 onMounted(async () => {
   await init()
+
+  const settings = await userStore.get('settings')
+  setTheme(settings.general.theme)
   router.push('/projects')
 })
 </script>

@@ -80,7 +80,7 @@ const viewerTypes = ['GridView', 'VirtualGrid', 'VirtualList', 'FocusView']
 .navbar {
   width: 50px;
   @apply flex flex-col justify-between items-center py-5 flex-shrink-0;
-  @apply bg-gray-600;
+  @apply bg-tertiary-bg;
 }
 
 .nav-list {

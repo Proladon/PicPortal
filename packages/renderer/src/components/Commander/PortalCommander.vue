@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { NModal } from 'naive-ui'
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch, nextTick } from 'vue'
 import { useModal } from '/@/use/modal'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
@@ -40,6 +40,12 @@ const { updateModalShow, showModal } = useModal(emit)
 
 const searchPortalName = ref('')
 const selectIndex = ref(0)
+
+watch(selectIndex, async () => {
+  await nextTick()
+  const a = document.querySelector('.selected')
+  a?.scrollIntoView()
+})
 
 const matchPrtals = computed(() => {
   if (searchPortalName.value === '*') return portalPaneStore.flattenPortals
@@ -97,7 +103,7 @@ onMounted(() => {
 }
 
 .selected {
-  @apply bg-border text-dark rounded-sm;
+  @apply bg-primary text-dark rounded-sm;
 }
 
 .search-input {
