@@ -261,7 +261,7 @@ const randomGroupPortalColor = async (groupId: string) => {
 
 <style lang="postcss" scoped>
 .portal-group {
-  @apply flex flex-col text-[var(--primary-font)];
+  @apply flex flex-col text-base;
   @apply border border-1 border-transparent;
 }
 

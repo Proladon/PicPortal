@@ -43,7 +43,7 @@ const maxWin = async () => {
 }
 
 .app-name {
-  @apply text-[var(--primary-font)] font-bold;
+  @apply text-base font-bold;
 }
 
 .min,
