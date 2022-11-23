@@ -18,7 +18,7 @@
           :key="portal.id"
           :class="isSelected(index)"
         >
-          {{ portal.name }}
+          {{ portal.name }} ({{ portal.group.group }})
         </div>
       </div>
     </div>

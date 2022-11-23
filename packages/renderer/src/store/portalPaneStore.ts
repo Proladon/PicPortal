@@ -12,7 +12,7 @@ export const usePortalPaneStore = defineStore('portalPane', {
   state: (): PortalPaneStoreState => ({
     activePortals: [],
     dockingMode: 'append',
-    searchPortalName: ''
+    searchPortalName: '',
   }),
   actions: {
     AddActivedPortal(portal: ActivePortalRef) {
@@ -26,7 +26,7 @@ export const usePortalPaneStore = defineStore('portalPane', {
     },
     SetDockingMode(mode: 'append' | 'override') {
       this.dockingMode = mode
-    }
+    },
   },
   getters: {
     portals(): PortalGroup[] {
@@ -35,10 +35,18 @@ export const usePortalPaneStore = defineStore('portalPane', {
       return appStore.dbData.portals
     },
     flattenPortals() {
-      const portals: any = this.portals
-      const childs = map(portals, 'childs')
-      const flattenChilds = flatten(childs)
-      return flattenChilds
-    }
-  }
+      const portalGroups: any = this.portals
+      const portals: Portal[] = []
+      portalGroups.forEach((group: PortalGroup) => {
+        const childs = map(group.childs, (p) => ({
+          group,
+          ...p,
+        }))
+        portals.push(...childs)
+      })
+      // const childs = map(portals, 'childs')
+      // const flattenChilds = flatten(childs)
+      return portals
+    },
+  },
 })

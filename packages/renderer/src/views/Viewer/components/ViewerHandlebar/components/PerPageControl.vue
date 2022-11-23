@@ -6,7 +6,7 @@
         :max="100"
         :min="10"
         v-model:value="viewerStore.gridView.perPage"
-        @change="viewerStore.signal.refresh = true"
+        :on-update:value="onChange"
       />
     </template>
     items perpage
@@ -17,6 +17,11 @@
 import { NInputNumber, NTooltip } from 'naive-ui'
 import { useViewerStore } from '/@/store/viewerStore'
 const viewerStore = useViewerStore()
+
+const onChange = (val: number) => {
+  viewerStore.gridView.perPage = val
+  viewerStore.signal.refresh = true
+}
 </script>
 
 <style scoped lang="postcss"></style>
