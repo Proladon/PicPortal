@@ -19,7 +19,7 @@ export default () => {
         event.preventDefault()
         portalPaneStore.ResetActivePortal()
       })
-      hotkeys('f2', (event) => {
+      hotkeys('f2', 'viewer', (event) => {
         event.preventDefault()
         appStore.commander.portal = true
       })

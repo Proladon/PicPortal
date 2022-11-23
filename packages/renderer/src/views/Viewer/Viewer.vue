@@ -35,8 +35,9 @@ import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed, ref } from '@vue/reactivity'
-import { onMounted, watchEffect } from 'vue'
+import { onMounted, onUnmounted, watchEffect } from 'vue'
 import { useAppStore } from '/@/store/appStore'
+import hotkeys from 'hotkeys-js'
 
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
@@ -65,7 +66,12 @@ const handleFileExistModalClose = () => {
 }
 
 onMounted(() => {
+  hotkeys.setScope('viewer')
   if (!appStore.openProject) showOpenProjectModal.value = true
+})
+
+onUnmounted(() => {
+  hotkeys.setScope('all')
 })
 </script>
 
