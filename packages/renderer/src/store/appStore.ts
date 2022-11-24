@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { useElectron } from '/@/use/electron'
 import { map } from 'lodash-es'
+import { GlobalThemeOverrides } from 'naive-ui'
 const { database } = useElectron()
 import PQueue from 'p-queue'
 export const DBQueue = new PQueue({ concurrency: 1 })
@@ -11,6 +12,7 @@ interface AppStoreState {
   commander: {
     portal: boolean
   }
+  theme: GlobalThemeOverrides
 }
 
 export const useAppStore = defineStore('app', {
@@ -20,6 +22,7 @@ export const useAppStore = defineStore('app', {
     commander: {
       portal: false,
     },
+    theme: {},
   }),
   actions: {
     SetOpenProject(project: Project) {

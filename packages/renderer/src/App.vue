@@ -9,14 +9,15 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from '@vue/runtime-core'
 import { useRouter } from 'vue-router'
-import PortalCommander from './components/Commander/PortalCommander.vue'
-import { useAppStore } from './store/appStore'
-import { useElectron } from './use/electron'
+import { onMounted } from '@vue/runtime-core'
+import PortalCommander from '/@/components/Commander/PortalCommander.vue'
 import Provider from '/@/components/Provider.vue'
+
 import useInit from '/@/use/init'
 import { useTheme } from '/@/use/theme'
+import { useElectron } from '/@/use/electron'
+import { useAppStore } from '/@/store/appStore'
 
 const { userStore } = useElectron()
 

@@ -1,6 +1,10 @@
 <template>
   <!-- <NThemeEditor> -->
-  <n-config-provider :theme="darkTheme" class="h-full">
+  <n-config-provider
+    :theme="darkTheme"
+    class="h-full"
+    :theme-overrides="appStore.theme"
+  >
     <n-global-style />
     <!-- <n-loading-bar-provider> -->
     <n-notification-provider placement="top-right">
@@ -23,7 +27,11 @@ import {
   NMessageProvider,
   NDialogProvider,
   darkTheme,
+  NThemeEditor,
 } from 'naive-ui'
+import { useAppStore } from '/@/store/appStore'
+
+const appStore = useAppStore()
 </script>
 
 <style lang="postcss" scoped></style>
