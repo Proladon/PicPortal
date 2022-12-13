@@ -12,12 +12,22 @@
             v-model:value="formData.name"
           />
         </n-form-item>
-        <n-button v-if="mode === 'edit'" @click="updatePortalGroup">{{
-          translate('common.update')
-        }}</n-button>
-        <n-button v-if="mode === 'create'" @click="createPortalGroup">{{
-          translate('common.create')
-        }}</n-button>
+        <n-button
+          v-if="mode === 'edit'"
+          secondary
+          block
+          type="primary"
+          @click="updatePortalGroup"
+          >{{ translate('common.update') }}</n-button
+        >
+        <n-button
+          v-if="mode === 'create'"
+          secondary
+          block
+          type="primary"
+          @click="createPortalGroup"
+          >{{ translate('common.create') }}</n-button
+        >
       </n-form>
     </div>
   </n-modal>

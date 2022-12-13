@@ -143,7 +143,7 @@ const changeMainFolder = () => {
 .main-folder-btn,
 .open-project-btn {
   @apply h-full px-5 outline-none;
-  @apply text-border hover:bg-border hover:text-gray-800;
+  @apply text-base hover:(text-primary);
   transition: ease-in-out 0.3s;
 }
 

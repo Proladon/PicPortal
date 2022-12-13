@@ -35,7 +35,7 @@
           <n-color-picker v-model:value="formData.color" :show-alpha="true" />
         </n-form-item>
       </n-form>
-      <n-button block @click="handleConfirm" type="primary">
+      <n-button block secondary @click="handleConfirm" type="primary">
         {{
           importMode
             ? translate('projects.editProject.import')

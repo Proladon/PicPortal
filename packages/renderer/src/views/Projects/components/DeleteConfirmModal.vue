@@ -15,10 +15,10 @@
         </p>
       </div>
       <div class="flex justify-end gap-[10px]">
-        <n-button @click="updateModalShow(false)">
+        <n-button secondary @click="updateModalShow(false)">
           {{ translate('common.cancel') }}
         </n-button>
-        <n-button ghost type="error" @click="$emit('delete')">
+        <n-button secondary type="error" @click="$emit('delete')">
           {{ translate('common.delete') }}
         </n-button>
       </div>

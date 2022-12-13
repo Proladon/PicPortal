@@ -119,7 +119,7 @@ const deleteProject = async () => {
   @apply w-[150px] h-[200px] flex flex-col justify-between;
   @apply bg-tertiary-bg p-[10px] rounded-[4px] text-left cursor-pointer shadow-xl;
   @apply transition duration-500 ease-in-out;
-  @apply border border-1  border-transparent hover:( border-emerald-200 );
+  @apply border border-1  border-transparent hover:( border-primary );
 }
 
 .project-name {
@@ -131,7 +131,7 @@ const deleteProject = async () => {
 }
 
 .bar {
-  @apply w-1 h-auto rounded-sm bg-emerald-400 mr-[10px];
+  @apply w-1 h-auto rounded-sm bg-primary mr-[10px];
 }
 
 .selected {

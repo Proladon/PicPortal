@@ -82,14 +82,18 @@
         v-if="mode === 'create'"
         :disabled="disabledCreate"
         class="mt-[50px]"
+        secondary
         block
+        type="primary"
         @click="createPortal"
         >{{ translate('common.create') }}</n-button
       >
       <n-button
         v-if="mode === 'edit'"
         class="mt-[50px]"
+        secondary
         block
+        type="primary"
         @click="updatePortal"
         >{{ translate('common.update') }}</n-button
       >

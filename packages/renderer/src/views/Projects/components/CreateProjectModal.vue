@@ -32,7 +32,7 @@
           <n-color-picker v-model:value="formData.color" :show-alpha="true" />
         </n-form-item>
       </n-form>
-      <n-button block type="primary" @click="createNewProject">{{
+      <n-button block secondary type="primary" @click="createNewProject">{{
         translate('projects.createProject.create')
       }}</n-button>
     </div>

@@ -13,7 +13,7 @@
       <div class="py-[15px]">尚無開啟專案</div>
       <div class="flex justify-end gap-[10px]">
         <router-link :to="{ name: 'Projects' }">
-          <n-button ghost type="error" @click="$emit('confirm')">
+          <n-button secondary type="error" @click="$emit('confirm')">
             前往專案
           </n-button>
         </router-link>

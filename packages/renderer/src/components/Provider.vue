@@ -1,10 +1,10 @@
 <template>
-  <!-- <NThemeEditor> -->
   <n-config-provider
     :theme="darkTheme"
     class="h-full"
     :theme-overrides="appStore.theme"
   >
+    <!-- <NThemeEditor> -->
     <n-global-style />
     <!-- <n-loading-bar-provider> -->
     <n-notification-provider placement="top-right">
@@ -15,8 +15,8 @@
       </n-message-provider>
     </n-notification-provider>
     <!-- </n-loading-bar-provider> -->
+    <!-- </NThemeEditor> -->
   </n-config-provider>
-  <!-- </NThemeEditor> -->
 </template>
 
 <script setup lang="ts">

@@ -15,7 +15,7 @@
       </n-spin>
     </n-scrollbar>
     <section class="btn-container">
-      <n-button ghost type="primary" @click="importProject">
+      <n-button secondary type="primary" @click="importProject">
         {{ translate('projects.import') }}
       </n-button>
     </section>
