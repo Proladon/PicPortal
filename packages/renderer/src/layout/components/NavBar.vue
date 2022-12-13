@@ -61,13 +61,7 @@ import hh from '/@/assets/icon/home.svg'
 import SettingsIcon from '/@/assets/icon/settings.svg'
 import InfoIcon from '/@/assets/icon/info.svg'
 import RecordIcon from '/@/assets/icon/book.svg'
-import {
-  Albums,
-  AppsSharp,
-  InformationCircle,
-  SettingsSharp,
-} from '@vicons/ionicons5'
-import { NIcon, NPopover } from 'naive-ui'
+import { NPopover } from 'naive-ui'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed } from '@vue/reactivity'
 
@@ -100,7 +94,7 @@ const viewerTypes = ['GridView', 'VirtualGrid', 'VirtualList', 'FocusView']
 }
 .nav--actived::after {
   content: '';
-  @apply absolute left-0 h-auto top-0 bottom-0 w-[4px] bg-emerald-300;
+  @apply absolute left-0 h-auto top-0 bottom-0 w-[4px] bg-primary;
   @apply transition duration-300 ease-in;
   animation: expand 0.3s;
 }
