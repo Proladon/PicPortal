@@ -128,7 +128,7 @@ onMounted(async () => {
 }
 
 .btn-container {
-  @apply flex justify-center gap-5 px-10;
+  @apply flex justify-center gap-5 px-10 pt-[20px];
 }
 
 .new-project-btn {

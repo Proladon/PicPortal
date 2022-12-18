@@ -36,6 +36,7 @@ import useViewer from '/@/use/useViewer'
 import { chunk, map, get } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
+import hotkeys from 'hotkeys-js'
 
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
@@ -59,8 +60,10 @@ const chunkFiles = async () => {
   loading.value = false
 }
 
-const { loading, pngs, page, perPage, mainFolder, selectItem, showFiles } =
-  useViewer(20, chunkFiles)
+const { loading, pngs, page, mainFolder, selectItem, showFiles } = useViewer(
+  20,
+  chunkFiles
+)
 
 // --- Watch ---
 watch(mainFolder, async () => {
@@ -73,6 +76,15 @@ onMounted(async () => {
   await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
   viewerStore.signal.refresh = false
+
+  hotkeys('right', 'viewer', (event) => {
+    event.preventDefault()
+    if (page.value < pngs.value.length) page.value += 1
+  })
+  hotkeys('left', 'viewer', (event) => {
+    event.preventDefault()
+    if (page.value > 1) page.value -= 1
+  })
 })
 </script>
 

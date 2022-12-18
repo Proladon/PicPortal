@@ -9,14 +9,18 @@
         @keydown.down.prevent="onKeyDown"
         @keydown.enter.prevent="onSelect"
       />
-
-      <div class="mt-[10px] h-[200px] overflow-y-auto">
+      <n-divider />
+      <div
+        class="mt-[10px] max-h-[200px] overflow-y-auto"
+        v-if="matchPrtals.length"
+      >
         <div
           class="portal-option"
-          v-if="matchPrtals.length"
           v-for="(portal, index) in matchPrtals"
           :key="portal.id"
           :class="isSelected(index)"
+          @mouseover="selectIndex = index"
+          @click="selectPortal(index)"
         >
           {{ portal.name }} ({{ portal.group.group }})
         </div>
@@ -26,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { NModal } from 'naive-ui'
+import { NModal, NDivider } from 'naive-ui'
 import { onMounted, ref, computed, watch, nextTick } from 'vue'
 import { useModal } from '/@/use/modal'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
@@ -57,15 +61,22 @@ const matchPrtals = computed(() => {
   })
 })
 
-const test = () => {
-  console.log(123)
+const selectPortal = (index: number) => {
+  selectIndex.value = index
+  onSelect()
 }
 
 const onKeyUp = () => {
   if (selectIndex.value > 0) selectIndex.value--
+  else if (selectIndex.value === 0) {
+    if (!matchPrtals.value.length) return
+    selectIndex.value = matchPrtals.value.length - 1
+  }
 }
 const onKeyDown = () => {
-  if (selectIndex.value < matchPrtals.value.length - 1) selectIndex.value++
+  const last = matchPrtals.value.length - 1
+  if (selectIndex.value < last) selectIndex.value++
+  else if (selectIndex.value === last) selectIndex.value = 0
 }
 const onSelect = () => {
   const portal: Portal = matchPrtals.value[selectIndex.value]
@@ -94,12 +105,12 @@ onMounted(() => {
 
 <style scoped lang="postcss">
 .modal-body {
-  @apply bg-primary-bg p-5 min-w-[300px] rounded-lg;
+  @apply bg-primary-bg p-5 min-w-[300px] rounded-lg text-base;
   @apply fixed top-[30%] left-0 right-0 w-[500px];
 }
 
 .portal-option {
-  @apply p-[3px] text-[18px];
+  @apply p-[3px] text-[18px] cursor-pointer;
 }
 
 .selected {
