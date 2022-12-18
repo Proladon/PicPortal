@@ -9,11 +9,14 @@
 
             <article class="flex flex-col">
               <h3 class="text-xl">Proladon</h3>
-              <div>
-                <a class="flex items-center" href="https://github.com/Proladon">
+              <div class="mt-[10px]">
+                <div
+                  class="flex items-center cursor-pointer hover:text-primary"
+                  @click="appWindow.openExternal('https://github.com/Proladon')"
+                >
                   <n-icon size="20" class="mr-2"> <logo-github /></n-icon>
                   <span>Github</span>
-                </a>
+                </div>
               </div>
             </article>
           </main>
@@ -22,10 +25,10 @@
         <!-- version-info -->
         <n-alert :show-icon="false">
           <div class="mb-[10px]">
-            <p>PicPortal {{ version }}</p>
+            <p class="text-primary">PicPortal {{ version }}</p>
           </div>
 
-          <div>
+          <div class="text-base">
             <p>Node: {{ platform.node }}</p>
             <p>Electron: {{ platform.electron }}</p>
             <p>Chorme: {{ platform.chrome }}</p>

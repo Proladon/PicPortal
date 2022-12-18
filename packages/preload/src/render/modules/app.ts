@@ -1,6 +1,9 @@
 import { ipcRenderer } from 'electron'
 
 const appWindow = {
+  openExternal(path: string) {
+    ipcRenderer.invoke('Open-External', path)
+  },
   close() {
     ipcRenderer.invoke('Window-Close')
   },
@@ -16,7 +19,7 @@ const appWindow = {
   getAppVersion() {
     const version = ipcRenderer.invoke('Get-App-Version')
     return version
-  }
+  },
 }
 
 export default appWindow

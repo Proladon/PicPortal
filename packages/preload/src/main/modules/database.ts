@@ -60,7 +60,7 @@ const database = () => {
       console.log(`splice ${index}`)
       return ['success', null]
     } catch (error) {
-      console.log(`splice error`)
+      console.log(`Database-Slice splice error`, error)
       return [null, error]
     }
   })
@@ -74,7 +74,7 @@ const database = () => {
       await db.write()
       return ['success', null]
     } catch (error) {
-      console.log(`splice error`)
+      console.log(`Pull-Dockings splice error`, error)
       return [null, error]
     }
   })

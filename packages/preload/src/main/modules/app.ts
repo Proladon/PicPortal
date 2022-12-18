@@ -1,11 +1,14 @@
-import { ipcMain, BrowserWindow, app } from 'electron'
-import gitTagVersion from 'git-tag-version'
+import { ipcMain, BrowserWindow, app, shell } from 'electron'
+import { simpleGit, SimpleGit } from 'simple-git'
 
 const ipc = ipcMain
 
 const appWindow = () => {
+  ipc.handle('Open-External', async (e, path) => {
+    await shell.openExternal(path)
+  })
+
   ipc.handle('Window-Close', (e) => {
-    // const win: BrowserWindow = BrowserWindow.getFocusedWindow()
     app.exit()
   })
 
@@ -22,7 +25,8 @@ const appWindow = () => {
   })
 
   ipc.handle('Get-App-Version', (e) => {
-    return gitTagVersion()
+    const git: SimpleGit = simpleGit()
+    return git.tag()
   })
 }
 
