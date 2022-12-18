@@ -1,6 +1,7 @@
 <template>
-  <n-tag
+  <n-button
     type="info"
+    secondary
     class="p-4 cursor-pointer"
     @click="showModeChangeModal = true"
   >
@@ -8,7 +9,7 @@
       <n-icon><BrowsersOutline /></n-icon>
       <span class="ml-2 text-gray-300">{{ $route.name }}</span>
     </div>
-  </n-tag>
+  </n-button>
 
   <ModeChangeModal
     v-if="showModeChangeModal"
@@ -18,7 +19,7 @@
 
 <script setup lang="ts">
 import ModeChangeModal from './ModeChangeModal.vue'
-import { NTag, NIcon } from 'naive-ui'
+import { NButton, NIcon } from 'naive-ui'
 import { BrowsersOutline } from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
 

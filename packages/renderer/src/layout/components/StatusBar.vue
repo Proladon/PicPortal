@@ -32,7 +32,7 @@
         Main Folder
       </n-popover>
 
-      <n-popover trigger="hover">
+      <n-popover trigger="hover" v-if="mainFolder.path">
         <template #trigger>
           <div class="btn main-folder-btn cursor-default">
             <n-icon>

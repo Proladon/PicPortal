@@ -2,7 +2,7 @@
   <div class="viewer-handlebar">
     <div class="handlebar">
       <ViewModeSwitcher />
-      <WrapingButton />
+
       <QuickActions />
       <n-button
         class="handle-item"
@@ -23,6 +23,7 @@
           :max="500"
         />
       </div>
+      <WrapingButton />
     </div>
 
     <ViewerFilter class="right-fixed" v-model:show="showFilter" />

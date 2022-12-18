@@ -1,24 +1,25 @@
 <template>
-  <n-tag
-    type="warning"
+  <n-button
+    type="success"
+    secondary
     class="p-4 cursor-pointer"
     @click="wraping"
     :disabled="wrapingStatus || !dockings.length"
   >
     <div class="handle-item">
       <n-icon><RocketSharp /></n-icon>
-      <span v-if="!wrapingStatus" class="ml-2 text-gray-300">{{
-        translate('viewer.warpingBtn.label')
-      }}</span>
-      <span v-if="wrapingStatus" class="ml-2 text-gray-300">{{
-        translate('viewer.warpingBtn.warping')
-      }}</span>
+      <span v-if="!wrapingStatus" class="ml-2 text-success">
+        {{ translate('viewer.warpingBtn.label') }}
+      </span>
+      <span v-if="wrapingStatus" class="ml-2 text-gray-300">
+        {{ translate('viewer.warpingBtn.warping') }}
+      </span>
     </div>
-  </n-tag>
+  </n-button>
 </template>
 
 <script setup lang="ts">
-import { NTag, NIcon } from 'naive-ui'
+import { NButton, NIcon } from 'naive-ui'
 import { RocketSharp } from '@vicons/ionicons5'
 import { useViewerStore } from '/@/store/viewerStore'
 import { computed } from '@vue/reactivity'

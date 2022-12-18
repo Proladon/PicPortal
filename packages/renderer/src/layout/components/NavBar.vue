@@ -90,7 +90,8 @@ const viewerTypes = ['GridView', 'VirtualGrid', 'VirtualList', 'FocusView']
 }
 
 .nav--actived {
-  @apply relative;
+  @apply relative bg-primary-hover;
+  transition: ease-in-out 0.3s;
 }
 .nav--actived::after {
   content: '';

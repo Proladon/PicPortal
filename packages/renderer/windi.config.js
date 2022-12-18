@@ -7,6 +7,8 @@ export default defineConfig({
       colors: {
         primary: 'var(--primary)',
         secondary: 'var(--secondary)',
+        /* hover */
+        'primary-hover': 'var(--primaryHover)',
         /* bg */
         'primary-bg': 'var(--primary-bg)',
         'secondary-bg': 'var(--secondary-bg)',

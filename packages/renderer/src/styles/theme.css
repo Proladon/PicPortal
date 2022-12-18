@@ -4,6 +4,7 @@
 
 [data-theme='picportal'] {
   --primary: #91b4c0;
+  --primaryHover: #91b4c064;
   --secondary: #ccc0b8;
   /* bg */
   --primary-bg: #272b36;
