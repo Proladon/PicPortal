@@ -51,6 +51,7 @@ const modal = reactive({
 })
 // --- Methods ---
 const wraping = async () => {
+  modal.warning = false
   if (!dockings.value.length) return
   if (wrapingStatus.value) return
   const dockingsData = dataClone(dockings.value)
