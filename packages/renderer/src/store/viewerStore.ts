@@ -90,7 +90,10 @@ export const useViewerStore = defineStore('viewer', {
     async GetFolderAllFiles({ fileTypes }: { fileTypes?: string[] }) {
       const appStore = useAppStore()
       let mainFolderPath = appStore.projectMainFolder.path
-      if (!mainFolderPath) return
+      if (!mainFolderPath) {
+        this.folderFiles = []
+        return
+      }
       if (!fileTypes) fileTypes = ['png', 'jpg', 'jpeg', 'gif', 'webp']
 
       mainFolderPath = mainFolderPath.replaceAll('(', '\\(')

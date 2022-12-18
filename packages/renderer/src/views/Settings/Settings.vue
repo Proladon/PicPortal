@@ -13,10 +13,10 @@
           v-if="activeTab === 'viewer'"
           v-model:model="formData.viewer"
         />
-        <HotKeysSettings
+        <!-- <HotKeysSettings
           v-if="activeTab === 'hotkeys'"
           v-model:model="formData.hotkeys"
-        />
+        /> -->
       </div>
     </div>
   </n-spin>
@@ -69,14 +69,14 @@ const generateMenu = () => {
       label: translate('settings.general.title'),
       key: 'general',
     },
-    {
-      label: 'Viewer',
-      key: 'viewer',
-    },
-    {
-      label: 'HotKeys',
-      key: 'hotkeys',
-    },
+    // {
+    //   label: 'Viewer',
+    //   key: 'viewer',
+    // },
+    // {
+    //   label: 'HotKeys',
+    //   key: 'hotkeys',
+    // },
   ]
   menuOptions.value = menu
 }

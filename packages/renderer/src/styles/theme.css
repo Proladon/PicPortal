@@ -16,7 +16,7 @@
   --dark: #272b36;
   /* status */
   --disable: #71717A;
-  --error: #fda4af,
+  --error: #fda4af;
   --success: #a7f3d0;
   --warning: #fdba74;
   --info: #bae6fd;
@@ -35,7 +35,7 @@
   --dark: #272b36;
   /* status */
   --disable: #71717A;
-  --error: #fda4af,
+  --error: #fda4af;
   --success: #a7f3d0;
   --warning: #fdba74;
   --info: #bae6fd;

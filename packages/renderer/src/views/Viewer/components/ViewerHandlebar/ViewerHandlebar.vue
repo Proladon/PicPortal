@@ -1,7 +1,7 @@
 <template>
   <div class="viewer-handlebar">
     <div class="handlebar">
-      <ViewModeSwitcher />
+      <!-- <ViewModeSwitcher /> -->
 
       <QuickActions />
       <n-button

@@ -3,7 +3,7 @@
     type="success"
     secondary
     class="p-4 cursor-pointer"
-    @click="wraping"
+    @click="modal.warning = true"
     :disabled="wrapingStatus || !dockings.length"
   >
     <div class="handle-item">
@@ -16,18 +16,28 @@
       </span>
     </div>
   </n-button>
+
+  <WarningModal
+    v-if="modal.warning"
+    type="info"
+    @close="modal.warning = false"
+    @confirm="wraping"
+  >
+    確認要開始傳送檔案?
+  </WarningModal>
 </template>
 
 <script setup lang="ts">
 import { NButton, NIcon } from 'naive-ui'
+import WarningModal from '/@/components/Modal/WarningModal.vue'
 import { RocketSharp } from '@vicons/ionicons5'
 import { useViewerStore } from '/@/store/viewerStore'
-import { computed } from '@vue/reactivity'
 import { forEach, find } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/data'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
+import { reactive, computed } from 'vue'
 
 const viewerStore = useViewerStore()
 const portalPaneStore = usePortalPaneStore()
@@ -36,7 +46,9 @@ const { translate } = useLocale()
 const dockings = computed(() => viewerStore.dockings)
 const flattenPortals = computed(() => portalPaneStore.flattenPortals)
 const wrapingStatus = computed(() => viewerStore.wrap.wraping)
-
+const modal = reactive({
+  warning: false,
+})
 // --- Methods ---
 const wraping = async () => {
   if (!dockings.value.length) return
