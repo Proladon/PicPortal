@@ -23,7 +23,12 @@
           :max="500"
         />
       </div>
-      <WrapingButton />
+      <div class="flex gap-[5px]">
+        <WrapingButton />
+        <n-tag class="h-[34px]" type="primary">
+          {{ viewerStore.dockings.length }}
+        </n-tag>
+      </div>
     </div>
 
     <ViewerFilter class="right-fixed" v-model:show="showFilter" />
@@ -36,7 +41,7 @@ import WrapingButton from './components/WrapingButton.vue'
 import ViewerFilter from './components/ViewerFilter.vue'
 import QuickActions from './components/QuickActions.vue'
 import PerPageControl from './components/PerPageControl.vue'
-import { NButton, NIcon, NSlider } from 'naive-ui'
+import { NButton, NIcon, NSlider, NTag } from 'naive-ui'
 import { Filter, Refresh } from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
 import { useViewerStore } from '/@/store/viewerStore'

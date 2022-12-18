@@ -1,5 +1,13 @@
 {
-  "name": "vite-electron-builder",
+  "name": "PicPortal",
+  "description": "Images management/classification IO software",
+  "author": {
+    "name": "Proladon",
+    "url": "https://github.com/Proladon"
+  },
+  "repository": {
+    "url": "https://github.com/Proladon/PicPortal"
+  },
   "private": true,
   "engines": {
     "node": ">=v14.16",
@@ -44,6 +52,7 @@
     "naive-ui": "^2.33.5",
     "prettier": "^2.2.1",
     "spectron": "^15.0.0",
+    "terser": "^5.16.1",
     "typescript": "^4.6.3",
     "vite": "^3.2.3",
     "vite-plugin-windicss": "^1.8.8",
