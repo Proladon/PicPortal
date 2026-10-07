@@ -106,9 +106,11 @@ async function main() {
     const configPath = path.join(root, 'browse.json')
     await fs.writeFile(configPath, JSON.stringify(override))
     console.log(`Dataset: ${dataset.root}\nBuilding the embedded frontend for native browsing`)
-    if (process.argv.includes('--interactions')) {
+    if (process.argv.includes('--interactions') || process.argv.includes('--drops')) {
       await fs.mkdir(path.join(env.APPDATA, 'PicPortal'), { recursive:true })
       await fs.copyFile(path.join(dataset.root,'config.json'),path.join(env.APPDATA,'PicPortal','config.json'))
+    }
+    if (process.argv.includes('--interactions')) {
       const prefsDir = path.join(process.env.APPDATA, override.identifier)
       await fs.mkdir(prefsDir, { recursive:true })
       const prefsPath = path.join(prefsDir, 'settings.json')
@@ -126,6 +128,10 @@ async function main() {
     }
     await start()
     const normal = path.join(dataset.root, 'normal.db')
+    if (process.argv.includes('--drops')) {
+      await require('./tauri-drops.cjs').exerciseDrops({ dataset, root, env, evaluate, invoke, code, waitFor, close, start, loadedImages, imageLoaded, send })
+      return
+    }
     if (process.argv.includes('--interactions')) {
       await require('./tauri-interactions.cjs').exerciseInteractions({ dataset, root, env, evaluate, invoke, code, waitFor, chooseProject, close, start, loadedImages, imageLoaded, send, releaseMigrationLock })
       return

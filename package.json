@@ -27,6 +27,7 @@
     "test:tauri-browse": "node tests/tauri-browse.cjs",
     "test:tauri-write": "node tests/tauri-browse.cjs --write",
     "test:tauri-interactions": "node tests/tauri-browse.cjs --interactions",
+    "test:tauri-drops": "node tests/tauri-browse.cjs --drops",
     "test:batch": "node tests/batch.spec.cjs",
     "test:tauri-skeleton": "node tests/tauri-skeleton.cjs",
     "test:tauri-skeleton:built": "node tests/tauri-skeleton.cjs --built",

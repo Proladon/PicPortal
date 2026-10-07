@@ -1,8 +1,8 @@
 # Tauri 2 遷移實作紀錄
 
-更新日期：2026-10-07（台灣時間）。階段 0–4 已完成；階段 5 的設定遷移、清單與關閉流程已通過 Windows 驗證，里程碑 C 仍缺原生外部拖入的實機驗收。Electron 開發、建置與發布入口保留。
+更新日期：2026-10-07（台灣時間）。階段 5 已依使用者決定收尾，可進入階段 6；外部資料夾與 `.db` 拖入實機驗收延期，不宣告通過、不阻擋後續遷移。Electron 開發、建置與發布入口保留。
 
-提交方式：`refactor` 分支，每階段各一個 commit；提交不代表尚未執行的手動驗收已完成。階段 0 已提交為 `cef0b6f`，階段 1 專門記錄桌面 API 抽象。
+提交方式：`refactor` 分支，按階段提交，驗收補充與收尾可另行提交；提交不代表尚未執行的手動驗收已完成。階段 0 已提交為 `cef0b6f`，階段 1 專門記錄桌面 API 抽象。
 
 ## 環境與重現
 
@@ -329,14 +329,16 @@ npm run build:tauri -- --debug --no-bundle
 | 關閉流程 | 未儲存設定關閉／取消、主題與面板儲存後關閉、語言放棄修改後關閉；批次衝突等待處理，略過保留來源與 docking，之後正常退出 |
 | About／外部目錄 | 無 `.git` 的暫存 cwd 顯示版本；Rust scoped opener 啟動匿名 Portal 目錄的檔案總管，專案外路徑拒絕 |
 | 嵌入前端骨架回歸 | 路由、樣式、版本、首次預設設定與最小化／最大化／關閉按鈕通過 |
-| 真正外部拖入 | **未驗證**。Windows Computer Use 拒絕把 drag 終點放在另一個程式視窗；完整模式曾在等待 OS drop 時逾時。`--skip-os-drop` 明確輸出 SKIP，exit 0 不代表此項通過 |
+| 真正外部拖入 | **完整流程未驗證、依使用者決定延期**。本輪手動資料夾拖入後清單出現一筆，但保存步驟的測試選錯按鈕，修正後不再重跑；`.db` 拖入未實測。`--skip-os-drop` 的 exit 0 不代表此項通過 |
 | Electron 回退 | 建置與隔離基線通過；原有 updater 重複註冊 `Store-Get` 問題仍保留，未納入本階段修復 |
 
 `test:tauri-interactions` 使用匿名資料與唯一 smoke identifier，在沒有 Git／Vite／Node sidecar 的暫存 cwd 啟動嵌入前端的 debug exe。真實 native picker 由 Windows Computer Use 操作，Vue／Pinia、IPC、指標／快捷鍵與檔案結果由 CDP 檢查，沒有測試專用授權 command。設定來源隔離在 `%TEMP%/picportal-tauri-browse-*/legacy-appdata/PicPortal/config.json`；Tauri KnownFolder 設定位置不跟隨子程序 APPDATA，因此正式設定以唯一 smoke identifier 隔離於主機 `%APPDATA%/io.github.proladon.picportal.smoke.*/`。匿名資料、profile 與 smoke 設定保留供診斷，normal.db 在 finally 還原；沒有修改使用者正式設定或專案。
 
 ### 尚未驗收與回退
 
-里程碑 C 尚未完成，原生外部資料夾／`.db` 拖入須用實際 Windows 桌面完成後才勾選。重新執行 `npm run test:tauri-interactions`，依輸出的匿名路徑完成匯入與儲存 picker，並在 ACTION OS folder drop 時把檔案總管的「拖入分類」拖到 Create Portal → DragDrop 虛線區；測試會檢查 Portal 保存。另須驗證 `.db` 拖入專案頁的區域分流。adapter mock 的事件與座標測試不能取代這兩項 OS 驗收。
+2026-10-07 使用者決定：「拖入這兩個就先不測了，如果之後我手動操作有遇到問題再另外修正」。因此階段 5 按延期例外收尾，可進入階段 6；原生外部資料夾／`.db` 拖入維持未驗證，不再要求使用者重做手動驗收，也不將延期視為通過。
+
+保留選用的 `npm run test:tauri-drops` 供日後重現：使用隔離匿名副本，自動開啟專案及拖入區，等待實際 OS 資料夾／`.db` 拖入，檢查 Portal 保存、精確路徑授權、清單 ID、JSON bytes、asset 範圍及重啟。此流程沒有測試專用授權 command，也不合成 drop 事件。本次使用者手動拖入後，前端資料夾清單確實出現一筆；但測試誤選 DropZone 同樣帶有 block class 的按鈕，未點到建立按鈕，之後等待 modal 關閉逾時。已修正為選取最後的 footer block 按鈕，依使用者決定不再重跑。資料夾事件接收有部分證據，Portal 保存／重啟與 `.db` 原生拖入完整流程仍未驗證。新增入口的語法、lint 檢查通過，不宣告整套原生拖入測試通過。adapter mock 的事件與座標測試亦不能取代 OS 驗收。
 
 macOS／Linux、release profile、乾淨環境安裝包與更新未驗證，留待各平台及階段 6。交付前以預設 Tauri config 重建，避免 smoke identifier／WebView profile 留在一般 exe。
 

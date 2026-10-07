@@ -128,7 +128,7 @@ async function exerciseInteractions(h) {
     console.log('SKIP genuine external folder drop: manual Windows drag required; native fallback sorting, F2 and scoped Explorer opening passed')
   } else {
     await waitFor(()=>evaluate(`document.querySelector('.folder-list')?.textContent.includes('拖入分類')`),600000)
-    await evaluate(`document.querySelector('.n-modal .n-button--block').click()`)
+    await evaluate(`Array.from(document.querySelectorAll('.n-modal .n-button--block')).pop().click()`)
     await waitFor(()=>evaluate(`$app.dbData.portals[0].childs.some(p=>p.link===${JSON.stringify(dropped)})`))
     console.log('PASS native fallback Portal sorting, F2 shortcut, scoped Explorer opening and genuine external folder drop')
   }
