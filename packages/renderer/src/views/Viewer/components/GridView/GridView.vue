@@ -30,7 +30,7 @@
 <script lang="ts" setup>
 import GridItem from './components/GridItem.vue'
 import { computed, ref } from '@vue/reactivity'
-import { onMounted, watch } from '@vue/runtime-core'
+import { onMounted, onUnmounted, watch } from '@vue/runtime-core'
 import { NScrollbar, NPagination, NEmpty, NSpin } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
 import { chunk, map, get } from 'lodash-es'
@@ -72,19 +72,28 @@ watch(mainFolder, async () => {
 })
 
 // --- Mounted ---
+let disposed = false
 onMounted(async () => {
   await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
+  if (disposed) return
   viewerStore.signal.refresh = false
 
-  hotkeys('right', 'viewer', (event) => {
-    event.preventDefault()
-    if (page.value < pngs.value.length) page.value += 1
-  })
-  hotkeys('left', 'viewer', (event) => {
-    event.preventDefault()
-    if (page.value > 1) page.value -= 1
-  })
+  hotkeys('right', 'viewer', nextPage)
+  hotkeys('left', 'viewer', previousPage)
+})
+const nextPage = (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (page.value < pngs.value.length) page.value++
+}
+const previousPage = (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (page.value > 1) page.value--
+}
+onUnmounted(() => {
+  disposed = true
+  hotkeys.unbind('right', 'viewer', nextPage)
+  hotkeys.unbind('left', 'viewer', previousPage)
 })
 </script>
 

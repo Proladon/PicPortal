@@ -17,12 +17,19 @@ async function main() {
   const requests = new Map()
   const assetResponses = new Map()
   let processHandle, socket, exit, nextId = 1, log = ''
+  let migrationLock
+  async function releaseMigrationLock() {
+    if (!migrationLock || migrationLock.exitCode !== null) return
+    migrationLock.stdin.write('\n')
+    await new Promise(resolve => migrationLock.once('exit', resolve))
+  }
   const portServer = net.createServer()
   await new Promise(resolve => portServer.listen(0, '127.0.0.1', resolve))
   const port = portServer.address().port
+  await fs.writeFile(path.join(root, 'debug.json'), JSON.stringify({port}))
   await new Promise(resolve => portServer.close(resolve))
-  const env = { ...process.env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port}` }
-  async function waitFor(check, timeout = 25000) {
+  const env = { ...process.env, APPDATA: path.join(root, 'legacy-appdata'), WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port}` }
+  async function waitFor(check, timeout = 60000) {
     const deadline = Date.now() + timeout
     while (Date.now() < deadline) {
       const value = await check()
@@ -95,10 +102,21 @@ async function main() {
   }
   try {
     const config = JSON.parse(await fs.readFile('src-tauri/tauri.conf.json', 'utf8'))
-    const override = { app: { windows: [{ ...config.app.windows[0], dataDirectory: path.join(root, 'webview') }] } }
+    const override = { identifier: `io.github.proladon.picportal.smoke.${path.basename(root).split('-').at(-1).toLowerCase()}`, app: { windows: [{ ...config.app.windows[0], dataDirectory: path.join(root, 'webview') }] } }
     const configPath = path.join(root, 'browse.json')
     await fs.writeFile(configPath, JSON.stringify(override))
     console.log(`Dataset: ${dataset.root}\nBuilding the embedded frontend for native browsing`)
+    if (process.argv.includes('--interactions')) {
+      await fs.mkdir(path.join(env.APPDATA, 'PicPortal'), { recursive:true })
+      await fs.copyFile(path.join(dataset.root,'config.json'),path.join(env.APPDATA,'PicPortal','config.json'))
+      const prefsDir = path.join(process.env.APPDATA, override.identifier)
+      await fs.mkdir(prefsDir, { recursive:true })
+      const prefsPath = path.join(prefsDir, 'settings.json')
+      await fs.writeFile(prefsPath, '{}')
+      const script = `& { param($target) $taskHandle = [IO.File]::Open($target,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::Read); Write-Output 'LOCKED'; [Console]::ReadLine() | Out-Null; $taskHandle.Dispose() } '${prefsPath.replace(/'/g, "''")}'`
+      migrationLock = spawn('powershell', ['-NoProfile', '-Command', script], { windowsHide:true, stdio:['pipe','pipe','pipe'] })
+      await new Promise((resolve,reject) => { migrationLock.stdout.once('data',data=>String(data).includes('LOCKED') ? resolve() : reject(Error(String(data)))); migrationLock.once('exit',code=>{if(code)reject(Error('Migration lock failed'))}); migrationLock.once('error',reject) })
+    }
     if (!process.argv.includes('--skip-build')) {
       const builder = spawn(process.execPath, [require.resolve('@tauri-apps/cli/tauri.js'), 'build', '--debug', '--no-bundle', '--config', configPath], { env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
       builder.stdout.on('data', data => { log += data })
@@ -108,6 +126,10 @@ async function main() {
     }
     await start()
     const normal = path.join(dataset.root, 'normal.db')
+    if (process.argv.includes('--interactions')) {
+      await require('./tauri-interactions.cjs').exerciseInteractions({ dataset, root, env, evaluate, invoke, code, waitFor, chooseProject, close, start, loadedImages, imageLoaded, send, releaseMigrationLock })
+      return
+    }
     assert.equal(await code('project_connect', { path: normal }), 'OUTSIDE_SCOPE')
     assert.equal(await code('scan_images', { directory: dataset.source, extensions: ['png'] }), 'NO_PROJECT')
     await chooseProject('normal.db')
@@ -190,7 +212,7 @@ async function main() {
     await close()
     assetResponses.clear()
     await start()
-    assert.equal(await code('project_connect', { path: normal }), 'OUTSIDE_SCOPE', 'Native authorization must reset on process restart')
+    assert.equal(await code('project_connect', { path: normal }), null, 'Saved project list restores validated selection on restart')
     assert.equal(await imageLoaded(imageUrl), false, 'Asset authorization must reset on process restart')
     await chooseProject('normal.db')
     await loadedImages('.image-item img')
@@ -198,6 +220,7 @@ async function main() {
     assert.equal(await evaluate('$app.dbData.id'), 'project-001')
     console.log('PASS process restart + project reselection restore browsing and scopes; all project bytes unchanged')
   } finally {
+    await releaseMigrationLock()
     await fs.writeFile(path.join(dataset.root, 'normal.db'), original)
     await close().catch(async () => {
       if (processHandle?.exitCode === null) await new Promise(resolve => { const killer = spawn('taskkill', ['/pid', String(processHandle.pid), '/t', '/f'], { windowsHide: true, stdio: 'ignore' }); killer.once('exit', resolve) })

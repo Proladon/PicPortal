@@ -1,23 +1,29 @@
+use crate::preferences::{ImportStatus, Preferences};
 use crate::project::{self, Folder, ProjectState, Result};
 use serde::Deserialize;
 use serde_json::Value;
+use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager, WebviewWindow};
 use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_opener::OpenerExt;
 
 #[derive(Default)]
-pub struct DesktopState(pub Mutex<ProjectState>);
+pub struct DesktopState(pub Mutex<ProjectState>, pub AtomicBool, pub AtomicBool);
+#[derive(Default)]
+pub struct PreferencesState(Mutex<Option<Preferences>>);
 
 // All disk I/O and blocking native dialogs run off the UI thread. A single
 // session lock serializes reads/scans/switches, including asset authorization.
-async fn blocking<T: Send + 'static>(
+pub(crate) async fn blocking<T: Send + 'static>(
     operation: impl FnOnce() -> Result<T> + Send + 'static,
 ) -> Result<T> {
     tauri::async_runtime::spawn_blocking(operation)
         .await
         .map_err(|e| project::error("INTERNAL", e.to_string()))?
 }
-fn with_state<T>(
+pub(crate) fn with_state<T>(
     app: &AppHandle,
     operation: impl FnOnce(&mut ProjectState) -> Result<T>,
 ) -> Result<T> {
@@ -26,6 +32,9 @@ fn with_state<T>(
         .0
         .lock()
         .map_err(|_| project::error("INTERNAL", "專案狀態無法讀取"))?;
+    if app.state::<DesktopState>().1.load(Ordering::SeqCst) {
+        return Err(project::error("CLOSING", "應用程式正在關閉"));
+    }
     operation(&mut state)
 }
 
@@ -94,9 +103,201 @@ pub async fn desktop_open_dialog(
 pub async fn project_connect(app: AppHandle, path: String) -> Result<Value> {
     blocking(move || {
         with_state(&app, |state| {
+            if !state.has_selection(&path) {
+                if let Some(prefs) = app
+                    .state::<PreferencesState>()
+                    .0
+                    .lock()
+                    .map_err(|_| project::error("INTERNAL", "無法讀取設定"))?
+                    .as_ref()
+                {
+                    if prefs
+                        .data
+                        .get("projects")
+                        .and_then(Value::as_array)
+                        .is_some_and(|list| {
+                            list.iter().any(|p| {
+                                crate::preferences::key(p["path"].as_str().unwrap())
+                                    == crate::preferences::key(&path)
+                            })
+                        })
+                    {
+                        state.selected(PathBuf::from(&path), false)?;
+                    }
+                }
+            }
             let data = state.connect(&path)?;
             Ok(serde_json::json!({ "data": data, "session": state.token()? }))
         })
+    })
+    .await
+}
+
+fn with_preferences<T>(
+    app: &AppHandle,
+    action: impl FnOnce(&mut ProjectState, &mut Preferences) -> Result<T>,
+) -> Result<T> {
+    with_state(app, |state| {
+        let managed = app.state::<PreferencesState>();
+        let mut prefs = managed
+            .0
+            .lock()
+            .map_err(|_| project::error("INTERNAL", "無法讀取設定"))?;
+        if prefs.is_none() {
+            let path = app
+                .path()
+                .app_data_dir()
+                .map_err(|e| project::error("SETTINGS_IO", e.to_string()))?
+                .join("settings.json");
+            *prefs = Some(Preferences::load(app, path)?);
+        }
+        action(state, prefs.as_mut().unwrap())
+    })
+}
+#[tauri::command]
+pub async fn preferences_init(app: AppHandle) -> Result<ImportStatus> {
+    blocking(move || {
+        with_preferences(&app, |state, prefs| {
+            let mut result = ImportStatus {
+                completed: prefs.completed(),
+                ..Default::default()
+            };
+            #[cfg(windows)]
+            if !prefs.completed() {
+                if let Some(folder) = std::env::var_os("APPDATA") {
+                    let legacy = PathBuf::from(folder).join("PicPortal/config.json");
+                    if legacy
+                        .try_exists()
+                        .map_err(|e| project::error("SETTINGS_IO", e.to_string()))?
+                    {
+                        match prefs.import(&legacy) {
+                            Ok(status) => result = status,
+                            Err(e) => result.message = Some(format!("{}: {}", e.code, e.message)),
+                        }
+                    }
+                }
+            }
+            authorize_saved(state, prefs);
+            Ok(result)
+        })
+    })
+    .await
+}
+fn authorize_saved(state: &mut ProjectState, prefs: &Preferences) {
+    for project in prefs
+        .data
+        .get("projects")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+    {
+        let path = project["path"].as_str().unwrap();
+        if !state.has_selection(path) {
+            let _ = state.selected(PathBuf::from(path), false);
+        }
+    }
+}
+#[tauri::command]
+pub async fn preferences_get(app: AppHandle, key: String) -> Result<Value> {
+    blocking(move || with_preferences(&app, |_, prefs| prefs.get(&key))).await
+}
+#[tauri::command]
+pub async fn preferences_set(app: AppHandle, key: String, value: Value) -> Result<()> {
+    blocking(move || {
+        with_preferences(&app, |state, prefs| {
+            if key == "projects" {
+                crate::preferences::validate(&serde_json::json!({"projects":value}))?;
+                for project in value.as_array().unwrap() {
+                    let path = project["path"].as_str().unwrap();
+                    let existing = prefs
+                        .data
+                        .get("projects")
+                        .and_then(Value::as_array)
+                        .is_some_and(|list| {
+                            list.iter().any(|p| {
+                                crate::preferences::key(p["path"].as_str().unwrap())
+                                    == crate::preferences::key(path)
+                            })
+                        });
+                    if !existing {
+                        state.selected_path(path, false)?;
+                    }
+                }
+            }
+            prefs.set(&key, value)
+        })
+    })
+    .await
+}
+#[tauri::command]
+pub async fn preferences_remove(app: AppHandle, key: Option<String>) -> Result<()> {
+    blocking(move || with_preferences(&app, |_, prefs| prefs.remove(key.as_deref()))).await
+}
+#[tauri::command]
+pub async fn preferences_import(
+    app: AppHandle,
+    window: WebviewWindow,
+) -> Result<Option<ImportStatus>> {
+    blocking(move || {
+        let selected = app
+            .dialog()
+            .file()
+            .set_parent(&window)
+            .set_title("匯入 Electron 設定（保留目前設定）")
+            .add_filter("JSON", &["json"])
+            .blocking_pick_file();
+        selected
+            .map(|path| {
+                let path = path
+                    .into_path()
+                    .map_err(|e| project::error("INVALID_PATH", e.to_string()))?;
+                with_preferences(&app, |state, prefs| {
+                    let result = prefs.import(&path)?;
+                    authorize_saved(state, prefs);
+                    Ok(result)
+                })
+            })
+            .transpose()
+    })
+    .await
+}
+#[tauri::command]
+pub async fn desktop_open_folder(app: AppHandle, session: String, path: String) -> Result<String> {
+    blocking(move || {
+        with_state(&app, |state| {
+            state.require_token(&session)?;
+            let path = state.open_folder(&path)?;
+            app.opener()
+                .open_path(path.to_string_lossy(), None::<&str>)
+                .map_err(|e| project::error("OPEN_FOLDER", e.to_string()))?;
+            Ok("ok".into())
+        })
+    })
+    .await
+}
+#[tauri::command]
+pub fn desktop_close_ready(app: AppHandle) {
+    app.state::<DesktopState>().2.store(true, Ordering::SeqCst);
+}
+#[tauri::command]
+pub async fn desktop_finish_close(app: AppHandle, window: WebviewWindow) -> Result<()> {
+    blocking(move || {
+        with_state(&app, |_| {
+            let managed = app.state::<PreferencesState>();
+            let _prefs = managed
+                .0
+                .lock()
+                .map_err(|_| project::error("INTERNAL", "無法完成設定儲存"))?;
+            app.state::<DesktopState>().1.store(true, Ordering::SeqCst);
+            Ok(())
+        })?;
+        let result = window
+            .destroy()
+            .map_err(|e| project::error("CLOSE", e.to_string()));
+        if result.is_err() {
+            app.state::<DesktopState>().1.store(false, Ordering::SeqCst);
+        }
+        result
     })
     .await
 }

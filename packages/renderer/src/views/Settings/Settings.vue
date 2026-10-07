@@ -39,7 +39,9 @@ import { useDesktop } from '/@/desktop'
 import { reportDesktopError } from '/@/desktop/status'
 import { createDefaultSettings, getSettings } from '/@/use/settings'
 import useLocale from '/@/use/locale'
-import { onMounted } from '@vue/runtime-core'
+import { onMounted, onUnmounted } from '@vue/runtime-core'
+import { settingsDirty, registerSettingsSave } from '/@/desktop/lifecycle'
+import { useViewerStore } from '/@/store/viewerStore'
 import { isEqual } from 'lodash-es'
 import { watch } from '@vue/runtime-core'
 import { dataClone } from '/@/utils/data'
@@ -63,6 +65,7 @@ watch(
     if (!loaded.value) return
     if (isEqual(config.value, formData)) showSave.value = false
     else showSave.value = true
+    settingsDirty.value = showSave.value
   },
   { deep: true }
 )
@@ -73,10 +76,7 @@ const generateMenu = () => {
       label: translate('settings.general.title'),
       key: 'general',
     },
-    // {
-    //   label: 'Viewer',
-    //   key: 'viewer',
-    // },
+    { label: 'Viewer', key: 'viewer' },
     // {
     //   label: 'HotKeys',
     //   key: 'hotkeys',
@@ -87,9 +87,15 @@ const generateMenu = () => {
 
 const save = async () => {
   if (!loaded.value) return
-  await userStore.set('settings', dataClone(formData))
-  await syncUserConfig()
-  showSave.value = false
+  try {
+    await userStore.set('settings', dataClone(formData))
+    await syncUserConfig()
+    settingsDirty.value = false
+    showSave.value = false
+  } catch (error) {
+    reportDesktopError(error)
+    throw error
+  }
 }
 
 const reset = () => {
@@ -106,7 +112,14 @@ const syncUserConfig = async () => {
   // const cloneSettings =
   Object.assign(formData, dataClone(settings))
   config.value = dataClone(settings)
+  useViewerStore().SET_PORTAL_PANEL_POSITION(
+    settings.viewer.portalPanelPosition
+  )
+  generateMenu()
 }
+
+const unregisterSave = registerSettingsSave(save)
+onUnmounted(unregisterSave)
 
 onMounted(async () => {
   loading.value = true

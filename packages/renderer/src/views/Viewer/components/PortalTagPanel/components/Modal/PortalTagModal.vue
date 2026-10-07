@@ -50,7 +50,7 @@
         </n-tab-pane>
         <!-- Drop Tab -->
         <n-tab-pane
-          v-if="mode === 'create' && desktop.runtime === 'electron'"
+          v-if="mode === 'create'"
           name="drop"
           :tab="translate('portalPane.portalModal.mode.drop')"
           class="flex flex-col h-full"
@@ -58,6 +58,7 @@
           <DropZone
             :class="{ 'drop-zone-collapse': dropList.length }"
             @drop="onDrop"
+            @paths="(paths: string[]) => dropList.push(...paths.filter(path => !dropList.includes(path)))"
           />
           <n-scrollbar class="mt-[10px]">
             <div class="folder-list">
@@ -136,7 +137,10 @@ import DropZone from '/@/components/DropZone.vue'
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  data: { type: Object as PropType<{ groupId: string; portal?: Portal }>, default: () => ({ groupId: '' }) },
+  data: {
+    type: Object as PropType<{ groupId: string; portal?: Portal }>,
+    default: () => ({ groupId: '' }),
+  },
 })
 const desktop = useDesktop()
 const { browserDialog, getDroppedPaths } = desktop
@@ -269,7 +273,9 @@ const updatePortal = async () => {
 const onDrop = (files: File[] | null) => {
   const ignore = ['image', 'video', 'audio']
   if (!files) return
-  const folders = files.filter((file) => !ignore.includes(file.type.split('/')[0]))
+  const folders = files.filter(
+    (file) => !ignore.includes(file.type.split('/')[0])
+  )
   dropList.value.push(...getDroppedPaths(folders))
 }
 

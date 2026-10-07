@@ -14,6 +14,7 @@ export async function getSettings(): Promise<DesktopSettings> {
   const saved = await userStore.get('settings')
   if (saved) return saved
   const defaults = createDefaultSettings()
-  await userStore.set('settings', defaults)
+  if (useDesktop().runtime === 'electron')
+    await userStore.set('settings', defaults)
   return defaults
 }

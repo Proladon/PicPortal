@@ -9,13 +9,20 @@ async function main() {
     const output = path.join(dataset.root, 'tauri.cjs')
     await build({ stdin: { contents: `export { useDesktop } from './packages/renderer/src/desktop'; export { mockIPC, mockWindows, clearMocks } from '@tauri-apps/api/mocks'`, resolveDir: process.cwd(), loader: 'ts' }, outfile: output, bundle: true, platform: 'node', format: 'cjs' })
     const { useDesktop, mockIPC, mockWindows, clearMocks } = require(output)
-    global.window = {}
+    global.window = { crypto: require('crypto').webcrypto, devicePixelRatio: 2 }
     global.isTauri = true
     mockWindows('main')
     const commands = []
     let sessionIndex = 0
+    let finishSave
+    const pendingSave = new Promise(resolve => { finishSave = resolve })
     mockIPC((command, payload) => {
       commands.push([command, payload])
+      if (command === 'preferences_init') return { completed: true, addedProjects: 1 }
+      if (command === 'preferences_get') return payload.key === 'projects' ? [] : null
+      if (command === 'preferences_import') return null
+      if (command === 'preferences_set') return pendingSave
+      if (command === 'desktop_open_folder') return 'ok'
       if (command === 'runtime_platform') return 'win32'
       if (command === 'plugin:app|tauri_version') return '2.12.1'
       if (command === 'plugin:app|version') return '0.1.0'
@@ -35,7 +42,7 @@ async function main() {
       if (command === 'project_set_source') return { name: '圖片', path: dataset.source }
       if (command === 'project_get') return ['old-id']
       if (command === 'file_exists') return payload.path !== 'missing'
-    })
+    }, { shouldMockEvents: true })
     window.__TAURI_INTERNALS__.convertFileSrc = (file) => `asset://${encodeURIComponent(file)}`
     const desktop = useDesktop()
     assert.equal(desktop.runtime, 'tauri')
@@ -51,7 +58,7 @@ async function main() {
     await desktop.appWindow.startDragging()
     await desktop.appWindow.openExternal('https://github.com/Proladon')
     await desktop.appWindow.close()
-    assert.deepEqual(commands.map(([command]) => command), ['runtime_platform', 'plugin:app|tauri_version', 'plugin:app|version', 'plugin:window|minimize', 'plugin:window|toggle_maximize', 'plugin:window|start_dragging', 'plugin:opener|open_url', 'plugin:window|close'])
+    assert.deepEqual(commands.map(([command]) => command), ['runtime_platform', 'plugin:app|tauri_version', 'preferences_init', 'plugin:app|version', 'plugin:window|minimize', 'plugin:window|toggle_maximize', 'plugin:window|start_dragging', 'plugin:opener|open_url', 'plugin:window|close'])
     assert.equal(desktop.toImageUrl(), '')
     assert.equal(desktop.toImageUrl(dataset.image), `asset://${encodeURIComponent(dataset.image)}`)
     assert.equal(desktop.database.readOnly, false)
@@ -82,13 +89,37 @@ async function main() {
     await desktop.fileSystem.createFile('new.db')
     await desktop.fileSystem.writeJson('new.db', { id: 'new' })
     assert.deepEqual(commands.at(-1), ['project_create', { path: 'new.db', data: { id: 'new' } }])
-    const before = commands.length
-    for (const operation of [() => desktop.userStore.get('projects'), () => desktop.userStore.set('projects', [])])
-      await assert.rejects(operation, (error) => error.code === 'NOT_IMPLEMENTED')
-    assert.throws(() => desktop.getDroppedPaths([]), (error) => error.code === 'NOT_IMPLEMENTED')
-    assert.equal(commands.length, before, 'Unsupported actions must not call native commands')
+    assert.equal(desktop.migration.completed, true)
+    assert.deepEqual(await desktop.userStore.get('projects'), [])
+    assert.equal(await desktop.importLegacySettings(), null)
+    let saved = false, idle = false
+    const saving = desktop.userStore.set('projects', []).then(() => { saved = true })
+    const waiting = desktop.whenIdle().then(() => { idle = true })
+    await Promise.resolve()
+    assert.equal(saved, false); assert.equal(idle, false)
+    finishSave()
+    await saving; await waiting
+    assert.equal(saved, true); assert.equal(idle, true)
+    let drops = []
+    const stopDrop = await desktop.onFileDrop(drop => drops.push(drop))
+    const payload = { paths:[{path:dataset.source,directory:true}],x:400,y:200,time:Date.now() }
+    await window.__TAURI_INTERNALS__.invoke('plugin:event|emit', { event:'desktop-file-drop',payload })
+    assert.equal(drops.length,1);assert.equal(drops[0].x,200);assert.equal(drops[0].y,100)
+    stopDrop()
+    await window.__TAURI_INTERNALS__.invoke('plugin:event|emit', { event:'desktop-file-drop',payload })
+    assert.equal(drops.length,1, 'Unsubscribe must prevent duplicate handling')
+    let closes = 0
+    const stopClose = await desktop.onCloseRequested(() => { closes++ })
+    await window.__TAURI_INTERNALS__.invoke('plugin:event|emit',{event:'desktop-close-requested',payload:null})
+    assert.equal(closes,1)
+    stopClose()
+    await window.__TAURI_INTERNALS__.invoke('plugin:event|emit',{event:'desktop-close-requested',payload:null})
+    assert.equal(closes,1)
+    await desktop.appWindow.finishClose()
+    assert.equal(commands.at(-1)[0],'desktop_finish_close')
+    assert.deepEqual(desktop.getDroppedPaths([{ path: 'not-trusted' }]), [])
     clearMocks()
-    console.log('PASS Tauri adapter: runtime selection, initialization, window controls, versions, URLs and unsupported operations')
+    console.log('PASS Tauri adapter: runtime selection, initialization, window controls, versions, URLs, persistence barrier, native drops and close lifecycle')
   } finally {
     delete global.window
     delete global.isTauri

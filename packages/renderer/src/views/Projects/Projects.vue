@@ -2,7 +2,7 @@
   <main class="projects">
     <n-scrollbar>
       <n-spin :show="loading">
-        <div v-if="desktop.runtime === 'electron'" class="project-list">
+        <div class="project-list">
           <ProjectCard
             v-for="(project, index) in projectsList"
             :key="index"
@@ -10,15 +10,33 @@
             @open="openProject"
             @refresh="refreshProjects"
           />
-          <ProjectCard newBtnCard @newProject="showCreateProjectModal = true" />
+          <ProjectCard
+            v-if="desktop.runtime === 'electron'"
+            newBtnCard
+            @newProject="showCreateProjectModal = true"
+          />
         </div>
-        <p v-else class="p-10 text-center">
-          開啟或建立 .db 專案，管理分類與批次整理圖片。
-        </p>
       </n-spin>
     </n-scrollbar>
+    <DropZone
+      v-if="desktop.runtime === 'tauri'"
+      projects
+      class="mx-10 h-12"
+      @paths="openDroppedProjects"
+    />
     <section class="btn-container">
-      <n-button v-if="desktop.runtime === 'tauri'" :disabled="loading" @click="showCreateProjectModal = true">新增專案</n-button>
+      <n-button
+        v-if="desktop.runtime === 'tauri'"
+        :disabled="loading"
+        @click="showCreateProjectModal = true"
+        >新增專案</n-button
+      >
+      <n-button
+        v-if="desktop.runtime === 'tauri'"
+        :disabled="loading"
+        @click="importSettings"
+        >匯入 Electron 設定</n-button
+      >
       <n-button
         secondary
         type="primary"
@@ -51,6 +69,7 @@
 
 <script lang="ts" setup>
 import ProjectCard from './components/ProjectCard.vue'
+import DropZone from '/@/components/DropZone.vue'
 import CreateProjectModal from './components/CreateProjectModal.vue'
 import EditProjectModal from './components/EditProjectModal.vue'
 import { NScrollbar, NButton, useNotification, NSpin } from 'naive-ui'
@@ -65,6 +84,8 @@ import useLocale from '/@/use/locale'
 import { getFileName } from '/@/utils/file'
 import { useViewerStore } from '/@/store/viewerStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
+import { getSettings } from '/@/use/settings'
+import { useTheme } from '/@/use/theme'
 
 // ANCHOR Use
 const desktop = useDesktop()
@@ -72,7 +93,7 @@ const { fileSystem, userStore } = desktop
 const router = useRouter()
 const notify = useNotification()
 const appStore = useAppStore()
-const { translate } = useLocale()
+const { translate, changeLocale } = useLocale()
 // ANCHOR Data
 const loading = ref<boolean>(false)
 const projectsList = ref<Project[]>([])
@@ -83,12 +104,24 @@ const importProjectData = ref<any>(null)
 // --- Methods ---
 
 const openProject = async (project: any) => {
+  if (desktop.runtime === 'tauri') {
+    if (loading.value || useViewerStore().wrap.wraping) return
+    loading.value = true
+    try {
+      await openNativeProject(project.path, project)
+    } catch (error) {
+      reportDesktopError(error)
+    } finally {
+      loading.value = false
+    }
+    return
+  }
   const [file, fileError] = await fileSystem.checkExist(project.path)
   if (fileError) return notify.error({ content: fileError })
   if (!file) {
     return notify.error({
       content: translate('projects.notify.notFoundProject'),
-      duration: 3000
+      duration: 3000,
     })
     // const projects = await userStore.get('projects')
     // const filterProjects = projects.filter((p: any) => p.id !== project.id)
@@ -104,7 +137,8 @@ const openProject = async (project: any) => {
 }
 
 const importProject = async () => {
-  if (useViewerStore().wrap.wraping) return notify.warning({ content: '請先完成批次作業與衝突處理' })
+  if (useViewerStore().wrap.wraping)
+    return notify.warning({ content: '請先完成批次作業與衝突處理' })
   if (loading.value) return
   loading.value = true
   try {
@@ -112,32 +146,14 @@ const importProject = async () => {
     if (!open) return
     const filePath = open[0]
     if (desktop.runtime === 'tauri') {
-      await DBQueue.onIdle()
-      const [dbData, error] = await desktop.database.connect(filePath)
-      if (error || !dbData)
-        return notify.error({ content: error || '無法讀取專案' })
-      const [source, sourceError] = await desktop.database.getSourceFolder()
-      if (sourceError) return notify.error({ content: sourceError })
-      appStore.SetOpenProject({
-        id: dbData.id || dbData.project || filePath,
-        name: getFileName(filePath),
-        path: filePath,
-        color: ''
-      })
-      await appStore.SyncDBData({ dbData })
-      appStore.sourceFolder = source
-      const viewerStore = useViewerStore()
-      viewerStore.folderFiles = []
-      viewerStore.filter = { onlyDockings: false, portals: [], fileTypes: [] }
-      usePortalPaneStore().ResetActivePortal()
-      await router.push({ name: 'GridView' })
+      await openNativeProject(filePath)
       return
     }
     importProjectData.value = {
       id: await nanoid(10),
       name: null,
       path: filePath,
-      color: null
+      color: null,
     }
     showImportProjectEditModal.value = true
   } catch (error) {
@@ -148,17 +164,77 @@ const importProject = async () => {
 }
 
 // => 取得專案列表
-const openCreatedProject = async (project: Project) => {
+const openNativeProject = async (filePath: string, metadata?: Project) => {
   await DBQueue.onIdle()
-  const [data, error] = await desktop.database.connect(project.path)
-  if (error || !data) return notify.error({ content: error || '無法開啟新專案' })
+  const [dbData, error] = await desktop.database.connect(filePath)
+  if (error || !dbData) throw new Error(error || '無法開啟專案')
+  const [source, sourceError] = await desktop.database.getSourceFolder()
+  if (sourceError) throw new Error(sourceError)
+  const projects = (await userStore.get('projects')) || []
+  const existing = projects.find(
+    (project) =>
+      project.path.replace(/\\/g, '/').toLowerCase() ===
+      filePath.replace(/\\/g, '/').toLowerCase()
+  )
+  const project = metadata ||
+    existing || {
+      id: await nanoid(10),
+      name: getFileName(filePath),
+      path: filePath,
+      color: '',
+    }
+  if (!existing) {
+    projects.push(project)
+    await userStore.set('projects', projects)
+  }
   appStore.SetOpenProject(project)
-  appStore.sourceFolder = null
-  await appStore.SyncDBData({ dbData: data })
-  useViewerStore().folderFiles = []
+  await appStore.SyncDBData({ dbData })
+  appStore.sourceFolder = source
+  const viewerStore = useViewerStore()
+  viewerStore.folderFiles = []
+  viewerStore.filter = { onlyDockings: false, portals: [], fileTypes: [] }
   usePortalPaneStore().ResetActivePortal()
-  showCreateProjectModal.value = false
   await router.push({ name: 'GridView' })
+}
+const openCreatedProject = async (project: Project) => {
+  try {
+    await openNativeProject(project.path, project)
+    showCreateProjectModal.value = false
+  } catch (error) {
+    reportDesktopError(error)
+  }
+}
+const openDroppedProjects = async (paths: string[]) => {
+  if (loading.value || useViewerStore().wrap.wraping) return
+  loading.value = true
+  try {
+    for (const path of paths) await openNativeProject(path)
+  } catch (error) {
+    reportDesktopError(error)
+  } finally {
+    loading.value = false
+  }
+}
+const importSettings = async () => {
+  loading.value = true
+  try {
+    const result = await desktop.importLegacySettings()
+    if (!result) return
+    const settings = await getSettings()
+    changeLocale(settings.general.locale)
+    await useTheme().setTheme(settings.general.theme)
+    useViewerStore().SET_PORTAL_PANEL_POSITION(
+      settings.viewer.portalPanelPosition
+    )
+    notify.success({
+      content: `設定匯入完成，新增 ${result.addedProjects} 個專案；已存在的設定已保留`,
+    })
+    await refreshProjects()
+  } catch (error) {
+    reportDesktopError(error)
+  } finally {
+    loading.value = false
+  }
 }
 
 const getProjects = async () => {
@@ -181,7 +257,7 @@ const refreshProjects = async () => {
 
 // --- Mounted ---
 onMounted(async () => {
-  if (desktop.runtime === 'electron') await refreshProjects()
+  await refreshProjects()
 })
 </script>
 

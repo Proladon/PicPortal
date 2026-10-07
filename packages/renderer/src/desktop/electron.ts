@@ -16,18 +16,34 @@ export function createElectronAdapter(
   bridge: Readonly<ElectronApi>
 ): DesktopApi {
   let generation = 0
-  const bind = <T extends object>(target: T, captured: number): T => new Proxy(target, {
-    get(target, key) {
-      const value = Reflect.get(target, key)
-      if (typeof value !== 'function') return value
-      return (...args: unknown[]) => captured === generation
-        ? Reflect.apply(value, target, args)
-        : Promise.resolve([null, 'STALE_PROJECT: 專案已切換'])
-    }
-  })
+  const bind = <T extends object>(target: T, captured: number): T =>
+    new Proxy(target, {
+      get(target, key) {
+        const value = Reflect.get(target, key)
+        if (typeof value !== 'function') return value
+        return (...args: unknown[]) =>
+          captured === generation
+            ? Reflect.apply(value, target, args)
+            : Promise.resolve([null, 'STALE_PROJECT: 專案已切換'])
+      },
+    })
   const api: DesktopApi = {
+    migration: { completed: true, addedProjects: 0 },
+    importLegacySettings: async () => null,
+    onFileDrop: async () => () => {
+      /* Electron uses HTML drop events. */
+    },
+    onCloseRequested: async () => () => {
+      /* Electron keeps its native lifecycle. */
+    },
+    whenIdle: async () => {
+      /* Electron writes use the shared DB queue. */
+    },
     captureProject() {
-      return { database: bind(api.database, generation), fileSystem: bind(api.fileSystem, generation) }
+      return {
+        database: bind(api.database, generation),
+        fileSystem: bind(api.fileSystem, generation),
+      }
     },
     initialize: () => Promise.resolve(),
     runtime: 'electron',
@@ -36,7 +52,7 @@ export function createElectronAdapter(
       isWindows: bridge.platform.isWindows,
       isMac: bridge.platform.isMac,
       isLinux: bridge.platform.isLinux,
-      versions: bridge.platform.versions
+      versions: bridge.platform.versions,
     },
     userStore: {
       get: (key) => bridge.userStore.get(key),
@@ -48,7 +64,7 @@ export function createElectronAdapter(
       },
       clear: async () => {
         await bridge.userStore.clear()
-      }
+      },
     },
     browserDialog: {
       async open(options = {}) {
@@ -57,8 +73,8 @@ export function createElectronAdapter(
           ...common,
           properties: [
             directory ? 'openDirectory' : 'openFile',
-            ...(multiple ? ['multiSelections'] : [])
-          ]
+            ...(multiple ? ['multiSelections'] : []),
+          ],
         })
         return response.canceled || !response.filePaths.length
           ? null
@@ -69,11 +85,11 @@ export function createElectronAdapter(
         return response.canceled || !response.filePath
           ? null
           : response.filePath
-      }
+      },
     },
     scanner: {
       scanImages: (directory, extensions) =>
-        bridge.fastGlob.scanImages(directory, extensions)
+        bridge.fastGlob.scanImages(directory, extensions),
     },
     database: {
       readOnly: false,
@@ -85,7 +101,7 @@ export function createElectronAdapter(
       setSourceFolder: async (path) => {
         const folder = {
           name: path.replace(/\\/g, '/').split('/').pop() || path,
-          path
+          path,
         }
         const [, error] = await result(() =>
           bridge.database.save('mainFolder', JSON.stringify(folder))
@@ -93,7 +109,9 @@ export function createElectronAdapter(
         return error ? [null, error] : [folder, null]
       },
       connect: async (path) => {
-        const response = await result<DBData>(() => bridge.database.connect(path))
+        const response = await result<DBData>(() =>
+          bridge.database.connect(path)
+        )
         if (!response[1]) generation++
         return response
       },
@@ -102,7 +120,7 @@ export function createElectronAdapter(
         result(() => bridge.database.deepSave(keys, data)),
       slice: (key, index) => result(() => bridge.database.slice(key, index)),
       get: (key) => result(() => bridge.database.get(key)),
-      pullDockings: (data) => result(() => bridge.database.pullDockings(data))
+      pullDockings: (data) => result(() => bridge.database.pullDockings(data)),
     },
     fileSystem: {
       openFolder: (path) => result(() => bridge.fileSystem.openFolder(path)),
@@ -116,7 +134,7 @@ export function createElectronAdapter(
         result(() => bridge.fileSystem.overrideFile(source, destination, mode)),
       checkExist: (path) => result(() => bridge.fileSystem.checkExist(path)),
       writeJson: (path, data) =>
-        result(() => bridge.fileSystem.writeJson(path, data))
+        result(() => bridge.fileSystem.writeJson(path, data)),
     },
     appWindow: {
       openExternal: async (url) => {
@@ -132,7 +150,10 @@ export function createElectronAdapter(
         await bridge.appWindow.maximum()
       },
       startDragging: () => Promise.resolve(),
-      getAppVersion: () => bridge.appWindow.getAppVersion()
+      getAppVersion: () => bridge.appWindow.getAppVersion(),
+      finishClose: async () => {
+        await bridge.appWindow.close()
+      },
     },
     toImageUrl: (path) =>
       path
@@ -143,7 +164,7 @@ export function createElectronAdapter(
     getDroppedPaths: (files) =>
       files
         .map((file) => (file as File & { path?: string }).path)
-        .filter((path): path is string => Boolean(path))
+        .filter((path): path is string => Boolean(path)),
   }
   return api
 }

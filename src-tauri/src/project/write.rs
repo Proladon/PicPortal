@@ -40,8 +40,9 @@ fn within(path: &Path, root: &Path) -> Result<bool> {
     let path = path_key(path)?;
     let root = path_key(root)?;
     let separator = std::path::MAIN_SEPARATOR;
-    Ok(path == root
-        || path.starts_with(&format!("{}{separator}", root.trim_end_matches(separator))))
+    let path = path.trim_end_matches(separator);
+    let root = root.trim_end_matches(separator);
+    Ok(path == root || path.starts_with(&format!("{root}{separator}")))
 }
 fn no_links(path: &Path) -> Result<()> {
     path_key(path)?;
@@ -112,7 +113,7 @@ pub(super) fn roots(data: &Value, file: &Path) -> Result<Vec<Root>> {
 fn serialize(data: &Value) -> Result<Vec<u8>> {
     serde_json::to_vec_pretty(data).map_err(|e| error("INVALID_JSON", e.to_string()))
 }
-fn atomic_write(
+pub(crate) fn atomic_write(
     path: &Path,
     bytes: &[u8],
     overwrite: bool,
@@ -403,6 +404,35 @@ impl ProjectState {
         let path = self.source_file(path)?;
         fs::remove_file(path).map_err(io_error)?;
         Ok("ok".into())
+    }
+    pub fn open_folder(&self, path: &str) -> Result<PathBuf> {
+        let path = Path::new(path);
+        let session = self.session()?;
+        let source = session
+            .source
+            .as_ref()
+            .filter(|root| within(path, root).unwrap_or(false));
+        if let Some(source) = source {
+            Root {
+                path: source.clone(),
+                anchor: source.clone(),
+            }
+            .check(path)?;
+        } else if let Some(root) = session
+            .destinations
+            .iter()
+            .find(|root| within(path, &root.path).unwrap_or(false))
+        {
+            root.check(path)?;
+        } else {
+            return Err(error("OUTSIDE_SCOPE", "只能開啟來源或 Portal 資料夾"));
+        }
+        no_links(path)?;
+        let resolved = canonical(path)?;
+        if !resolved.is_dir() {
+            return Err(error("INVALID_PATH", "必須選取資料夾"));
+        }
+        Ok(resolved)
     }
     pub(super) fn scoped_exists(&self, path: &str) -> Result<bool> {
         let session = self.session()?;

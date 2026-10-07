@@ -1,6 +1,6 @@
 # Tauri 2 遷移實作紀錄
 
-更新日期：2026-10-07（台灣時間）。已完成階段 0–4，里程碑 B 在 Windows 通過。Electron 開發、建置與發布入口保留；設定遷移與原生拖入留待階段 5。
+更新日期：2026-10-07（台灣時間）。階段 0–4 已完成；階段 5 的設定遷移、清單與關閉流程已通過 Windows 驗證，里程碑 C 仍缺原生外部拖入的實機驗收。Electron 開發、建置與發布入口保留。
 
 提交方式：`refactor` 分支，每階段各一個 commit；提交不代表尚未執行的手動驗收已完成。階段 0 已提交為 `cef0b6f`，階段 1 專門記錄桌面 API 抽象。
 
@@ -282,3 +282,62 @@ npm run build:tauri -- --debug --no-bundle
 - 回退使用 `npm run dev:electron` 或階段 3 commit `fc7d503`。JSON 格式仍相容；在正式專案套用前先複製 `.db` 與圖片目錄。已搬移／刪除的圖片不能只靠退回程式碼復原，須由資料副本還原。
 
 里程碑 B 已在 Windows 通過；下一階段為設定遷移與完整互動整合。交付前以預設 Tauri config 重建，移除 smoke 的隔離 profile 設定。
+
+## 階段 5：設定遷移與互動整合
+
+### 實作範圍
+
+- 固定 Rust store plugin 2.5.0 與 single-instance plugin 2.5.2，沿用 Tauri 2.12.1。設定存放於應用識別碼對應的 app data 目錄 `settings.json`；只透過自訂 commands 讀寫，沒有開放前端任意 store／檔案路徑權限。
+- store plugin 的直接儲存會截斷檔案，因此先儲存 `.settings.pending.json`，再以階段 4 的同目錄暫存／同步／替換流程提交正式設定。失敗恢復 plugin cache 並保留原設定 bytes。外部變更回傳 `SETTINGS_CHANGED`，不覆蓋其他程式修改。
+- Windows 首次啟動讀取 `%APPDATA%/PicPortal/config.json`；找不到或匯入失敗時可從專案頁手動選取 JSON。匯入保留已有設定、專案 ID／名稱與未知欄位，依清單 ID 或 Windows 路徑去重，只補缺少的資料。資料與遷移完成標記一次提交，來源檔只讀；失敗可重試。缺少設定時的 UI 預設值不先寫入，以免阻擋手動匯入舊值。
+- 專案清單可持久化新增、匯入、編輯及移除；移除清單項目不刪 `.db`。重啟後由 Rust 重新驗證保存的專案路徑，不需要再次選檔。新增路徑仍須原生 picker／drop 授權；已選取路徑不因再次初始化設定而重設固定的解析結果。新的清單項目使用獨立 ID，避免不同 `.db` 副本共用內部 ID 時影響編輯／移除。
+- 設定頁可保存語言、主題及 Portal 面板位置。adapter 的 `set` 等待實際持久化完成，`whenIdle` 等待尚未完成的 commands。儲存失敗保留未儲存提示並顯示錯誤。
+- 外部拖入接上 Rust 原生 Drop 事件，驗證並授權實際 OS 路徑，再依座標與類型交給 `.db` 或資料夾區域；前端依 devicePixelRatio 轉換實體座標，不使用 `File.path`。DropZone 在非同步訂閱完成後仍會檢查卸載狀態，並解除 drop／error listeners，避免舊事件交給新掛載區域。
+- Portal 與群組使用 Sortable fallback、滑鼠事件與指定拖曳 handle，保留原生檔案 handler；不使用 HTML5 拖曳與原生檔案 handler 互相衝突的組合。Portal 名稱停用文字選取。此方案依 [Sortable 官方說明](https://github.com/SortableJS/Sortable#forcefallback-option)，實際 WebView 指標排序及 JSON 寫回已驗證。
+- single-instance 放在第一個 plugin；第二次啟動退出並還原／聚焦主實例。原生關閉先通知前端：未儲存設定可繼續、儲存後關閉或放棄修改；批次／衝突尚未結束時可等作業完成或取消關閉。完成時等待 DBQueue、adapter pending 與 Rust mutex，禁止後續 commands 才銷毀視窗。沒有強制終止正在搬移的批次。
+- 資料夾開啟僅允許目前來源或 Portal 目錄，驗證固定祖先與連結。修正目錄尾端分隔符造成精確根目錄被拒絕的問題；任意專案外路徑仍拒絕。App／GridView 的快捷鍵在卸載時解除，非同步初始化完成後不再替已卸載元件綁定。
+
+### 驗證與重現
+
+環境延用 Windows 11／WebView2、Node 24.6.0、Rust 1.97.1、Tauri 2.12.1。
+
+```powershell
+npm run typecheck
+npm run lint -- --quiet
+npm run test:desktop
+npm run test:tauri-adapter
+npm run test:batch
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+$env:PICPORTAL_TEST_OTHER_VOLUME = 'D:\Coding\Repos\Proladon\PicPortal\src-tauri\target'
+cargo test --manifest-path src-tauri/Cargo.toml --locked
+cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets -- -D warnings
+npm run test:tauri-interactions -- --skip-os-drop
+npm run build:electron
+npm run test:baseline
+npm run test:tauri-skeleton:built
+npm run build:tauri -- --debug --no-bundle
+```
+
+| 驗證 | 結果與界線 |
+| --- | --- |
+| 型別、lint、Rust fmt／clippy | 通過；lint 0 errors |
+| 24 個 Rust 測試 | 通過，含設定 JSON／合併／去重、精確來源／Portal 目錄開啟及實際 C → D 跨磁碟搬移回歸 |
+| Desktop／Tauri adapter／batch | 通過，含設定儲存 barrier、實體座標轉換、訂閱解除、關閉契約及原有批次處理 |
+| 原生設定遷移 | 真正 store plugin 與鎖檔失敗注入：正式檔保持 `{}` 且無標記；釋放鎖後重試成功，重試不重複，來源 bytes 不變 |
+| 原生設定與清單 | 真正手動 JSON picker、既有設定與未知欄位保存、清單 metadata 編輯、新專案 save picker、重啟保留；直接 IPC 移除清單後 `.db` bytes 不變 |
+| 單一實例與排序 | 真正程序重啟、第二次啟動退出／還原最小化；WebView 可信指標事件操作 Portal fallback 排序並驗證 JSON 次序；F2 可開啟 Commander |
+| 關閉流程 | 未儲存設定關閉／取消、主題與面板儲存後關閉、語言放棄修改後關閉；批次衝突等待處理，略過保留來源與 docking，之後正常退出 |
+| About／外部目錄 | 無 `.git` 的暫存 cwd 顯示版本；Rust scoped opener 啟動匿名 Portal 目錄的檔案總管，專案外路徑拒絕 |
+| 嵌入前端骨架回歸 | 路由、樣式、版本、首次預設設定與最小化／最大化／關閉按鈕通過 |
+| 真正外部拖入 | **未驗證**。Windows Computer Use 拒絕把 drag 終點放在另一個程式視窗；完整模式曾在等待 OS drop 時逾時。`--skip-os-drop` 明確輸出 SKIP，exit 0 不代表此項通過 |
+| Electron 回退 | 建置與隔離基線通過；原有 updater 重複註冊 `Store-Get` 問題仍保留，未納入本階段修復 |
+
+`test:tauri-interactions` 使用匿名資料與唯一 smoke identifier，在沒有 Git／Vite／Node sidecar 的暫存 cwd 啟動嵌入前端的 debug exe。真實 native picker 由 Windows Computer Use 操作，Vue／Pinia、IPC、指標／快捷鍵與檔案結果由 CDP 檢查，沒有測試專用授權 command。設定來源隔離在 `%TEMP%/picportal-tauri-browse-*/legacy-appdata/PicPortal/config.json`；Tauri KnownFolder 設定位置不跟隨子程序 APPDATA，因此正式設定以唯一 smoke identifier 隔離於主機 `%APPDATA%/io.github.proladon.picportal.smoke.*/`。匿名資料、profile 與 smoke 設定保留供診斷，normal.db 在 finally 還原；沒有修改使用者正式設定或專案。
+
+### 尚未驗收與回退
+
+里程碑 C 尚未完成，原生外部資料夾／`.db` 拖入須用實際 Windows 桌面完成後才勾選。重新執行 `npm run test:tauri-interactions`，依輸出的匿名路徑完成匯入與儲存 picker，並在 ACTION OS folder drop 時把檔案總管的「拖入分類」拖到 Create Portal → DragDrop 虛線區；測試會檢查 Portal 保存。另須驗證 `.db` 拖入專案頁的區域分流。adapter mock 的事件與座標測試不能取代這兩項 OS 驗收。
+
+macOS／Linux、release profile、乾淨環境安裝包與更新未驗證，留待各平台及階段 6。交付前以預設 Tauri config 重建，避免 smoke identifier／WebView profile 留在一般 exe。
+
+回退使用 `npm run dev:electron` 或階段 4 commit `fbce844`。Electron `config.json` 未被覆蓋；Tauri `settings.json` 使用獨立識別碼目錄。`.db` 與圖片的備份／還原方式沿用階段 4。

@@ -5,6 +5,10 @@
       v-model="portals"
       item-key="id"
       :animation="300"
+      :force-fallback="true"
+      :fallback-on-body="true"
+      :support-pointer="false"
+      handle=".group-header"
       :disabled="appStore.readOnly"
     >
       <template #item="{ element }">
@@ -32,7 +36,7 @@ const portals = computed({
     const [, error] = await appStore.SaveToDB({ key: 'portals', data: newData })
     await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
     if (error) alert(error)
-  }
+  },
 })
 </script>
 

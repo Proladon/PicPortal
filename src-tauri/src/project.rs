@@ -12,10 +12,11 @@ use walkdir::WalkDir;
 #[cfg(test)]
 mod tests;
 mod write;
+pub(crate) use write::atomic_write;
 
 pub const IMAGE_TYPES: &[&str] = &["png", "jpg", "jpeg", "gif", "webp"];
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Error {
     pub code: &'static str,
     pub message: String,
@@ -67,7 +68,10 @@ struct Session {
 }
 
 impl ProjectState {
-    /// Called exclusively with results returned by the Rust native dialog.
+    pub(crate) fn has_selection(&self, path: &str) -> bool {
+        path_key(Path::new(path)).is_ok_and(|key| self.selected_files.contains_key(&key))
+    }
+    /// Called with native picker/drop results or validated saved project paths.
     pub fn selected(&mut self, path: PathBuf, directory: bool) -> Result<String> {
         let resolved = canonical(&path)?;
         let key = path_key(&path)?;
@@ -84,7 +88,7 @@ impl ProjectState {
         Ok(resolved.to_string_lossy().into_owned())
     }
 
-    fn selected_path(&self, path: &str, directory: bool) -> Result<PathBuf> {
+    pub(crate) fn selected_path(&self, path: &str, directory: bool) -> Result<PathBuf> {
         let path = Path::new(path);
         let selections = if directory {
             &self.selected_folders

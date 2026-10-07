@@ -63,7 +63,7 @@ import { useDesktop } from '/@/desktop'
 // --- Props ---
 const props = defineProps({
   groupId: { type: String, required: true },
-  data: { type: Object as PropType<Portal>, required: true }
+  data: { type: Object as PropType<Portal>, required: true },
 })
 
 const { fileSystem } = useDesktop()
@@ -79,7 +79,7 @@ const selectPortal = ref<any>(null)
 const styles = reactive({
   borderColor: '',
   background: '',
-  color: ''
+  color: '',
 })
 
 // --- Computed ---
@@ -103,7 +103,7 @@ const activePortal = async () => {
     if (exist < 0)
       portalPaneStore.AddActivedPortal({
         id: portal.id,
-        group: groupId
+        group: groupId,
       })
   } else {
     styles.borderColor = portal.bg
@@ -188,6 +188,7 @@ onMounted(() => {
 
 <style lang="postcss" scoped>
 .portal-tag {
+  user-select: none;
   @apply px-2 py-1 rounded-md cursor-pointer;
   @apply border-solid border-[1px] font-medium;
   @apply flex justify-between items-center;

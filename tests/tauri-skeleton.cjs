@@ -50,10 +50,10 @@ async function main() {
       await server.listen()
     }
     const config = JSON.parse(await fs.readFile('src-tauri/tauri.conf.json', 'utf8'))
-    const override = { build: { beforeDevCommand: null }, app: { windows: [{ ...config.app.windows[0], visible: false, focus: false, dataDirectory: path.join(root, 'webview') }] } }
+    const override = { identifier: `io.github.proladon.picportal.skeleton.${path.basename(root).split('-').at(-1).toLowerCase()}`, build: { beforeDevCommand: null }, app: { windows: [{ ...config.app.windows[0], visible: false, focus: false, dataDirectory: path.join(root, 'webview') }] } }
     const configPath = path.join(root, 'smoke.json')
     await fs.writeFile(configPath, JSON.stringify(override))
-    const env = { ...process.env, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${debugPort}` }
+    const env = { ...process.env, APPDATA:path.join(root,'legacy-appdata'), WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${debugPort}` }
     if (built) {
       console.log('Building the embedded frontend smoke executable')
       const builder = spawn(process.execPath, [require.resolve('@tauri-apps/cli/tauri.js'), 'build', '--debug', '--no-bundle', '--config', configPath], { env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
@@ -94,7 +94,7 @@ async function main() {
       pending.clear()
     })
     await waitFor(() => evaluate(`location.hash === '#/projects' && !!document.querySelector('.projects')`))
-    assert.match(await evaluate(`document.querySelector('.desktop-status').textContent`), /NOT_IMPLEMENTED/)
+    assert.equal(await evaluate(`!!document.querySelector('.desktop-status')`), false)
     const metadata = await evaluate(`(async () => { const invoke=window.__TAURI_INTERNALS__.invoke; return {runtime:globalThis.isTauri ? 'tauri' : 'unknown',os:await invoke('runtime_platform'),version:await invoke('plugin:app|version'),tauri:await invoke('plugin:app|tauri_version')} })()`)
     assert.deepEqual(metadata, { runtime: 'tauri', os: 'win32', version: '0.1.0', tauri: '2.12.1' })
     for (const route of ['about', 'settings', 'projects']) {
@@ -104,7 +104,7 @@ async function main() {
     }
     assert.equal(await evaluate(`!!document.querySelector('.n-spin-container--blur')`), false)
     assert.equal(await evaluate(`getComputedStyle(document.documentElement).getPropertyValue('--base').trim()`), '#ccc0b8')
-    console.log('PASS native routes, styles, metadata and unsupported feature messages')
+    console.log('PASS native routes, styles, metadata and default preferences')
     if (!built) {
       // Spy at the adapter boundary; native IPC globals are immutable in production.
       await evaluate(`(async () => { const d=(await import('/src/desktop/index.ts')).useDesktop(); globalThis.dragCalls=0; d.appWindow.startDragging=async()=>{globalThis.dragCalls++}; document.querySelector('.app-name').dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0})); })()`)
@@ -135,7 +135,7 @@ async function main() {
       exitTimeout = setTimeout(() => reject(new Error('Window close did not exit app')), 10000)
     })]).finally(() => clearTimeout(exitTimeout))
     assert.equal(code, 0)
-    console.log(`PASS native Tauri skeleton (${built ? 'embedded frontend' : 'Vite + HMR'}): routes/styles, metadata, unsupported feature errors, window controls${built ? '' : ', titlebar drag isolation'}`)
+    console.log(`PASS native Tauri skeleton (${built ? 'embedded frontend' : 'Vite + HMR'}): routes/styles, metadata, default preferences, window controls${built ? '' : ', titlebar drag isolation'}`)
   } finally {
     if (!originalRestored) await fs.writeFile(titlePath, originalTitle)
     if (socket) socket.close()

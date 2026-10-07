@@ -135,12 +135,6 @@ const createNewProject = async () => {
       color: formData.color,
     }
 
-    if (desktop.runtime === 'tauri') {
-      emit('created', newProject)
-      updateModalShow(false)
-      return
-    }
-
     const projects = await userStore.get('projects')
     const nextProjects = projects || []
     nextProjects.push(newProject)
@@ -149,7 +143,8 @@ const createNewProject = async () => {
       content: translate('projects.notify.createSuccess'),
       duration: 1500,
     })
-    emit('refresh')
+    if (desktop.runtime === 'tauri') emit('created', newProject)
+    else emit('refresh')
     updateModalShow(false)
   })
 }

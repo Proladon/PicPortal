@@ -26,8 +26,24 @@ export interface DesktopSettings {
   viewer: { portalPanelPosition: 'left' | 'right' }
   hotkeys: Record<string, unknown>
 }
+export interface MigrationStatus {
+  completed: boolean
+  addedProjects: number
+  message?: string | null
+}
+export interface NativeFileDrop {
+  paths: Array<{ path: string; directory: boolean }>
+  x: number
+  y: number
+  time: number
+}
 
 export interface DesktopApi {
+  readonly migration: MigrationStatus
+  importLegacySettings(): Promise<MigrationStatus | null>
+  onFileDrop(handler: (drop: NativeFileDrop) => void): Promise<() => void>
+  onCloseRequested(handler: () => void): Promise<() => void>
+  whenIdle(): Promise<void>
   /** Bind queued operations to the session that is open at enqueue time. */
   captureProject(): Pick<DesktopApi, 'database' | 'fileSystem'>
   initialize(): Promise<void>
@@ -91,6 +107,7 @@ export interface DesktopApi {
     maximum(): Promise<void>
     startDragging(): Promise<void>
     getAppVersion(): Promise<string>
+    finishClose(): Promise<void>
   }
   toImageUrl(path?: string): string
   /** Electron HTML drop paths; Tauri will use native drop events in stage 5. */

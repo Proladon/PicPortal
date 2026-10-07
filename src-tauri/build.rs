@@ -17,6 +17,14 @@ fn main() {
             "project_create",
             "file_transfer",
             "file_delete",
+            "preferences_init",
+            "preferences_get",
+            "preferences_set",
+            "preferences_remove",
+            "preferences_import",
+            "desktop_open_folder",
+            "desktop_close_ready",
+            "desktop_finish_close",
         ]),
     ))
     .expect("無法建立桌面命令權限");

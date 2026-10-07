@@ -56,6 +56,35 @@ impl Fixture {
 }
 
 #[test]
+fn folder_opening_accepts_exact_roots_and_rejects_outside_paths() {
+    let mut f = Fixture::new();
+    let destination = f.temp.path().join("目的/收藏");
+    fs::create_dir_all(&destination).unwrap();
+    f.open();
+    assert_eq!(
+        f.state.open_folder(destination.to_str().unwrap()).unwrap(),
+        canonical(&destination).unwrap()
+    );
+    assert_eq!(
+        f.state.open_folder(f.root.to_str().unwrap()).unwrap(),
+        canonical(&f.root).unwrap()
+    );
+    assert_eq!(
+        f.state
+            .open_folder(f.temp.path().to_str().unwrap())
+            .unwrap_err()
+            .code,
+        "OUTSIDE_SCOPE"
+    );
+    assert_eq!(
+        f.state
+            .open_folder(f.root.join("非圖片.txt").to_str().unwrap())
+            .unwrap_err()
+            .code,
+        "INVALID_PATH"
+    );
+}
+#[test]
 fn reading_and_scanning_preserve_bytes_ids_unknown_fields_and_legacy_paths() {
     let mut f = Fixture::new();
     let before = fs::read(&f.file).unwrap();

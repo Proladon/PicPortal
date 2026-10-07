@@ -22,6 +22,7 @@
         <n-form-item path="path">
           <n-input
             :disabled="importMode"
+            :readonly="desktop.runtime === 'tauri'"
             v-model:value="formData.path"
             :placeholder="
               translate('projects.createProject.placeholder.projectPath')
@@ -61,7 +62,8 @@ import { reactive, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { find } from 'lodash-es'
 import { useDesktop } from '/@/desktop'
-import { saveProjectDialog } from '/@/utils/browserDialog'
+import { useAppStore } from '/@/store/appStore'
+import { saveProjectDialog, importProjectDialog } from '/@/utils/browserDialog'
 import { useNotification } from 'naive-ui'
 import useLocale from '/@/use/locale'
 
@@ -82,7 +84,8 @@ const props = defineProps({
 })
 
 // ANCHOR Use
-const { userStore } = useDesktop()
+const desktop = useDesktop()
+const { userStore } = desktop
 const notify = useNotification()
 const { translate } = useLocale()
 // ANCHOR Data
@@ -127,6 +130,8 @@ const updateProject = async () => {
   project.color = formData.color
   project.path = formData.path
   await userStore.set('projects', projects)
+  if (useAppStore().openProject?.id === project.id)
+    useAppStore().SetOpenProject(project)
   notify.success({
     content: translate('projects.notify.updateSuccess'),
     duration: 1500,
@@ -162,7 +167,10 @@ const handleConfirm = async () => {
 }
 
 const browseFolder = async (): Promise<void> => {
-  const save = await saveProjectDialog()
+  const save =
+    desktop.runtime === 'tauri'
+      ? (await importProjectDialog())?.[0] || null
+      : await saveProjectDialog()
   if (save === null) return
   formData.path = save
 }

@@ -106,10 +106,14 @@
       group="portal"
       item-key="id"
       :animation="300"
+      :force-fallback="true"
+      :fallback-on-body="true"
+      :support-pointer="false"
+      handle=".portal-name"
       :disabled="appStore.readOnly"
       :class="{
         'list-view': listView === 'list',
-        'grid-view': listView === 'grid'
+        'grid-view': listView === 'grid',
       }"
     >
       <template #item="{ element }">
@@ -153,7 +157,7 @@ import {
   PencilSharp,
   ColorFill,
   ListSharp,
-  Grid
+  Grid,
 } from '@vicons/ionicons5'
 import { computed, ref } from '@vue/reactivity'
 import PortalTag from './PortalTag.vue'
@@ -165,7 +169,7 @@ import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
 // --- Data ---
 const props = defineProps({
-  groupData: { type: Object as PropType<PortalGroup>, required: true }
+  groupData: { type: Object as PropType<PortalGroup>, required: true },
 })
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
@@ -201,10 +205,10 @@ const groupPortals = computed({
 
     await appStore.DeepSaveToDB({
       key: `[portals][${groupIndex}][childs]`,
-      data: newData
+      data: newData,
     })
     await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
-  }
+  },
 })
 const showPortalGroup = computed(() => {
   if (searchPortalName.value && !groupPortals.value.length) return false
@@ -238,7 +242,7 @@ const deleteGroup = async (groupId: any) => {
   // TODO background task
   for (let t = 0; t < needDelete.length; t++) {
     const index = findIndex(activePortals.value, {
-      group: needDelete[t].group
+      group: needDelete[t].group,
     })
     portalPaneStore.RemoveActivePortal(index)
   }
