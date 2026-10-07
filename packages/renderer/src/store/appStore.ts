@@ -9,6 +9,7 @@ export const DBQueue = new PQueue({ concurrency: 1 })
 interface AppStoreState {
   openProject: null | Project
   dbData: null | DBData
+  sourceFolder: MainFolder | null
   commander: {
     portal: boolean
   }
@@ -19,10 +20,11 @@ export const useAppStore = defineStore('app', {
   state: (): AppStoreState => ({
     openProject: null,
     dbData: null,
+    sourceFolder: null,
     commander: {
-      portal: false,
+      portal: false
     },
-    theme: {},
+    theme: {}
   }),
   actions: {
     SetOpenProject(project: Project) {
@@ -35,6 +37,8 @@ export const useAppStore = defineStore('app', {
       return [null, 'No project open']
     },
     async SaveToDB({ key, data }: { key: string; data: any }) {
+      if (database.readOnly)
+        return [null, '唯讀模式：分類與專案儲存將於階段 4 開放']
       // const start = performance.now()
       const stringData = JSON.stringify(data)
       // const end = performance.now()
@@ -42,11 +46,13 @@ export const useAppStore = defineStore('app', {
       return await database.save(key, stringData)
     },
     async DeepSaveToDB({ key, data }: { key: string; data: any }) {
+      if (database.readOnly) return
       const stringData = JSON.stringify(data)
       const task = async () => await database.deepSave(key, stringData)
       await DBQueue.add(task)
     },
     async DBSlice({ key, index }: { key: string; index: number }) {
+      if (database.readOnly) return
       const task = async () => await database.slice(key, index)
       await DBQueue.add(task)
     },
@@ -67,7 +73,7 @@ export const useAppStore = defineStore('app', {
     },
 
     async SyncDBDataToState({
-      syncKeys,
+      syncKeys
     }: {
       syncKeys: Array<'project' | 'portals' | 'mainFolder' | 'dockings'>
     }) {
@@ -77,14 +83,17 @@ export const useAppStore = defineStore('app', {
         if (getError) return alert(getError)
         Object.assign(this.dbData, { [key]: getRes })
       }
-    },
+    }
   },
   getters: {
     projectName(): string {
       return this.openProject?.name || ''
     },
     projectMainFolder(): MainFolder | Record<string, never> {
-      return this.dbData?.mainFolder || {}
+      return this.sourceFolder || this.dbData?.mainFolder || {}
     },
-  },
+    readOnly(): boolean {
+      return database.readOnly
+    }
+  }
 })

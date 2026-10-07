@@ -5,13 +5,13 @@
         size="20"
         :class="[
           { transform: portalPanelPosition === 'right' },
-          { 'rotate-180': portalPanelPosition === 'right' },
+          { 'rotate-180': portalPanelPosition === 'right' }
         ]"
         class="cursor-pointer"
         ><EnterSharp
       /></n-icon>
     </n-button>
-    <n-button text @click="showPortalGroupModal = true">
+    <n-button text :disabled="readOnly" @click="showPortalGroupModal = true">
       <n-icon size="20" class="cursor-pointer"><Folder /></n-icon>
     </n-button>
     <n-button text @click="showPortalSearch = true">
@@ -44,6 +44,8 @@ import { computed, ref } from '@vue/reactivity'
 import { useViewerStore } from '/@/store/viewerStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
+import { useDesktop } from '/@/desktop'
+const readOnly = useDesktop().database.readOnly
 
 // ANCHOR Use
 const viewerStore = useViewerStore()
@@ -59,7 +61,7 @@ const searchPortalName = computed({
   set: (value: string) => {
     if (!value) portalPaneStore.searchPortalName = ''
     portalPaneStore.searchPortalName = value.trim()
-  },
+  }
 })
 // ANCHOR Methods
 const changePortalPanelPosition = () => {

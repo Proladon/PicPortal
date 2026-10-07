@@ -16,6 +16,12 @@
         Project
       </n-popover>
 
+      <span
+        v-if="appStore.readOnly && projectName"
+        class="read-only-status px-3"
+        >唯讀</span
+      >
+
       <n-popover trigger="hover">
         <template #trigger>
           <button
@@ -83,9 +89,10 @@ import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
 import { getFileName } from '/@/utils/file'
 import useLocale from '/@/use/locale'
+import { reportDesktopError } from '/@/desktop/status'
 
 // ANCHOR Use
-const { browserDialog } = useDesktop()
+const { browserDialog, database } = useDesktop()
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
 const { translate } = useLocale()
@@ -106,26 +113,33 @@ const choseMainFolder = async () => {
   showWarningModal.value = false
   try {
     const res = await browserDialog.open({
-      directory: true,
+      directory: true
     })
 
     if (res) {
+      if (database.readOnly) {
+        const [folder, error] = await database.setSourceFolder(res[0])
+        if (error) throw new Error(error)
+        appStore.sourceFolder = folder
+        return
+      }
       const folder = {
         name: getFileName(res[0]),
-        path: res[0].replaceAll('\\', '/'),
+        path: res[0].replaceAll('\\', '/')
       }
       await appStore.SaveToDB({ key: 'mainFolder', data: folder })
       await appStore.SaveToDB({ key: 'dockings', data: [] })
       await appStore.SyncDBDataToState({
-        syncKeys: ['mainFolder', 'dockings'],
+        syncKeys: ['mainFolder', 'dockings']
       })
     }
   } catch (error) {
-    console.log(error)
+    reportDesktopError(error)
   }
 }
 
 const changeMainFolder = () => {
+  if (database.readOnly) return choseMainFolder()
   if (mainFolder.value.name) {
     showWarningModal.value = true
     return

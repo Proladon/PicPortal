@@ -12,7 +12,7 @@
     >
       <GridItem
         v-for="item in itemsList"
-        :key="item"
+        :key="item.path"
         :img="item.path"
         @click="selectItem($event, item)"
       />

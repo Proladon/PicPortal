@@ -54,7 +54,10 @@ export interface DesktopApi {
     scanImages(directory: string, extensions: string[]): Promise<string[]>
   }
   readonly database: {
+    readonly readOnly: boolean
     connect(path: string): Promise<DesktopResult<DBData>>
+    getSourceFolder(): Promise<DesktopResult<MainFolder | null>>
+    setSourceFolder(path: string): Promise<DesktopResult<MainFolder>>
     save(key: string, serializedData: string): Promise<DesktopResult<string>>
     deepSave(
       keys: string | string[],

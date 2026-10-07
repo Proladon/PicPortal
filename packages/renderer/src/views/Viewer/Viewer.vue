@@ -48,6 +48,7 @@ const filesExistCount = computed(() => viewerStore.wrap.filesExist.length)
 const filesExist = computed(() => viewerStore.wrap.filesExist[0] || {})
 
 watchEffect(() => {
+  if (appStore.readOnly) return
   console.log('watch filesExistCount', filesExistCount.value)
   if (filesExistCount.value > 0) {
     setTimeout(() => {

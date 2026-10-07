@@ -160,3 +160,66 @@ cargo test --manifest-path src-tauri/Cargo.toml --locked
 macOS／Linux、實體拖曳、外部瀏覽器啟動、安裝／解除安裝、更新與所有資料功能都未宣告驗收完成。下一階段為對話框、舊專案唯讀解析、掃描、圖片 URL 與範圍授權。
 
 回退：使用 `npm run dev:electron` 或 checkout 階段 1 commit `9c126d9` 後重新安裝依賴；使用者資料未被遷移。原始匿名模板保留於 repository。
+
+## 階段 3：專案唯讀開啟與圖片瀏覽
+
+### 實作範圍
+
+- Tauri Projects 直接開啟既有 `.db`，不依賴尚未遷移的設定／專案清單。Rust 使用 dialog plugin 的原生選檔結果建立授權；取消回傳 `null`。來源資料夾選取也走原生對話框。
+- Rust 讀取並驗證 JSON，接受 `id`／舊 `project`、`mainFolder: ''` 或物件；以 `serde_json::Value` 保留未知欄位、原 ID、分類與圖片路徑。讀取、切換來源及瀏覽均不寫回 `.db`。
+- 新增 `database.readOnly`、`getSourceFolder`、`setSourceFolder`。Tauri 的來源 override 只存於工作階段，既有 dockings 不清除；相對來源路徑以 `.db` 所在目錄解析，原始 JSON 不改成絕對路徑。重新開啟會恢復專案內的來源。
+- 補上原先只有型別、沒有 route／元件的 List 模式，開啟既有模式切換入口；Grid、List、VirtualGrid、VirtualList、Focus 共用篩選結果。Focus 加入上一張／下一張。大圖使用既有 viewer 與 adapter URL。
+- Windows 圖片路徑比對接受大小寫與斜線差異，保留舊 dockings 原文；找不到的 Portal ID 不生成空白標籤。唯讀狀態停用分類新增／修改／排序、標籤移除與批次操作，避免瀏覽觸發舊佇列清理。
+- 掃描失敗會清除失效的圖片清單、顯示錯誤並結束 loading。前端檢查掃描請求序號與專案／來源，避免過期結果覆蓋切換後的圖片。
+
+### 掃描與權限語意
+
+副檔名支援 png、jpg、jpeg、gif、webp，大小寫不敏感，接受有／無前導句點；空列表回傳空結果，其他副檔名回傳 `INVALID_EXTENSION`。逐層列舉目錄，不把路徑當 glob。結果以 Rust 路徑字典序排序、去重；忽略點號開頭的檔案／目錄、Windows hidden attribute，以及符號連結和所有 Windows reparse points（包含 junction）。掃描錯誤不回傳部分成功清單。
+
+原生對話框選取檔案／目錄後保存 canonical path，命令重新解析並比對，拒絕未選取或重新指向別處的路徑。專案內的來源也先驗證為可讀目錄；掃描只接受目前專案的來源根目錄，不能由前端要求掃描任意目錄。阻塞 I/O 使用 `spawn_blocking`，單一 session mutex 包含讀取、切換、掃描與授權，序列化操作。
+
+依 [Tauri capabilities 文件](https://v2.tauri.app/security/capabilities/)以 `AppManifest.commands` 產生自訂命令 ACL，再逐項授權 `main` 視窗。未給前端 dialog／fs 的廣泛 plugin 權限；選檔由受限的自訂 command 呼叫 Rust dialog API。這也避免 JS dialog command 自動授予整個目錄的 asset scope。
+
+asset protocol 初始 scope 仍為空。Rust 只對掃描成功、位於驗證來源內的圖片呼叫 `allow_file`，利用 Tauri scope 的字元跳脫處理中文、括號、方括號、`#`、`%`。專案 JSON、設定檔、非圖片、隱藏圖片及 Portal 目的目錄均不因選檔／選資料夾而獲得圖片權限。前端使用 `convertFileSrc` 與既有 CSP；[asset protocol 文件](https://v2.tauri.app/security/asset-protocol/)說明它與其他檔案存取範圍分開。
+
+已由使用者核准來源並授權的「精確圖片檔」在同一程序中累積；Tauri 2.12 scope 沒有撤銷單一 allow pattern 的公開 API。本階段切換專案不擴大成整個目錄權限，Rust 檔案命令仍受目前專案限制；程序結束後，選檔與圖片權限全部重建。這不是檔案寫入權限。若未來需要在切換專案時立即撤銷已核准圖片，須另設可撤銷的圖片服務。
+
+### 驗證紀錄
+
+環境延用階段 2 的 Windows x86_64／WebView2、Node 24.6.0、Rust 1.97.1、Tauri 2.12.1；macOS／Linux 未驗證。
+
+```powershell
+npm run typecheck
+npm run lint
+npm run test:desktop
+npm run test:tauri-adapter
+npm run test:tauri-skeleton
+npm run test:tauri-browse
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml --locked
+npm run build:electron
+npm run test:baseline
+npm run build:tauri -- --debug --no-bundle
+```
+
+| 驗證 | 結果 |
+| --- | --- |
+| 前端型別、lint；Rust fmt／clippy | 通過，lint 0 errors；仍有既有格式與未使用項目的 warnings |
+| Desktop／Tauri adapter | 取消、資料／錯誤格式、掃描參數、原生命令，以及未接上的寫入不呼叫 IPC，全部通過 |
+| 9 個 Rust 測試 | 正常／空白／舊格式、未知欄位／ID／原始 bytes、不合法 JSON／schema、來源與檔案消失、相對來源、scope、來源 override、專案切換、大小寫副檔名、隱藏檔與 junction 排除；Windows 獨占檔案造成讀取拒絕時，原專案狀態與 bytes 保留 |
+| Windows 原生瀏覽 smoke | 真正選檔、讀取 normal.db；5 種模式顯示圖片、唯讀分類標籤及篩選；特殊路徑圖片、大圖預覽都載入成功 |
+| 圖片／命令權限 | 未選取專案不能 connect；不能掃描任意目錄、讀取外部設定或指定未選取來源。額外以 CDP Network 確認專案 JSON、設定、隱藏圖片及非圖片 asset 請求為 HTTP 403，而非只檢查破圖 |
+| 空白專案與來源選取 | 原生資料夾對話框選來源後顯示圖片；原 `.db` 保持 `mainFolder: ''`，bytes 完全相同 |
+| 錯誤與復原 | 損毀 JSON 拒絕讀取；來源移走時 UI 顯示 NOT_FOUND、清空舊圖片且不永久 loading，還原後可刷新瀏覽。ACCESS_DENIED 由 Rust 錯誤與 adapter 契約驗證；未修改使用者或系統 ACL |
+| 真正程序重啟 | 重啟時原選檔與 asset 授權失效；再次原生選取同一專案後重新授權並顯示圖片，原 ID／bytes 不變 |
+| 開發骨架回歸 | Vite 路由、HMR、視窗按鈕、標題列拖曳分流通過 |
+| Electron 回退 | 建置與隔離基線通過；既有 updater 重複註冊 Store-Get 的錯誤仍留待階段 6 |
+
+`tests/tauri-browse.cjs` 在無 `.git` 的暫存 cwd 直接啟動含前端產物的 debug exe，使用隔離 WebView profile 與匿名資料，無 Vite／Node sidecar。選檔必須在印出的路徑透過真實 Windows 對話框完成（手動或 computer-use），沒有測試專用的繞過授權 command；CDP 檢查原生 IPC 與 UI。此次選檔以 computer-use 完成，其餘檢查自動執行。若 CI 沒有可操作的 Windows 桌面，不能把這個互動 smoke 當成無人值守測試，階段 6 再整合。
+
+匿名副本與 WebView profile 保留於 `%TEMP%/picportal-migration-*`、`picportal-tauri-browse-*` 供診斷；Rust unit tests 的暫存資料自動清理。未讀取或修改使用者正式專案／設定。交付前以預設 Tauri config 重建，避免測試 profile 設定留在一般 exe。
+
+里程碑 A 已在 Windows 通過。分類與資料寫入、檔案批次處理留待階段 4；設定／專案清單持久化、外部拖入留待階段 5。這次未驗收安裝包、release profile 或更新。
+
+回退：`npm run dev:electron`，或 checkout 階段 2 commit `b238ec3`。階段 3 未修改舊 `.db` 或使用者設定，沒有資料回退步驟。

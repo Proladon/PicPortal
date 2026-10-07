@@ -3,6 +3,10 @@
     <div class="modal-content">
       <p>Mode Change</p>
       <div class="mode-btn-container">
+        <div class="mode-btn" @click="changeView('ListView')">
+          <n-icon><ListSharp /></n-icon>
+          <p>List View</p>
+        </div>
         <div class="mode-btn" @click="changeView('VirtualList')">
           <n-icon>
             <ListSharp />
@@ -45,7 +49,7 @@ import { onMounted } from '@vue/runtime-core'
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  group: Object,
+  group: Object
 })
 
 const showModal = ref(false)

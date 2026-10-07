@@ -5,6 +5,7 @@
       v-model="portals"
       item-key="id"
       :animation="300"
+      :disabled="appStore.readOnly"
     >
       <template #item="{ element }">
         <PortalGroup :groupData="element" />
@@ -31,7 +32,7 @@ const portals = computed({
     const [, error] = await appStore.SaveToDB({ key: 'portals', data: newData })
     await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
     if (error) alert(error)
-  },
+  }
 })
 </script>
 

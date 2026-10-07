@@ -24,6 +24,7 @@
     "test": "node tests/app.spec.js",
     "test:desktop": "node tests/desktop.spec.cjs",
     "test:tauri-adapter": "node tests/tauri-adapter.spec.cjs",
+    "test:tauri-browse": "node tests/tauri-browse.cjs",
     "test:tauri-skeleton": "node tests/tauri-skeleton.cjs",
     "test:tauri-skeleton:built": "node tests/tauri-skeleton.cjs --built",
     "test:baseline": "node tests/electron-baseline.cjs",

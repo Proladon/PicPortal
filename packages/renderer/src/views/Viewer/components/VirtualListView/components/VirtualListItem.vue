@@ -1,11 +1,6 @@
 <template>
   <div class="virtual-list-item">
-    <img
-      class="item-thumb-nail"
-      :src="toImageUrl(img)"
-      alt=""
-      srcset=""
-    />
+    <img class="item-thumb-nail" :src="toImageUrl(img)" alt="" srcset="" />
     <NIcon
       class="magnifier"
       size="20"
@@ -23,7 +18,7 @@
         <div class="portal-tag-list">
           <n-tag
             class="tag"
-            closable
+            :closable="!appStore.readOnly"
             @close="removePortal(portal)"
             :color="{
               color: portal.bg,
@@ -42,6 +37,7 @@
 </template>
 
 <script lang="ts" setup>
+import { sameFilePath } from '/@/utils/file'
 import { toImageUrl } from '/@/desktop'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
@@ -71,9 +67,9 @@ const flattenPortals = computed(() => portalPanelStore.flattenPortals)
 
 // => 移除圖片上的 portal
 const removePortal = async (portal: Portal) => {
-  const targetIndex = findIndex(
-    dockings.value,
-    (item) => item.target === props.img
+  if (appStore.readOnly) return
+  const targetIndex = findIndex(dockings.value, (item) =>
+    sameFilePath(item.target, props.img)
   )
   const portalsRef = dataClone(target.value?.portals || [])
   pull(portalsRef, portal.id)
@@ -96,7 +92,9 @@ const removePortal = async (portal: Portal) => {
 
 // => 同步 docking
 const syncDockingsData = () => {
-  const exist = find(dockings.value, { target: props.img })
+  const exist = find(dockings.value, (item) =>
+    sameFilePath(item.target, props.img)
+  )
 
   if (!exist) {
     targetPortals.value = []
@@ -104,9 +102,10 @@ const syncDockingsData = () => {
   }
   target.value = exist
 
-  targetPortals.value = map(exist.portals, (portal) =>
-    find(flattenPortals.value, { id: portal })
-  )
+  targetPortals.value = exist.portals.flatMap((id) => {
+    const portal = flattenPortals.value.find((item) => item.id === id)
+    return portal ? [portal] : []
+  })
 }
 
 watch(dockings, () => {

@@ -1,9 +1,9 @@
 <template>
   <div class="viewer-handlebar">
     <div class="handlebar">
-      <!-- <ViewModeSwitcher /> -->
+      <ViewModeSwitcher />
 
-      <QuickActions />
+      <QuickActions v-if="!readOnly" />
       <n-button
         class="handle-item"
         :type="showFilter ? 'primary' : 'default'"
@@ -44,6 +44,8 @@ import PerPageControl from './components/PerPageControl.vue'
 import { NButton, NIcon, NSlider, NTag } from 'naive-ui'
 import { Filter, Refresh } from '@vicons/ionicons5'
 import { ref } from '@vue/reactivity'
+import { useDesktop } from '/@/desktop'
+const readOnly = useDesktop().database.readOnly
 import { useViewerStore } from '/@/store/viewerStore'
 
 const showFilter = ref(false)

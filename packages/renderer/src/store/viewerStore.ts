@@ -5,6 +5,9 @@ import { difference, map, filter, intersection } from 'lodash'
 const { scanner, fileSystem } = useDesktop()
 import { wrapingQueue, filesExistQueue } from '/@/queue'
 import PQueue from 'p-queue'
+import { filePathKey } from '/@/utils/file'
+import { reportDesktopError } from '/@/desktop/status'
+let scanRequest = 0
 
 export type ViewerTypes =
   | 'GridView'
@@ -50,7 +53,7 @@ export const useViewerStore = defineStore('viewer', {
   state: (): ViewerStoreState => ({
     loading: false, // viewer loading
     signal: {
-      refresh: false,
+      refresh: false
     },
     lastViewerType: 'GridView',
     portalPanelPosition: 'right',
@@ -64,19 +67,19 @@ export const useViewerStore = defineStore('viewer', {
       filesExist: [],
       sameOperation: {
         enable: false,
-        action: null,
-      },
+        action: null
+      }
     },
     pullList: [], // files need to pull after portal
     filter: {
       onlyDockings: false,
       portals: [],
-      fileTypes: [],
+      fileTypes: []
     },
     gridView: {
       perPage: 20,
-      imgSize: 150,
-    },
+      imgSize: 150
+    }
   }),
   actions: {
     SET_PORTAL_PANEL_POSITION(position: 'left' | 'right') {
@@ -89,7 +92,9 @@ export const useViewerStore = defineStore('viewer', {
       this.pullList = pullList
     },
     async GetFolderAllFiles({ fileTypes }: { fileTypes?: string[] }) {
+      const request = ++scanRequest
       const appStore = useAppStore()
+      const project = appStore.openProject?.path
       const mainFolderPath = appStore.projectMainFolder.path
       if (!mainFolderPath) {
         this.folderFiles = []
@@ -97,9 +102,20 @@ export const useViewerStore = defineStore('viewer', {
       }
       if (!fileTypes) fileTypes = ['png', 'jpg', 'jpeg', 'gif', 'webp']
 
-      const files = await scanner.scanImages(mainFolderPath, fileTypes)
-
-      this.folderFiles = files
+      try {
+        const files = await scanner.scanImages(mainFolderPath, fileTypes)
+        if (
+          request === scanRequest &&
+          project === appStore.openProject?.path &&
+          mainFolderPath === appStore.projectMainFolder.path
+        )
+          this.folderFiles = files
+      } catch (error) {
+        if (request === scanRequest) {
+          this.folderFiles = []
+          reportDesktopError(error)
+        }
+      }
     },
     async ClearDockings() {
       const appStore = useAppStore()
@@ -113,7 +129,7 @@ export const useViewerStore = defineStore('viewer', {
     async Wraping({
       mode,
       filePath,
-      destPath,
+      destPath
     }: {
       mode: 'copy' | 'move'
       filePath: string
@@ -127,7 +143,7 @@ export const useViewerStore = defineStore('viewer', {
             this.wrap.filesExist.push({
               mode: mode,
               filePath,
-              destPath,
+              destPath
             })
           return Promise.reject(new Error(err))
         }
@@ -150,7 +166,7 @@ export const useViewerStore = defineStore('viewer', {
       this.wrap.sameOperation.enable = false
       this.wrap.sameOperation.action = null
       usingQueue.start()
-    },
+    }
   },
   getters: {
     folderFilesCount(): number {
@@ -166,12 +182,12 @@ export const useViewerStore = defineStore('viewer', {
       if (this.filter.fileTypes.length) {
         if (this.filter.onlyDockings) {
           dockings = filter(dockings, (docking) => {
-            const extensions = docking.target.split('.').pop()
+            const extensions = docking.target.split('.').pop()?.toLowerCase()
             return this.filter.fileTypes.includes(extensions || '')
           })
         } else {
           files = filter(files, (file) => {
-            const extensions = file.split('.').pop()
+            const extensions = file.split('.').pop()?.toLowerCase()
             return this.filter.fileTypes.includes(extensions) || false
           })
         }
@@ -187,6 +203,16 @@ export const useViewerStore = defineStore('viewer', {
           filter(dockings, (i: any) => i.portals.length),
           'target'
         )
+        if (useDesktop().database.readOnly) {
+          const scanned = new Map<string, string>(
+            files.map((file: string) => [filePathKey(file), file])
+          )
+          return res.flatMap((target: string) =>
+            scanned.get(filePathKey(target))
+              ? [scanned.get(filePathKey(target))!]
+              : []
+          )
+        }
         return res
       }
       return files
@@ -195,8 +221,8 @@ export const useViewerStore = defineStore('viewer', {
       const appStore = useAppStore()
       if (!appStore.dbData) return []
       return appStore.dbData.dockings
-    },
-  },
+    }
+  }
 })
 
 let count = 0

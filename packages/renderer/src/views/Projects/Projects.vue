@@ -2,7 +2,7 @@
   <main class="projects">
     <n-scrollbar>
       <n-spin :show="loading">
-        <div class="project-list">
+        <div v-if="desktop.runtime === 'electron'" class="project-list">
           <ProjectCard
             v-for="(project, index) in projectsList"
             :key="index"
@@ -12,11 +12,23 @@
           />
           <ProjectCard newBtnCard @newProject="showCreateProjectModal = true" />
         </div>
+        <p v-else class="p-10 text-center">
+          唯讀開啟既有 .db 專案。分類與檔案操作將於下一階段開放。
+        </p>
       </n-spin>
     </n-scrollbar>
     <section class="btn-container">
-      <n-button secondary type="primary" @click="importProject">
-        {{ translate('projects.import') }}
+      <n-button
+        secondary
+        type="primary"
+        :disabled="loading"
+        @click="importProject"
+      >
+        {{
+          desktop.runtime === 'tauri'
+            ? '開啟既有專案 (.db)'
+            : translate('projects.import')
+        }}
       </n-button>
     </section>
   </main>
@@ -48,9 +60,13 @@ import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid/async'
 import { useAppStore } from '/@/store/appStore'
 import useLocale from '/@/use/locale'
+import { getFileName } from '/@/utils/file'
+import { useViewerStore } from '/@/store/viewerStore'
+import { usePortalPaneStore } from '/@/store/portalPaneStore'
 
 // ANCHOR Use
-const { fileSystem, userStore } = useDesktop()
+const desktop = useDesktop()
+const { fileSystem, userStore } = desktop
 const router = useRouter()
 const notify = useNotification()
 const appStore = useAppStore()
@@ -70,7 +86,7 @@ const openProject = async (project: any) => {
   if (!file) {
     return notify.error({
       content: translate('projects.notify.notFoundProject'),
-      duration: 3000,
+      duration: 3000
     })
     // const projects = await userStore.get('projects')
     // const filterProjects = projects.filter((p: any) => p.id !== project.id)
@@ -86,16 +102,45 @@ const openProject = async (project: any) => {
 }
 
 const importProject = async () => {
-  const open = await importProjectDialog()
-  if (!open) return
-  const filePath = open[0]
-  importProjectData.value = {
-    id: await nanoid(10),
-    name: null,
-    path: filePath,
-    color: null,
+  if (loading.value) return
+  loading.value = true
+  try {
+    const open = await importProjectDialog()
+    if (!open) return
+    const filePath = open[0]
+    if (desktop.runtime === 'tauri') {
+      const [dbData, error] = await desktop.database.connect(filePath)
+      if (error || !dbData)
+        return notify.error({ content: error || '無法讀取專案' })
+      const [source, sourceError] = await desktop.database.getSourceFolder()
+      if (sourceError) return notify.error({ content: sourceError })
+      appStore.SetOpenProject({
+        id: dbData.id || dbData.project || filePath,
+        name: getFileName(filePath),
+        path: filePath,
+        color: ''
+      })
+      await appStore.SyncDBData({ dbData })
+      appStore.sourceFolder = source
+      const viewerStore = useViewerStore()
+      viewerStore.folderFiles = []
+      viewerStore.filter = { onlyDockings: false, portals: [], fileTypes: [] }
+      usePortalPaneStore().ResetActivePortal()
+      await router.push({ name: 'GridView' })
+      return
+    }
+    importProjectData.value = {
+      id: await nanoid(10),
+      name: null,
+      path: filePath,
+      color: null
+    }
+    showImportProjectEditModal.value = true
+  } catch (error) {
+    reportDesktopError(error)
+  } finally {
+    loading.value = false
   }
-  showImportProjectEditModal.value = true
 }
 
 // => 取得專案列表
@@ -119,7 +164,7 @@ const refreshProjects = async () => {
 
 // --- Mounted ---
 onMounted(async () => {
-  await refreshProjects()
+  if (desktop.runtime === 'electron') await refreshProjects()
 })
 </script>
 

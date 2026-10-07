@@ -4,7 +4,7 @@
     secondary
     class="p-4 cursor-pointer"
     @click="modal.warning = true"
-    :disabled="wrapingStatus || !dockings.length"
+    :disabled="readOnly || wrapingStatus || !dockings.length"
   >
     <div class="handle-item">
       <n-icon><RocketSharp /></n-icon>
@@ -38,6 +38,8 @@ import { getFileName } from '/@/utils/data'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
 import { reactive, computed } from 'vue'
+import { useDesktop } from '/@/desktop'
+const readOnly = useDesktop().database.readOnly
 
 const viewerStore = useViewerStore()
 const portalPaneStore = usePortalPaneStore()
@@ -47,12 +49,12 @@ const dockings = computed(() => viewerStore.dockings)
 const flattenPortals = computed(() => portalPaneStore.flattenPortals)
 const wrapingStatus = computed(() => viewerStore.wrap.wraping)
 const modal = reactive({
-  warning: false,
+  warning: false
 })
 // --- Methods ---
 const wraping = async () => {
   modal.warning = false
-  if (!dockings.value.length) return
+  if (readOnly || !dockings.value.length) return
   if (wrapingStatus.value) return
   const dockingsData = dataClone(dockings.value)
   const waitRemove: string[] = []
@@ -70,7 +72,7 @@ const wraping = async () => {
       await viewerStore.Wraping({
         mode: count === dock.portals.length ? 'move' : 'copy',
         filePath: src,
-        destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src),
+        destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src)
       })
     })
     waitRemove.push(src)

@@ -18,6 +18,12 @@ tauri = { version = "=2.12.1", features = ["protocol-asset"] }
 tauri-plugin-opener = "=2.7.0"
 tauri-plugin-dialog = "=2.8.1"
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dunce = "1"
+walkdir = "2"
+
+[dev-dependencies]
+tempfile = "3"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
