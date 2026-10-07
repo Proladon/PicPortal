@@ -4,13 +4,13 @@
       <n-form-item label="Portalpanel Position">
         <n-button-group>
           <n-button
-            :type="portalPanelPosition === 'left' ? 'primary' : ''"
+            :type="portalPanelPosition === 'left' ? 'primary' : 'default'"
             @click="syncModel.portalPanelPosition = 'left'"
           >
             左邊
           </n-button>
           <n-button
-            :type="portalPanelPosition === 'right' ? 'primary' : ''"
+            :type="portalPanelPosition === 'right' ? 'primary' : 'default'"
             @click="syncModel.portalPanelPosition = 'right'"
           >
             右邊

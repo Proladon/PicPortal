@@ -75,7 +75,7 @@ export const useAppStore = defineStore('app', {
       for (const key of syncKeys) {
         const [getRes, getError] = await database.get(key)
         if (getError) return alert(getError)
-        this.dbData[key] = getRes
+        Object.assign(this.dbData, { [key]: getRes })
       }
     },
   },

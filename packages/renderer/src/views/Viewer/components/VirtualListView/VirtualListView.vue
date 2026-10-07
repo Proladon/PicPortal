@@ -13,7 +13,7 @@
           :poolBuffer="5"
           dataKey="path"
         >
-          <template v-slot="{ item, index }">
+          <template v-slot="{ item }">
             <div class="item-container">
               <VirtualListItem
                 :img="item.path"

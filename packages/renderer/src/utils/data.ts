@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash-es'
 
-export const dataClone = (data: unknown): unknown => {
+export const dataClone = <T>(data: T): T => {
   // return JSON.parse(JSON.stringify(data))
   return cloneDeep(data)
 }

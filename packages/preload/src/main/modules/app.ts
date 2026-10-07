@@ -13,12 +13,13 @@ const appWindow = () => {
   })
 
   ipc.handle('Window-Minimum', (e) => {
-    const win: BrowserWindow = BrowserWindow.getFocusedWindow()
-    win.minimize()
+    const win = BrowserWindow.getFocusedWindow()
+    win?.minimize()
   })
 
   ipc.handle('Window-Maximum', (e) => {
-    const win: BrowserWindow = BrowserWindow.getFocusedWindow()
+    const win = BrowserWindow.getFocusedWindow()
+    if (!win) return
     const isMaximized = win.isMaximized()
     if (isMaximized) win.unmaximize()
     else if (!isMaximized) win.maximize()

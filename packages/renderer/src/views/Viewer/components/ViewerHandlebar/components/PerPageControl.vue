@@ -1,5 +1,5 @@
 <template>
-  <n-tooltip :delay="500" trigger="hover" placement="bottom-center">
+  <n-tooltip :delay="500" trigger="hover" placement="bottom">
     <template #trigger>
       <n-input-number
         class="w-[100px]"
@@ -18,8 +18,8 @@ import { NInputNumber, NTooltip } from 'naive-ui'
 import { useViewerStore } from '/@/store/viewerStore'
 const viewerStore = useViewerStore()
 
-const onChange = (val: number) => {
-  viewerStore.gridView.perPage = val
+const onChange = (val: number | null) => {
+  viewerStore.gridView.perPage = val || 10
   viewerStore.signal.refresh = true
 }
 </script>

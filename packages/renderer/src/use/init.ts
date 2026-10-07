@@ -1,19 +1,19 @@
 import hotkeys from 'hotkeys-js'
 import { useAppStore } from '../store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
-import { useElectron } from '/@/use/electron'
+import type { UserSettings } from './settings'
+import { getSettings } from './settings'
 import useLocale from '/@/use/locale'
 
 export default () => {
-  const { userStore } = useElectron()
   const { changeLocale } = useLocale()
 
   const portalPaneStore = usePortalPaneStore()
   const appStore = useAppStore()
   return {
-    init: async (): Promise<void> => {
-      const settings = await userStore.get('settings')
-      if (settings) changeLocale(settings.general.locale)
+    init: async (): Promise<UserSettings> => {
+      const settings = await getSettings()
+      changeLocale(settings.general.locale)
 
       hotkeys('esc', (event) => {
         event.preventDefault()
@@ -23,6 +23,7 @@ export default () => {
         event.preventDefault()
         appStore.commander.portal = true
       })
+      return settings
     },
   }
 }

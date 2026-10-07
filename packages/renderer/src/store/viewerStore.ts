@@ -11,6 +11,7 @@ export type ViewerTypes =
   | 'ListView'
   | 'VirtualList'
   | 'VirtualGrid'
+  | 'FocusView'
 export type PortalPanelPosition = 'left' | 'right'
 
 interface ViewerStoreState {
@@ -89,23 +90,14 @@ export const useViewerStore = defineStore('viewer', {
     },
     async GetFolderAllFiles({ fileTypes }: { fileTypes?: string[] }) {
       const appStore = useAppStore()
-      let mainFolderPath = appStore.projectMainFolder.path
+      const mainFolderPath = appStore.projectMainFolder.path
       if (!mainFolderPath) {
         this.folderFiles = []
         return
       }
       if (!fileTypes) fileTypes = ['png', 'jpg', 'jpeg', 'gif', 'webp']
 
-      mainFolderPath = mainFolderPath.replaceAll('(', '\\(')
-      mainFolderPath = mainFolderPath.replaceAll(')', '\\)')
-
-      let pathPattern
-      if (fileTypes.length === 1)
-        pathPattern = `${mainFolderPath}/**/*.${fileTypes[0]}`
-      else if (fileTypes.length > 2)
-        pathPattern = `${mainFolderPath}/**/*.{${fileTypes.join(',')}}`
-
-      const files = await fastGlob.glob(pathPattern)
+      const files = await fastGlob.scanImages(mainFolderPath, fileTypes)
 
       this.folderFiles = files
     },
@@ -175,7 +167,7 @@ export const useViewerStore = defineStore('viewer', {
         if (this.filter.onlyDockings) {
           dockings = filter(dockings, (docking) => {
             const extensions = docking.target.split('.').pop()
-            return this.filter.fileTypes.includes(extensions) || false
+            return this.filter.fileTypes.includes(extensions || '')
           })
         } else {
           files = filter(files, (file) => {
@@ -185,10 +177,9 @@ export const useViewerStore = defineStore('viewer', {
         }
       }
       if (this.filter.portals.length) {
-        dockings = filter(dockings, (docking) => {
+        dockings = dockings.filter((docking) => {
           const res = intersection(docking.portals, this.filter.portals)
-          if (res.length) return docking
-          return false
+          return res.length > 0
         })
       }
       if (this.filter.onlyDockings) {

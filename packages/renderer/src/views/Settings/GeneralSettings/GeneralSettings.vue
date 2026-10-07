@@ -46,11 +46,7 @@ const syncModel = computed({
 })
 
 const languageOptions = computed(() => {
-  const list = []
-  for (const key in localeConfig) {
-    list.push(localeConfig[key])
-  }
-  return list
+  return Object.values(localeConfig)
 })
 
 const onThemeChange = (theme: string) => {

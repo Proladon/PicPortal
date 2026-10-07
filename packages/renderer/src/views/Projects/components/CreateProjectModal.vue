@@ -68,9 +68,9 @@ const { translate } = useLocale()
 const formRef = ref<any>(null)
 const showModal = ref<boolean>(false)
 const formData = reactive({
-  name: null,
-  path: null,
-  color: null,
+  name: '',
+  path: '',
+  color: '',
 })
 const formRules = {
   name: {
@@ -134,9 +134,9 @@ const createNewProject = async () => {
     }
 
     const projects = await userStore.get('projects')
-    if (!projects) return await userStore.set('projects', [newProject])
-    projects.push(newProject)
-    await userStore.set('projects', projects)
+    const nextProjects = projects || []
+    nextProjects.push(newProject)
+    await userStore.set('projects', nextProjects)
     notify.success({
       content: translate('projects.notify.createSuccess'),
       duration: 1500,
@@ -148,8 +148,8 @@ const createNewProject = async () => {
 
 const browseFolder = async (): Promise<void> => {
   const save = await saveProjectDialog()
-  if (save.canceled) return
-  formData.path = save.filePath
+  if (save === null) return
+  formData.path = save
 }
 
 // ANCHOR Mounted

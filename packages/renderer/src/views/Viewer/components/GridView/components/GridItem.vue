@@ -29,13 +29,14 @@
     <img
       class="!w-full"
       :style="`width: ${imgSize}px; height: ${imgSize}px`"
-      :src="`local-resource://${img}`"
+      :src="toImageUrl(img)"
       loading="lazy"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { localFile as toImageUrl } from '/@/utils/file'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { NButton, NTag, NPopover, NIcon } from 'naive-ui'
@@ -57,7 +58,7 @@ const appStore = useAppStore()
 const viewerStore = useViewerStore()
 const portalPanelStore = usePortalPaneStore()
 
-const targetPortals = ref([])
+const targetPortals = ref<Portal[]>([])
 const target = ref<any>(null)
 
 const dockings = computed(() => viewerStore.dockings)
@@ -70,7 +71,7 @@ const removePortal = async (portal: any) => {
     dockings.value,
     (item: any) => item.target === props.img
   )
-  const portalsRef: any = dataClone(target.value.portals)
+  const portalsRef: any = dataClone(target.value?.portals || [])
   pull(portalsRef, portal.id)
 
   if (!portalsRef.length) {
@@ -99,7 +100,10 @@ const syncDockingsData = () => {
   target.value = exist
 
   targetPortals.value = compact(
-    map(exist.portals, (portal) => find(flattenPortals.value, { id: portal }))
+    exist.portals.flatMap((id) => {
+      const portal = flattenPortals.value.find((item) => item.id === id)
+      return portal ? [portal] : []
+    })
   )
 }
 

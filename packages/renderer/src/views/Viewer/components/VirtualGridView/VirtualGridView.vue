@@ -14,7 +14,7 @@
             :poolBuffer="5"
             dataKey="path"
           >
-            <template v-slot="{ item, index }">
+            <template v-slot="{ item }">
               <div
                 class="item-container"
                 :style="`grid-template-columns: repeat(${column}, 1fr);`"

@@ -1,0 +1,4 @@
+node_modules/
+**/dist/
+types/env.d.ts
+src-tauri/target/

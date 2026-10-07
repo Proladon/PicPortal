@@ -38,6 +38,7 @@ import { computed, reactive, ref } from '@vue/reactivity'
 import { useRouter } from 'vue-router'
 import { NModal, NIcon, NButton } from 'naive-ui'
 import { AppsSharp, ListSharp, ImageOutline } from '@vicons/ionicons5'
+import type { ViewerTypes } from '/@/store/viewerStore'
 import { useViewerStore } from '/@/store/viewerStore'
 import { onMounted } from '@vue/runtime-core'
 
@@ -67,7 +68,7 @@ const closeModal = (): void => {
   }, 150)
 }
 
-const changeView = (type: string): void => {
+const changeView = (type: ViewerTypes): void => {
   viewerStore.SET_LAST_VIEWER_TYPE(type)
   closeModal()
   router.push({ name: type })

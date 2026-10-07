@@ -1,6 +1,6 @@
 interface Docking {
   target: string
-  portals: ActivedPortals[]
+  portals: NanoId[]
 }
 
 interface ActivedPortals {
@@ -21,10 +21,12 @@ type MainFolder = {
 }
 
 type DBData = {
-  project: string
-  portals: Portals[]
-  dockings: any[]
-  mainFolder: MainFolder
+  id?: string
+  project?: string
+  portals: PortalGroup[]
+  dockings: Docking[]
+  mainFolder: MainFolder | ''
+  [key: string]: unknown
 }
 
 type PortalGroup = {

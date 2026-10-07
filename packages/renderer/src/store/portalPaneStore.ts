@@ -36,7 +36,7 @@ export const usePortalPaneStore = defineStore('portalPane', {
     },
     flattenPortals() {
       const portalGroups: any = this.portals
-      const portals: Portal[] = []
+      const portals: (Portal & { group: PortalGroup })[] = []
       portalGroups.forEach((group: PortalGroup) => {
         const childs = map(group.childs, (p) => ({
           group,

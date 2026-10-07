@@ -87,7 +87,7 @@
           </section>
         </n-popover>
 
-        <n-button text :type="expand ? 'primary' : ''">
+        <n-button text :type="expand ? 'primary' : 'default'">
           <n-icon
             size="20"
             v-if="groupData.childs.length"
@@ -139,6 +139,7 @@
 </template>
 
 <script setup lang="ts">
+import type { PropType } from 'vue'
 import draggable from 'vuedraggable'
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
 import { NButton, NIcon, NEllipsis, NPopover, NBadge, NDivider } from 'naive-ui'
@@ -162,7 +163,7 @@ import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
 // --- Data ---
 const props = defineProps({
-  groupData: Object,
+  groupData: { type: Object as PropType<PortalGroup>, required: true },
 })
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()

@@ -65,7 +65,7 @@
 
       <div v-if="rename">
         <p class="text-border">New filename</p>
-        <n-input clearable :status="renameError" v-model:value="newFileName" />
+        <n-input clearable :status="renameError || undefined" v-model:value="newFileName" />
       </div>
 
       <div class="modal-footer" v-if="rename">

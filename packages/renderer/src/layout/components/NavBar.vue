@@ -6,7 +6,7 @@
           <router-link
             :to="{ name: lastViewerType }"
             class="nav-btn"
-            :class="{ 'nav--actived': viewerTypes.includes($route.name) }"
+            :class="{ 'nav--actived': viewerTypes.includes(String($route.name || '')) }"
           >
             <img :src="hh" alt="info" />
           </router-link>

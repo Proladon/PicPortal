@@ -122,6 +122,8 @@ import {
 } from 'naive-ui'
 import { findIndex } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
+import type { PropType } from 'vue'
+import type { FormInst } from 'naive-ui'
 import { useElectron } from '/@/use/electron'
 import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/file'
@@ -133,7 +135,7 @@ import DropZone from '/@/components/DropZone.vue'
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  data: Object,
+  data: { type: Object as PropType<{ groupId: string; portal?: Portal }>, default: () => ({ groupId: '' }) },
 })
 const { browserDialog } = useElectron()
 const message = useMessage()
@@ -144,7 +146,7 @@ const { translate } = useLocale()
 const tab = ref<'manual' | 'drop'>('manual')
 const dropList = ref<string[]>([])
 const showModal = ref<boolean>(false)
-const formRef = ref(null)
+const formRef = ref<FormInst | null>(null)
 const formData = reactive({
   name: '',
   link: '',
@@ -195,10 +197,10 @@ const browseFolder = async (): Promise<void> => {
   const res = await browserDialog.open({
     properties: ['openDirectory'],
   })
-  formData.link = res.filePaths[0]
+  if (!res.canceled && res.filePaths.length) formData.link = res.filePaths[0]
 }
 
-const newPortal = async (exist = null) => {
+const newPortal = async (exist?: string) => {
   return {
     name: formData.name,
     id: exist || (await nanoid(10)),
@@ -220,7 +222,7 @@ const createPortal = async (): Promise<void> => {
   const portals = dataClone(portalsData.value)
   const groupIndex = findIndex(portals, { id: props.data?.groupId })
   if (tab.value == 'manual') {
-    await formRef.value.validate(async (errors: any) => {
+    await formRef.value?.validate(async (errors: any) => {
       if (errors) return
       const portal = await newPortal()
       portals[groupIndex].childs.push(portal)
@@ -244,14 +246,16 @@ const createPortal = async (): Promise<void> => {
 
 // => 更新 PortalTag
 const updatePortal = async () => {
+  const currentPortal = props.data.portal
+  if (!currentPortal || !formRef.value) return
   await formRef.value.validate(async (errors: any) => {
     if (errors) return
 
     const portals = dataClone(portalsData.value)
-    const portal = await newPortal(props.data.portal.id)
+    const portal = await newPortal(currentPortal.id)
     const groupIndex = findIndex(portals, { id: props.data.groupId })
     const portalIndex = findIndex(portals[groupIndex].childs, {
-      id: props.data.portal.id,
+      id: currentPortal.id,
     })
     portals[groupIndex].childs[portalIndex] = portal
     await updateDBData(portals)
@@ -263,10 +267,10 @@ const updatePortal = async () => {
 const onDrop = (files: File[] | null) => {
   const ignore = ['image', 'video', 'audio']
   if (!files) return
-  for (const f of files) {
-    if (!ignore.includes(f.type.split('/')[0])) {
-      dropList.value.push(f.path)
-    }
+  const folders = files.filter((file) => !ignore.includes(file.type.split('/')[0]))
+  for (const file of folders) {
+    const filePath = (file as File & { path?: string }).path
+    if (filePath) dropList.value.push(filePath)
   }
 }
 

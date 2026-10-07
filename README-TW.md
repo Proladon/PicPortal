@@ -16,6 +16,12 @@ This is [Picnel.io-2](https://github.com/Proladon/Picnel.io-2) next version.
 
 > ... 待更新
 
+## Tauri 2 遷移
+
+已開始建立資料基線，目前仍以 Electron 執行。使用 `npm ci` 安裝，`npm run watch` 開發，`npm run build` 建置。
+
+檢查指令：`npm run typecheck`、`npm run lint`、建置後執行 `npm run test:baseline`。詳見 [遷移計畫](docs/tauri-2-migration-plan.md)與 [實作紀錄](docs/tauri-2-migration-progress.md)。
+
 [vite]: https://github.com/vitejs/vite/
 [electron]: https://github.com/electron/electron
 [electron-builder]: https://github.com/electron-userland/electron-builder

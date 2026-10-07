@@ -109,7 +109,7 @@ const choseMainFolder = async () => {
       properties: ['openDirectory'],
     })
 
-    if (res.filePaths.length) {
+    if (!res.canceled && res.filePaths.length) {
       const folder = {
         name: getFileName(res.filePaths[0]),
         path: res.filePaths[0].replaceAll('\\', '/'),

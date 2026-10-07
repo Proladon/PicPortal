@@ -6,7 +6,7 @@
       <QuickActions />
       <n-button
         class="handle-item"
-        :type="showFilter ? 'primary' : ''"
+        :type="showFilter ? 'primary' : 'default'"
         ghost
         @click="showFilter = !showFilter"
       >

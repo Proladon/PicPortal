@@ -117,7 +117,7 @@ const updateModalShow = (show: boolean) => {
 
 // => 更新專案資訊
 const updateProject = async () => {
-  const projects = await userStore.get('projects')
+  const projects = (await userStore.get('projects')) || []
   const project = find(projects, { id: props.project.id })
   if (!project)
     return notify.error({
@@ -136,7 +136,7 @@ const updateProject = async () => {
 }
 
 const importProject = async () => {
-  const projects = await userStore.get('projects')
+  const projects = (await userStore.get('projects')) || []
   projects.push({
     id: props.project.id,
     name: formData.name,
@@ -163,8 +163,8 @@ const handleConfirm = async () => {
 
 const browseFolder = async (): Promise<void> => {
   const save = await saveProjectDialog()
-  if (save.canceled) return
-  formData.path = save.filePath
+  if (save === null) return
+  formData.path = save
 }
 
 const syncData = (keys: string[]) => {

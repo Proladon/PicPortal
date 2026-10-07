@@ -55,7 +55,7 @@ const wraping = async () => {
   if (!dockings.value.length) return
   if (wrapingStatus.value) return
   const dockingsData = dataClone(dockings.value)
-  const waitRemove = []
+  const waitRemove: string[] = []
   forEach(dockingsData, async (dock) => {
     const src = dock.target
     let count = 0
@@ -64,7 +64,8 @@ const wraping = async () => {
       const targetFolder = find(
         flattenPortals.value,
         (item) => item.id === portal
-      ).link
+      )?.link
+      if (!targetFolder) return
 
       await viewerStore.Wraping({
         mode: count === dock.portals.length ? 'move' : 'copy',

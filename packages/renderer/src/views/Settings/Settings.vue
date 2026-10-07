@@ -36,6 +36,7 @@ import HotKeysSettings from './HotKeysSettings/HotKeysSettings.vue'
 import ViewerSettings from './ViewerSettings/ViewerSettings.vue'
 import { reactive, ref, computed } from '@vue/reactivity'
 import { useElectron } from '/@/use/electron'
+import { createDefaultSettings, getSettings } from '/@/use/settings'
 import useLocale from '/@/use/locale'
 import { onMounted } from '@vue/runtime-core'
 import { isEqual } from 'lodash-es'
@@ -51,7 +52,7 @@ const activeTab = ref('general')
 const showSave = ref(false)
 const loading = ref(false)
 const menuOptions = ref()
-const formData = reactive({})
+const formData = reactive(createDefaultSettings())
 const config = ref<any>(null)
 
 watch(
@@ -94,19 +95,7 @@ const reset = () => {
 }
 
 const syncUserConfig = async () => {
-  const settings = await userStore.get('settings')
-
-  if (!settings)
-    await userStore.set('settings', {
-      general: {
-        locale: 'en',
-        theme: 'picportal',
-      },
-      viewer: {
-        portalPanelPosition: 'right',
-      },
-      hotkeys: {},
-    })
+  const settings = await getSettings()
   changeLocale(settings.general.locale)
   setTheme(settings.general.theme)
 

@@ -18,11 +18,12 @@
         </n-tag>
       </div>
     </div>
-    <img :src="`local-resource://${img}`" loading="lazy" />
+    <img :src="toImageUrl(img)" loading="lazy" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { localFile as toImageUrl } from '/@/utils/file'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { NTag } from 'naive-ui'
@@ -43,17 +44,17 @@ const viewerStore = useViewerStore()
 const portalPanelStore = usePortalPaneStore()
 
 const targetPortals = ref<any>([])
-const target = ref(null)
+const target = ref<Docking | null>(null)
 const dockings = computed(() => viewerStore.dockings)
 const flattenPortals = computed(() => portalPanelStore.flattenPortals)
 
 // => 移除圖片上的 portal
-const removePortal = async (portal) => {
+const removePortal = async (portal: Portal) => {
   const targetIndex = findIndex(
     dockings.value,
     (item) => item.target === props.img
   )
-  const portalsRef = dataClone(target.value.portals)
+  const portalsRef = dataClone(target.value?.portals || [])
   pull(portalsRef, portal.id)
 
   if (!portalsRef.length) {

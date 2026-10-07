@@ -1,0 +1,7 @@
+{
+  "id": "project-001",
+  "mainFolder": { "name": "圖片 (測試) #100% [來源]", "path": "__SOURCE__" },
+  "portals": [{ "id": "group-001", "group": "人物", "childs": [{ "id": "portal-001", "name": "收藏", "link": "__DESTINATION__", "bg": "#123456", "fg": "#ffffff", "extraPortal": true }] }],
+  "dockings": [{ "target": "__IMAGE__", "portals": ["portal-001"] }],
+  "extraProject": { "keep": true }
+}

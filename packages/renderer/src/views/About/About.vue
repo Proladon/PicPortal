@@ -55,14 +55,13 @@ import { NIcon, NAlert, NScrollbar } from 'naive-ui'
 import { ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useElectron } from '/@/use/electron'
-const { appWindow } = useElectron()
+const { appWindow, platform: desktopPlatform } = useElectron()
 
 const version = ref('')
-const platform = ref({})
+const platform = desktopPlatform.versions
 
 onMounted(async () => {
   version.value = await appWindow.getAppVersion()
-  platform.value = window.electron.platform.versions
 })
 </script>
 

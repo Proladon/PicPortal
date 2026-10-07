@@ -1,16 +1,16 @@
-import {chrome} from '../../electron-vendors.config.json';
-import {join} from 'path';
-import { builtinModules } from 'module';
-import {defineConfig} from 'vite';
-import {loadAndSetEnv} from '../../scripts/loadAndSetEnv.mjs';
+import {chrome} from '../../electron-vendors.config.json'
+import {join} from 'path'
+import { builtinModules } from 'module'
+import {defineConfig} from 'vite'
+import {loadAndSetEnv} from '../../scripts/loadAndSetEnv.mjs'
 
-const PACKAGE_ROOT = __dirname;
+const PACKAGE_ROOT = __dirname
 
 /**
  * Vite looks for `.env.[mode]` files only in `PACKAGE_ROOT` directory.
  * Therefore, you must manually load and set the environment variables from the root directory above
  */
-loadAndSetEnv(process.env.MODE, process.cwd());
+loadAndSetEnv(process.env.MODE, process.cwd())
 
 /**
  * @see https://vitejs.dev/config/
@@ -42,7 +42,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         'electron',
-        ...builtinModules,
+        ...builtinModules.flatMap((name) => [name, `node:${name}`]),
       ],
       output: {
         entryFileNames: '[name].cjs',
@@ -50,4 +50,4 @@ export default defineConfig({
     },
     emptyOutDir: true,
   },
-});
+})

@@ -3,11 +3,11 @@
     <section class="viewer-container">
       <viewer
         :options="viewerOptions"
-        :images="[img]"
+        :images="[toImageUrl(img)]"
         class="viewer"
         ref="viewer"
       >
-        <img class="w-full" :src="`local-resource://${img}`" alt="" />
+        <img class="w-full" :src="toImageUrl(img)" alt="" />
       </viewer>
     </section>
     <hr />
@@ -36,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+import { localFile as toImageUrl } from '/@/utils/file'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { NTag } from 'naive-ui'
@@ -66,7 +67,7 @@ const removePortal = async (portal: any) => {
     dockings.value,
     (item: any) => item.target === props.img
   )
-  const portalsRef: any = dataClone(target.value.portals)
+  const portalsRef: any = dataClone(target.value?.portals || [])
   pull(portalsRef, portal.id)
 
   if (!portalsRef.length) {

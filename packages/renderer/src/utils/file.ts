@@ -31,7 +31,7 @@ export const getFileDir = (filePath: string): string => {
   return path.dirname(filePath)
 }
 
-export const localFile = (filePath: string): string => {
+export const localFile = (filePath?: string): string => {
   if (!filePath) return ''
-  return `local-resource://${filePath}`
+  return `local-resource://${encodeURI(filePath).replace(/#/g, '%23').replace(/\?/g, '%3F')}`
 }

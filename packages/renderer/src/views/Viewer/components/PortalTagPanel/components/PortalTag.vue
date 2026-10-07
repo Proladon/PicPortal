@@ -56,12 +56,13 @@ import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { dataClone } from '/@/utils/data'
 import useLocale from '/@/use/locale'
+import type { PropType } from 'vue'
 import { useElectron } from '/@/use/electron'
 
 // --- Props ---
 const props = defineProps({
-  groupId: String,
-  data: Object,
+  groupId: { type: String, required: true },
+  data: { type: Object as PropType<Portal>, required: true },
 })
 
 const { fileSystem } = useElectron()
@@ -128,7 +129,7 @@ const deletePortal = async (groupId: string, portal: Portal) => {
 }
 
 // => 編輯更新protal
-const editPortal = async (groupId, portal) => {
+const editPortal = async (groupId: string, portal: Portal) => {
   selectPortal.value = { groupId, portal }
   showPortalTagModal.value = true
   showPopOver.value = false

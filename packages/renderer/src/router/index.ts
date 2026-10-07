@@ -53,7 +53,7 @@ const router = createRouter({
 })
 
 router.afterEach((to, from) => {
-  hotkeys.setScope(to.meta.hotKeyScope)
+  hotkeys.setScope(typeof to.meta.hotKeyScope === 'string' ? to.meta.hotKeyScope : 'all')
 })
 
 export default router

@@ -56,7 +56,7 @@ const appStore = useAppStore()
 const { translate } = useLocale()
 // ANCHOR Data
 const loading = ref<boolean>(false)
-const projectsList = ref([])
+const projectsList = ref<Project[]>([])
 const showCreateProjectModal = ref(false)
 const showImportProjectEditModal = ref(false)
 const importProjectData = ref<any>(null)
@@ -86,10 +86,8 @@ const openProject = async (project: any) => {
 
 const importProject = async () => {
   const open = await importProjectDialog()
-  const canceled = open.canceled
-  const filePath = open.filePaths[0]
-
-  if (canceled) return
+  if (!open) return
+  const filePath = open[0]
   importProjectData.value = {
     id: await nanoid(10),
     name: null,
@@ -109,7 +107,7 @@ const refreshProjects = async () => {
   loading.value = true
   const projects = await getProjects()
   if (!projects) await userStore.set('projects', [])
-  projectsList.value = projects
+  projectsList.value = projects || []
   loading.value = false
 }
 

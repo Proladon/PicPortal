@@ -1,12 +1,12 @@
 interface ElectronApi {
   readonly versions: Readonly<NodeJS.ProcessVersions>
-  readonly userStore: Object<Function>
-  readonly browserDialog: Object<Function>
-  readonly fastGlob: Object<Function>
-  readonly fileSystem: Object<Function>
-  readonly database: Object<Function>
-  readonly appWindow: Object<Function>
-  readonly platform: { [key: string]: boolean }
+  readonly userStore: typeof import('../src/render/modules/userStore').default
+  readonly browserDialog: typeof import('../src/render/modules/browserDialog').default
+  readonly fastGlob: typeof import('../src/render/modules/fastGlob').default
+  readonly fileSystem: typeof import('../src/render/modules/fileSystem').default
+  readonly database: typeof import('../src/render/modules/database').default
+  readonly appWindow: typeof import('../src/render/modules/app').default
+  readonly platform: typeof import('../src/render/modules/platform').default
 }
 
 declare interface Window {

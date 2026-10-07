@@ -100,7 +100,7 @@ const showBtn = ref<boolean>(false)
 const selected = ref<boolean>(false)
 
 const deleteProject = async () => {
-  const projects = await userStore.get('projects')
+  const projects = (await userStore.get('projects')) || []
   const filterProjects = projects.filter((i: any) => {
     if (i.id !== props.project.id) return i
     return false

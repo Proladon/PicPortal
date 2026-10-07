@@ -16,10 +16,8 @@ import Provider from '/@/components/Provider.vue'
 
 import useInit from '/@/use/init'
 import { useTheme } from '/@/use/theme'
-import { useElectron } from '/@/use/electron'
 import { useAppStore } from '/@/store/appStore'
 
-const { userStore } = useElectron()
 
 const { setTheme } = useTheme()
 const router = useRouter()
@@ -27,10 +25,8 @@ const appStore = useAppStore()
 const { init } = useInit()
 
 onMounted(async () => {
-  await init()
-
-  const settings = await userStore.get('settings')
-  setTheme(settings.general.theme)
+  const settings = await init()
+  await setTheme(settings.general.theme)
   router.push('/projects')
 })
 </script>
