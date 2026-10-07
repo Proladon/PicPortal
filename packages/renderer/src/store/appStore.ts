@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { map } from 'lodash-es'
 import { GlobalThemeOverrides } from 'naive-ui'
-const { database } = useElectron()
+const { database } = useDesktop()
 import PQueue from 'p-queue'
 export const DBQueue = new PQueue({ concurrency: 1 })
 

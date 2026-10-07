@@ -73,12 +73,12 @@ import { NButton, NEllipsis, NIcon, NScrollbar } from 'naive-ui'
 import EditProjectModal from './EditProjectModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { Add, Pencil } from '@vicons/ionicons5'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { ref } from '@vue/reactivity'
 import { useNotification } from 'naive-ui'
 import useLocale from '/@/use/locale'
 
-const { userStore } = useElectron()
+const { userStore } = useDesktop()
 const notify = useNotification()
 const { translate } = useLocale()
 

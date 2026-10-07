@@ -54,8 +54,8 @@ import { LogoGithub } from '@vicons/ionicons5'
 import { NIcon, NAlert, NScrollbar } from 'naive-ui'
 import { ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
-import { useElectron } from '/@/use/electron'
-const { appWindow, platform: desktopPlatform } = useElectron()
+import { useDesktop } from '/@/desktop'
+const { appWindow, platform: desktopPlatform } = useDesktop()
 
 const version = ref('')
 const platform = desktopPlatform.versions

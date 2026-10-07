@@ -1,11 +1,7 @@
-import { useElectron } from '/@/use/electron'
-export interface UserSettings {
-  general: { locale: string; theme: string }
-  viewer: { portalPanelPosition: 'left' | 'right' }
-  hotkeys: Record<string, unknown>
-}
+import { useDesktop } from '/@/desktop'
+import type { DesktopSettings } from '/@/desktop'
 
-export function createDefaultSettings(): UserSettings {
+export function createDefaultSettings(): DesktopSettings {
   return {
     general: { locale: 'en', theme: 'picportal' },
     viewer: { portalPanelPosition: 'right' },
@@ -13,8 +9,8 @@ export function createDefaultSettings(): UserSettings {
   }
 }
 
-export async function getSettings(): Promise<UserSettings> {
-  const { userStore } = useElectron()
+export async function getSettings(): Promise<DesktopSettings> {
+  const { userStore } = useDesktop()
   const saved = await userStore.get('settings')
   if (saved) return saved
   const defaults = createDefaultSettings()

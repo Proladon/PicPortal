@@ -54,14 +54,14 @@ import { FolderOpenOutline } from '@vicons/ionicons5'
 import { reactive, ref } from '@vue/reactivity'
 import { nanoid } from 'nanoid/async'
 import { onMounted } from '@vue/runtime-core'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { saveProjectDialog } from '/@/utils/browserDialog'
 import useLocale from '/@/use/locale'
 
 const emit = defineEmits(['refresh', 'close', 'created'])
 
 // ANCHOR Use
-const { fileSystem, userStore } = useElectron()
+const { fileSystem, userStore } = useDesktop()
 const notify = useNotification()
 const { translate } = useLocale()
 // ANCHOR Data

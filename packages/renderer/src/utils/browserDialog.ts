@@ -1,5 +1,5 @@
-import { useElectron } from '../use/electron'
-const { browserDialog } = useElectron()
+import { useDesktop } from '../desktop'
+const { browserDialog } = useDesktop()
 
 export const saveProjectDialog = async () => {
   return await browserDialog.save({

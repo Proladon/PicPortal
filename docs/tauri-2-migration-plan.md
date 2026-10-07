@@ -1,7 +1,7 @@
 # PicPortal 遷移至 Tauri 2 執行規劃
 
 建立日期：2026-10-07  
-狀態：已建立階段 0 基線，階段 1 尚未提交，驗證結果與待驗項目見 [實作紀錄](./tauri-2-migration-progress.md)。下列核取方塊代表實作驗收，不代表文件完成度。
+狀態：已開始階段 0／1 實作，驗證結果與待驗項目見 [實作紀錄](./tauri-2-migration-progress.md)。下列核取方塊代表實作驗收，不代表文件完成度。
 
 ## 目標與範圍
 
@@ -94,8 +94,8 @@ Tauri 的開發伺服器與前端產物透過 `devUrl`、`beforeDevCommand`、`f
 **驗收條件**
 
 - [ ] Electron 下主要操作與階段 0 基線一致。
-- [ ] 桌面專用呼叫集中於 adapter；Vue 元件與 store 不直接使用 Electron API。
-- [ ] 圖片 URL 與對話框回傳值有單一轉換入口，前端型別檢查通過。
+- [x] 桌面專用呼叫集中於 adapter；Vue 元件與 store 不直接使用 Electron API。
+- [x] 圖片 URL 與對話框回傳值有單一轉換入口，前端型別檢查通過。
 
 ### 階段 2：建立 Tauri 執行骨架
 

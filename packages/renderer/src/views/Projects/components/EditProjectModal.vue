@@ -60,7 +60,7 @@ import { FolderOpenOutline, Pencil } from '@vicons/ionicons5'
 import { reactive, ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { find } from 'lodash-es'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { saveProjectDialog } from '/@/utils/browserDialog'
 import { useNotification } from 'naive-ui'
 import useLocale from '/@/use/locale'
@@ -82,7 +82,7 @@ const props = defineProps({
 })
 
 // ANCHOR Use
-const { userStore } = useElectron()
+const { userStore } = useDesktop()
 const notify = useNotification()
 const { translate } = useLocale()
 // ANCHOR Data

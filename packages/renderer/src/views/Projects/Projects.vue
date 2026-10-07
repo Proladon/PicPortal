@@ -42,14 +42,14 @@ import EditProjectModal from './components/EditProjectModal.vue'
 import { NScrollbar, NButton, useNotification, NSpin } from 'naive-ui'
 import { onMounted, ref } from '@vue/runtime-core'
 import { importProjectDialog } from '/@/utils/browserDialog'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid/async'
 import { useAppStore } from '/@/store/appStore'
 import useLocale from '/@/use/locale'
 
 // ANCHOR Use
-const { fileSystem, userStore } = useElectron()
+const { fileSystem, userStore } = useDesktop()
 const router = useRouter()
 const notify = useNotification()
 const appStore = useAppStore()

@@ -57,7 +57,7 @@ import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { dataClone } from '/@/utils/data'
 import useLocale from '/@/use/locale'
 import type { PropType } from 'vue'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 
 // --- Props ---
 const props = defineProps({
@@ -65,7 +65,7 @@ const props = defineProps({
   data: { type: Object as PropType<Portal>, required: true },
 })
 
-const { fileSystem } = useElectron()
+const { fileSystem } = useDesktop()
 
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()

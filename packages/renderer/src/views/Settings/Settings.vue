@@ -35,7 +35,7 @@ import GeneralSettings from './GeneralSettings/GeneralSettings.vue'
 import HotKeysSettings from './HotKeysSettings/HotKeysSettings.vue'
 import ViewerSettings from './ViewerSettings/ViewerSettings.vue'
 import { reactive, ref, computed } from '@vue/reactivity'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { createDefaultSettings, getSettings } from '/@/use/settings'
 import useLocale from '/@/use/locale'
 import { onMounted } from '@vue/runtime-core'
@@ -46,7 +46,7 @@ import { useTheme } from '/@/use/theme'
 
 const { setTheme } = useTheme()
 const { translate, changeLocale } = useLocale()
-const { userStore } = useElectron()
+const { userStore } = useDesktop()
 
 const activeTab = ref('general')
 const showSave = ref(false)

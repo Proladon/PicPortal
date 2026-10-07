@@ -17,8 +17,8 @@
 <script setup lang="ts">
 import { NIcon } from 'naive-ui'
 import { LogoGithub } from '@vicons/ionicons5'
-import { useElectron } from '/@/use/electron'
-const { appWindow } = useElectron()
+import { useDesktop } from '/@/desktop'
+const { appWindow } = useDesktop()
 
 const closeWin = async () => {
   await appWindow.close()

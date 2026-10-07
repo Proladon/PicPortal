@@ -1,8 +1,8 @@
 # Tauri 2 遷移實作紀錄
 
-更新日期：2026-10-07（台灣時間）。本輪範圍：階段 0 基線與資料盤點。尚未加入 Tauri 執行環境；Electron 開發、建置與發布入口保留。
+更新日期：2026-10-07（台灣時間）。本輪範圍：階段 0 基線與階段 1 桌面 API 抽象。尚未加入 Tauri 執行環境；Electron 開發、建置與發布入口保留。
 
-提交方式：`refactor` 分支，每階段各一個 commit；提交不代表尚未執行的手動驗收已完成。
+提交方式：`refactor` 分支，每階段各一個 commit；提交不代表尚未執行的手動驗收已完成。階段 0 已提交為 `cef0b6f`，階段 1 專門記錄桌面 API 抽象。
 
 ## 環境與重現
 
@@ -18,11 +18,12 @@ npm ci
 npm run typecheck
 npm run lint
 npm run build
+npm run test:desktop
 npm run test:baseline
 node tests/electron-baseline.cjs --development
 ```
 
-`test:baseline` 載入真正的 main 建置入口／preload／IPC，攔截測試視窗的 show 以保持隱藏，使用 `%TEMP%/picportal-migration-*` 資料副本與獨立 userData；結束後只清除經路徑驗證的測試目錄。開發模式另用隱藏視窗與真正 IPC 啟動並關閉 Vite server，未載入 production main 入口。測試不寫入使用者的專案或原始設定。
+`test:desktop` 驗證 adapter 契約。`test:baseline` 載入真正的 main 建置入口／preload／IPC，攔截測試視窗的 show 以保持隱藏，使用 `%TEMP%/picportal-migration-*` 資料副本與獨立 userData；結束後只清除經路徑驗證的測試目錄。開發模式另用隱藏視窗與真正 IPC 啟動並關閉 Vite server，未載入 production main 入口。測試不寫入使用者的專案或原始設定。
 
 ## 原始基線問題與本輪處理
 
@@ -34,9 +35,9 @@ node tests/electron-baseline.cjs --development
 | lint 包含建置產物、全域 TS 型別被 `no-undef` 誤判、既有分號與未使用 slot 變數 | 忽略生成檔；TS 名稱解析交由編譯器；修正既有 lint errors。仍有既有排版／any／未使用 import warnings |
 | 初次啟動直接讀取不存在的 settings | 統一建立預設設定，等待持久化完成；首次建立專案不再提前 return 而漏掉 UI refresh |
 | 首次主題初始化早於 stylesheet 載入，Naive UI 收到空顏色 | 設定主題後等待頁面 load，再取得 CSS variables |
-| 兩種副檔名沒有 glob 分支；資料夾路徑被當 glob pattern | 新增 Electron `fastGlob.scanImages()`，Electron 後端使用 literal cwd；一／二／多種副檔名與括號、中文、空白、`#`、`%`、方括號路徑通過 |
+| 兩種副檔名沒有 glob 分支；資料夾路徑被當 glob pattern | 新增 `scanner.scanImages()`，Electron 後端使用 literal cwd；一／二／多種副檔名與括號、中文、空白、`#`、`%`、方括號路徑通過 |
 | 圖片 URL 直接串接，裸 `%` 可能造成 decode 例外、`#` 可能截斷路徑 | 統一入口編碼路徑，保留 `local-resource` 協定；主程序 decode 改在 try 內，特殊字元圖片在四個瀏覽路由均確認 naturalWidth > 0 |
-| preload `set`、`clear`、視窗方法沒有回傳 IPC Promise | 回傳 Promise，使用端可等待儲存完成 |
+| preload `set`、`clear`、視窗方法沒有回傳 IPC Promise | 回傳 Promise，adapter 等待完成後才回覆 |
 | Spectron 測試混用 import 與 require | 原測試在 Node 24 出現 `require is not defined`，且依賴已移除的 Electron remote 能力。保留原測試供階段 6 正式替換，本輪新增獨立基線測試入口 |
 | production main 的 updater 初始化失敗 | 實際 main smoke 啟動時記錄 `Attempted to register a second handler for 'Store-Get'`；錯誤被更新 catch 處理，畫面與 IPC 測試仍通過。更新能力維持未驗證，隨階段 6 更換 updater 流程處理 |
 
@@ -61,11 +62,11 @@ node tests/electron-baseline.cjs --development
 
 Windows runtime 以名稱 `PicPortal` 查得 userData：`%APPDATA%/PicPortal`；`electron-store` 預設檔名為 `config.json`，測試已確認獨立 userData 下會生成此檔。這台機器未找到原本的 PicPortal 設定目錄；未實測舊安裝包是否使用不同名稱或位置。
 
-階段 5 優先找 `%APPDATA%/PicPortal/config.json`，找不到提供手動選檔。只讀來源，保留 `projects`、`settings` 與未知欄位；新設定已存在時不可直接覆蓋。匯入成功持久化後才標记，重試依 ID／path 避免重複。macOS／Linux 真實來源尚未驗證。
+階段 5 優先找 `%APPDATA%/PicPortal/config.json`，找不到提供手動選檔。只讀來源，保留 `projects`、`settings` 與未知欄位；新設定已存在時不可直接覆蓋。匯入成功持久化後才標記，重試依 ID／path 避免重複。macOS／Linux 真實來源尚未驗證。
 
-階段 1 待替換的 bridge 呼叫包括：設定 get／set；open／save dialogs；圖片掃描；檔案建立、複製、搬移、刪除、覆寫、存在檢查、JSON 寫入、開啟資料夾；DB connect／save／deepSave／slice／get／pullDockings；視窗操作、開啟網址、版本與平台資訊。
+使用中的 bridge 全部透過 `DesktopApi`：設定 get／set；open／save dialogs；圖片掃描；檔案建立、複製、搬移、刪除、覆寫、存在檢查、JSON 寫入、開啟資料夾；DB connect／save／deepSave／slice／get／pullDockings；視窗操作、開啟網址、版本與平台資訊。
 
-階段 1 不應加入新介面的舊方法：`Database-Find`（未使用且函式不能經 IPC 複製）、`Wraping`（未使用且無主程序 handler）、通用 `Glob`（UI 改用 scanImages）。Electron 舊 bridge 暫時保留，以便回退。
+不加入新介面的舊方法：`Database-Find`（未使用且函式不能經 IPC 複製）、`Wraping`（未使用且無主程序 handler）、通用 `Glob`（UI 改用 scanImages）。Electron 舊 bridge 暫時保留，以便回退。
 
 ## 驗證結果與操作清單
 
@@ -74,6 +75,7 @@ Windows runtime 以名稱 `PicPortal` 查得 userData：`%APPDATA%/PicPortal`；
 | 前端、main、preload 完整建置 | 通過；保留既有大型 chunk 提示 |
 | 三個 TypeScript targets | 通過 |
 | lint | exit 0、0 errors；保留既有 warnings，不宣告 warning-free |
+| 初始化順序、取消 dialog、選檔／選資料夾格式、FILE_EXIST、IPC 拒絕、設定 Promise、圖片 URL、HTML drop paths | adapter 契約測試通過 |
 | 正常／空白／legacy／損毀 JSON 與未知欄位、ID 保存 | 真正 Electron IPC 測試通過 |
 | 主資料夾掃描、巢狀／特殊字元／重複檔名、一／二／五種副檔名 | 通過；Electron 延用區分大小寫、不含 dotfiles 的 glob 行為；排序與符號連結行為待階段 3 明確定義 |
 | 深層分類儲存、重新讀取 | IPC 通過 |
@@ -84,9 +86,11 @@ Windows runtime 以名稱 `PicPortal` 查得 userData：`%APPDATA%/PicPortal`；
 
 同機匿名小資料集的測試視窗基線（單次取樣，不代表安裝版冷啟動或大型圖片效能）：真正 production main 至頁面 ready 551 ms、掃描 6.5 ms、主程序 RSS 約 101 MiB；Vite 首次頁面 ready 約 6–8 秒、掃描約 4–11 ms、測試主程序 RSS 約 80–82 MiB。兩種測試入口不同，不能直接比較其記憶體。主程序記憶體不包含 renderer／GPU，後續需補全程序與較大型同資料集測量。
 
-## 後續門檻
+## 階段 1 實作與後續門檻
 
-階段 0 已保存操作清單、資料格式與可重現測試。下一階段建立 DesktopApi 與 Electron adapter，替換 useElectron、原生 dialog 回傳值、File.path 與圖片協定使用入口。
+`packages/renderer/src/desktop/` 已提供 DesktopApi、Electron adapter、錯誤轉換、同步 lazy 初始化與 Tauri adapter 預留說明。Vue 元件與 store 已替換全部 `useElectron()`；只有 adapter selection 存取 `window.electron`，圖片 URL 與 dialog 原生回傳結構集中於 adapter。`File.path` 也集中於 Electron adapter，Tauri 原生拖入在階段 5 實作。
+
+後續依計畫先補操作清單的手動驗收，再進入階段 2。尚未建立 Rust/Tauri 專案，沒有宣告 Tauri、安裝包或更新流程完成。
 
 已盤點而尚未修正的資料風險：DB 仍有全域連線，延遲任務可能跨專案寫入；批次隊列仍會提前從 UI 移除待處理項目，idle 清理可能包含失敗檔；legacy override 在 copy 衝突選項仍會搬移來源。這些依階段 4 修正並補失敗與併發測試。
 

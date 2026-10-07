@@ -78,14 +78,14 @@ import WarningModal from '/@/components/Modal/WarningModal.vue'
 import { NIcon, NPopover, NProgress } from 'naive-ui'
 import { Folder, Cube, DocumentOutline, Book } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
 import { getFileName } from '/@/utils/file'
 import useLocale from '/@/use/locale'
 
 // ANCHOR Use
-const { browserDialog } = useElectron()
+const { browserDialog } = useDesktop()
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
 const { translate } = useLocale()
@@ -106,13 +106,13 @@ const choseMainFolder = async () => {
   showWarningModal.value = false
   try {
     const res = await browserDialog.open({
-      properties: ['openDirectory'],
+      directory: true,
     })
 
-    if (!res.canceled && res.filePaths.length) {
+    if (res) {
       const folder = {
-        name: getFileName(res.filePaths[0]),
-        path: res.filePaths[0].replaceAll('\\', '/'),
+        name: getFileName(res[0]),
+        path: res[0].replaceAll('\\', '/'),
       }
       await appStore.SaveToDB({ key: 'mainFolder', data: folder })
       await appStore.SaveToDB({ key: 'dockings', data: [] })

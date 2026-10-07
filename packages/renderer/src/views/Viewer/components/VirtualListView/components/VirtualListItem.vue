@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { localFile as toImageUrl } from '/@/utils/file'
+import { toImageUrl } from '/@/desktop'
 import { computed, ref } from '@vue/reactivity'
 import { onMounted, watch } from '@vue/runtime-core'
 import { NTag, NIcon } from 'naive-ui'

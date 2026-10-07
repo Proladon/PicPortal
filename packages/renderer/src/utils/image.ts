@@ -1,4 +1,4 @@
-import { localFile as toImageUrl } from '/@/utils/file'
+import { toImageUrl } from '/@/desktop'
 import { api as viewerApi } from 'v-viewer'
 
 export const openViewer = (imgPath?: string) => {

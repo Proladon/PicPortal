@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { useAppStore } from '/@/store/appStore'
 import { difference, map, filter, intersection } from 'lodash'
-const { fastGlob, fileSystem } = useElectron()
+const { scanner, fileSystem } = useDesktop()
 import { wrapingQueue, filesExistQueue } from '/@/queue'
 import PQueue from 'p-queue'
 
@@ -97,7 +97,7 @@ export const useViewerStore = defineStore('viewer', {
       }
       if (!fileTypes) fileTypes = ['png', 'jpg', 'jpeg', 'gif', 'webp']
 
-      const files = await fastGlob.scanImages(mainFolderPath, fileTypes)
+      const files = await scanner.scanImages(mainFolderPath, fileTypes)
 
       this.folderFiles = files
     },

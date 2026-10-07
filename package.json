@@ -21,6 +21,7 @@
     "compile": "electron-builder build --config electron-builder.config.js --dir --config.asar=false",
     "pretest": "cross-env MODE=test npm run build",
     "test": "node tests/app.spec.js",
+    "test:desktop": "node tests/desktop.spec.cjs",
     "test:baseline": "node tests/electron-baseline.cjs",
     "watch": "node scripts/watch.js",
     "lint": "eslint . --ext js,ts,vue",

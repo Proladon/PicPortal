@@ -1,8 +1,9 @@
+import { useDesktop, toImageUrl } from '/@/desktop'
 import path from 'path-browserify'
 
 export const getFileName = (filePath: string): string => {
   if (!filePath) return ''
-  if (window.electron.platform.isWindows)
+  if (useDesktop().platform.isWindows)
     filePath = filePath.replace(/\\/g, '/')
   const fileBase = path.basename(filePath)
   if (fileBase) {
@@ -14,7 +15,7 @@ export const getFileName = (filePath: string): string => {
 
 export const getFileExt = (filePath: string): string => {
   if (!filePath) return ''
-  if (window.electron.platform.isWindows)
+  if (useDesktop().platform.isWindows)
     filePath = filePath.replace(/\\/g, '/')
   const fileBase = path.basename(filePath)
   if (fileBase) {
@@ -26,12 +27,12 @@ export const getFileExt = (filePath: string): string => {
 
 export const getFileDir = (filePath: string): string => {
   if (!filePath) return ''
-  if (window.electron.platform.isWindows)
+  if (useDesktop().platform.isWindows)
     filePath = filePath.replace(/\\/g, '/')
   return path.dirname(filePath)
 }
 
-export const localFile = (filePath?: string): string => {
+export const localFile = (filePath: string): string => {
   if (!filePath) return ''
-  return `local-resource://${encodeURI(filePath).replace(/#/g, '%23').replace(/\?/g, '%3F')}`
+  return toImageUrl(filePath)
 }

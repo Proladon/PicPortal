@@ -124,7 +124,7 @@ import { findIndex } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
 import type { PropType } from 'vue'
 import type { FormInst } from 'naive-ui'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/file'
 import { useAppStore } from '/@/store/appStore'
@@ -137,7 +137,7 @@ const props = defineProps({
   mode: String,
   data: { type: Object as PropType<{ groupId: string; portal?: Portal }>, default: () => ({ groupId: '' }) },
 })
-const { browserDialog } = useElectron()
+const { browserDialog, getDroppedPaths } = useDesktop()
 const message = useMessage()
 const appStore = useAppStore()
 const portalPanelStore = usePortalPaneStore()
@@ -195,9 +195,9 @@ const updateModalShow = (show: boolean) => {
 
 const browseFolder = async (): Promise<void> => {
   const res = await browserDialog.open({
-    properties: ['openDirectory'],
+    directory: true,
   })
-  if (!res.canceled && res.filePaths.length) formData.link = res.filePaths[0]
+  if (res) formData.link = res[0]
 }
 
 const newPortal = async (exist?: string) => {
@@ -268,10 +268,7 @@ const onDrop = (files: File[] | null) => {
   const ignore = ['image', 'video', 'audio']
   if (!files) return
   const folders = files.filter((file) => !ignore.includes(file.type.split('/')[0]))
-  for (const file of folders) {
-    const filePath = (file as File & { path?: string }).path
-    if (filePath) dropList.value.push(filePath)
-  }
+  dropList.value.push(...getDroppedPaths(folders))
 }
 
 onMounted(() => {

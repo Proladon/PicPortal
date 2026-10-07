@@ -99,13 +99,13 @@ import { computed, onMounted, ref } from '@vue/runtime-core'
 import { useModal } from '/@/use/modal'
 import useLocale from '/@/use/locale'
 import { localFile, getFileName, getFileDir, getFileExt } from '/@/utils/file'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { useViewerStore } from '/@/store/viewerStore'
 
 const notify = useNotification()
 const viewerStore = useViewerStore()
 const { translate } = useLocale()
-const { fileSystem } = useElectron()
+const { fileSystem } = useDesktop()
 const emit = defineEmits(['close', 'confirm'])
 const props = defineProps({
   data: {
