@@ -1,3 +1,12 @@
+export class DesktopNotImplementedError extends Error {
+  readonly code = 'NOT_IMPLEMENTED'
+
+  constructor(operation: string) {
+    super(`Tauri 尚未接上${operation}`)
+    this.name = 'DesktopNotImplementedError'
+  }
+}
+
 export function desktopErrorMessage(error: unknown): string {
   if (typeof error === 'string') return error
   if (error && typeof error === 'object') {

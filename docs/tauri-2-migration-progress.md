@@ -1,6 +1,6 @@
 # Tauri 2 遷移實作紀錄
 
-更新日期：2026-10-07（台灣時間）。本輪範圍：階段 0 基線與階段 1 桌面 API 抽象。尚未加入 Tauri 執行環境；Electron 開發、建置與發布入口保留。
+更新日期：2026-10-07（台灣時間）。已完成階段 0 基線、階段 1 API 抽象及階段 2 Tauri 執行骨架。Electron 開發、建置與發布入口保留；專案讀寫與設定等 Tauri 功能仍待後續階段接上。
 
 提交方式：`refactor` 分支，每階段各一個 commit；提交不代表尚未執行的手動驗收已完成。階段 0 已提交為 `cef0b6f`，階段 1 專門記錄桌面 API 抽象。
 
@@ -90,8 +90,73 @@ Windows runtime 以名稱 `PicPortal` 查得 userData：`%APPDATA%/PicPortal`；
 
 `packages/renderer/src/desktop/` 已提供 DesktopApi、Electron adapter、錯誤轉換、同步 lazy 初始化與 Tauri adapter 預留說明。Vue 元件與 store 已替換全部 `useElectron()`；只有 adapter selection 存取 `window.electron`，圖片 URL 與 dialog 原生回傳結構集中於 adapter。`File.path` 也集中於 Electron adapter，Tauri 原生拖入在階段 5 實作。
 
-後續依計畫先補操作清單的手動驗收，再進入階段 2。尚未建立 Rust/Tauri 專案，沒有宣告 Tauri、安裝包或更新流程完成。
+階段 1 的完整手動操作驗收仍待補齊；階段 2 依使用者「繼續下個階段」指示進行，保留 Electron 自動基線作為回退與比對。安裝包與更新流程尚未驗收。
 
 已盤點而尚未修正的資料風險：DB 仍有全域連線，延遲任務可能跨專案寫入；批次隊列仍會提前從 UI 移除待處理項目，idle 清理可能包含失敗檔；legacy override 在 copy 衝突選項仍會搬移來源。這些依階段 4 修正並補失敗與併發測試。
 
-回退：使用 Git 還原本輪原始碼與 lockfile 變更，再安裝依賴；使用者資料未被遷移。測試資料只存在於測試期的暫存目錄，原始匿名模板保留於 repository。
+## 階段 2：Tauri 執行骨架
+
+### 實作範圍
+
+- 新增 `src-tauri/` 的 Cargo 專案、建置腳本、Windows 圖示、無框視窗、CSP 與 `main` capability；Rust command 目前僅有唯讀的 `runtime_platform`。
+- 固定 Tauri Rust／JS API／CLI 2.12.1、tauri-build 2.7.1、opener 2.7.0、dialog 2.8.1；納入 `Cargo.lock` 與前端 lockfile。以 crates.io 的穩定版本選取，未採用 search 結果中的 3.0 alpha。
+- `tauri.ts` 實作 initialize、應用版本與 Tauri 版本 API、平台資訊、視窗最小化／最大化切換／關閉／開始拖曳、opener URL 與 convertFileSrc。`useDesktop()` 依 `isTauri()` 選取執行環境，Vue 掛載前完成初始化。
+- 尚未接上的設定、專案清單、對話框、掃描、專案讀寫、檔案處理與原生拖入回傳 `NOT_IMPLEMENTED`。UI 保留路由與標題列，顯示錯誤、解除 loading；設定未成功載入時不提供儲存，不建立假設定或專案。
+- `TitleBar` 經 adapter 呼叫拖曳；按鈕區域停止 mousedown 傳遞。Electron 延用原 CSS 拖曳。
+- About 改為依實際 runtime 顯示平台／版本；Electron 也使用 `app.getVersion()`，不再呼叫 simple-git。未使用的套件留待階段 7 清理。
+- 專案版本設定為 0.1.0；Tauri config 引用根目錄 package.json，Cargo 版本同步為 0.1.0。Electron 安裝包仍使用 builder 的日曆版本，發布與更新來源統一留待階段 6。
+
+### 開發與建置入口
+
+```powershell
+npm ci
+npm run dev:electron
+npm run build:electron
+npm run dev:tauri
+npm run build:tauri -- --debug --no-bundle
+```
+
+Tauri 使用 `http://127.0.0.1:5173` 與既有 `packages/renderer/dist`，保留 `/@/` alias 與根目錄環境載入。5173 必須可用，Vite 設定 strictPort；原先試用的 1420 位於這台 Windows 的 TCP 排除範圍而產生 EACCES，因此改用 5173。依 [Tauri Vite 整合文件](https://v2.tauri.app/start/frontend/vite/)調整 WebView targets，Tauri build 不使用 Node builtin external；忽略 Rust 目錄的前端 watcher。
+
+### 存取限制
+
+capability 限定 `main` 視窗，可讀應用／Tauri 版本並操作基本視窗；opener 僅允許目前 About 使用的 `https://github.com/Proladon` 與其子路徑。dialog 已註冊，尚未授予 UI 選檔權限或接入 adapter，留待階段 3。
+
+asset protocol 啟用但 scope 為空，不允許任意本機圖片；檔案 commands 仍未建立。階段 3 須由後端驗證專案與使用者選取路徑，分別授予圖片 scope 與自訂命令讀取範圍，不能以 plugin scope 當成 Rust 檔案授權。
+
+Windows 保留預設原生 drag-drop handler；尚未宣告外部拖入或 HTML5 排序共存可用，留待階段 5。[Tauri 設定文件](https://v2.tauri.app/reference/config/#windowconfig)指出 Windows HTML5 拖曳需另外處理 dragDropEnabled，不能直接停用後仍假設有原生事件。
+
+### 執行環境與驗證
+
+`tauri info` 確認 Windows 10.0.26300 x86_64、Visual Studio Community 2022 MSVC、WebView2 154.0.4258.62、Rust／Cargo 1.97.1、Node 24.6.0／npm 11.5.1。所選 Tauri 依賴宣告 Rust 1.90，Cargo 的最低版本依此設定；只以本機 Rust 1.97.1 實測。
+
+```powershell
+npm run typecheck
+npm run lint
+npm run test:desktop
+npm run test:tauri-adapter
+npm run test:tauri-skeleton
+npm run test:tauri-skeleton:built
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --locked -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml --locked
+```
+
+| 驗證 | 結果與界線 |
+| --- | --- |
+| 前端型別／lint、Rust fmt／clippy | 通過；lint 為 0 errors，仍有既有 warnings |
+| Electron adapter、Tauri adapter | 通過；驗證 runtime、初始化順序、視窗命令、版本、URL、未實作錯誤與不呼叫原生資料寫入 |
+| 真正 Tauri 開發視窗 | WebView2 顯示 Projects／Settings／About 與主題樣式；缺少資料功能時有 NOT_IMPLEMENTED 提示，沒有白畫面或永久 loading |
+| HMR | 暫時修改 TitleBar 文字，確認更新後還原原始 bytes，且還原也即時更新 |
+| 原生視窗按鈕 | 實際最大化切換兩次、最小化與關閉；getter 驗證 OS 視窗狀態，關閉後程序正常結束 |
+| 標題列拖曳分流 | Tauri adapter 命令測試與實際 Vue 元件事件測試通過；標題區域會呼叫 startDragging，按鈕區域不會。未以實體滑鼠拖動驗證視窗位置 |
+| 含正式前端產物的執行檔 | 在無 `.git` 的暫存 cwd 直接啟動原生 debug exe，未啟動 Vite；CSP、路由、樣式、平台／版本與視窗控制通過。不是 release profile 或安裝包驗收 |
+| opener | SDK 命令契約與 scoped permission 建置通過；沒有為測試開啟使用者預設瀏覽器，外部瀏覽器實際啟動仍待手動驗證 |
+| Cargo test | 編譯與測試 harness 通過，目前 0 個 Rust unit tests；核心資料／檔案整合測試留待階段 3／4 |
+| Electron 回退入口 | 完整建置與隔離資料基線通過；原先 updater 初始化錯誤仍存在並保持未驗證 |
+
+`tests/tauri-skeleton.cjs` 限 Windows／Node 22 以上，使用 [Microsoft 官方 WebView2 調試方式](https://learn.microsoft.com/en-us/microsoft-edge/webview2/how-to/debug-visual-studio-code)的暫時 CDP port。視窗與 WebView profile 使用測試設定，profile 保存於 `%TEMP%/picportal-tauri-smoke-*` 供診斷，不含使用者專案或設定；原始 TitleBar 在 finally 保證還原。測試的 debug exe 會包含測試視窗設定，交付前再以預設 config 建置還原一般執行檔；測試設定不會納入應用原始碼。
+
+macOS／Linux、實體拖曳、外部瀏覽器啟動、安裝／解除安裝、更新與所有資料功能都未宣告驗收完成。下一階段為對話框、舊專案唯讀解析、掃描、圖片 URL 與範圍授權。
+
+回退：使用 `npm run dev:electron` 或 checkout 階段 1 commit `9c126d9` 後重新安裝依賴；使用者資料未被遷移。原始匿名模板保留於 repository。

@@ -26,7 +26,7 @@ const { init } = useInit()
 
 onMounted(async () => {
   const settings = await init()
-  await setTheme(settings.general.theme)
+  await setTheme(settings?.general.theme || 'picportal')
   router.push('/projects')
 })
 </script>

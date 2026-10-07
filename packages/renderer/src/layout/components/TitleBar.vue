@@ -1,12 +1,12 @@
 <template>
-  <header class="title-bar" style="-webkit-app-region: drag">
+  <header class="title-bar" :style="desktop.runtime === 'electron' ? '-webkit-app-region: drag' : undefined" @mousedown="dragWindow">
     <section class="app-logo">
       <n-icon size="30">
         <LogoGithub />
       </n-icon>
     </section>
     <section class="app-name">PicPortal</section>
-    <section class="win-btn-container">
+    <section class="win-btn-container" @mousedown.stop>
       <div class="win-btn min" @click="minWin"></div>
       <div class="win-btn max" @click="maxWin"></div>
       <div class="win-btn close" @click="closeWin"></div>
@@ -18,7 +18,12 @@
 import { NIcon } from 'naive-ui'
 import { LogoGithub } from '@vicons/ionicons5'
 import { useDesktop } from '/@/desktop'
-const { appWindow } = useDesktop()
+const desktop = useDesktop()
+const { appWindow } = desktop
+
+const dragWindow = async (event: MouseEvent) => {
+  if (desktop.runtime === 'tauri' && event.button === 0) await appWindow.startDragging()
+}
 
 const closeWin = async () => {
   await appWindow.close()

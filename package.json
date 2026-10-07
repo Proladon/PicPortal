@@ -1,5 +1,6 @@
 {
   "name": "PicPortal",
+  "version": "0.1.0",
   "description": "Images management/classification IO software",
   "author": {
     "name": "Proladon",
@@ -22,8 +23,18 @@
     "pretest": "cross-env MODE=test npm run build",
     "test": "node tests/app.spec.js",
     "test:desktop": "node tests/desktop.spec.cjs",
+    "test:tauri-adapter": "node tests/tauri-adapter.spec.cjs",
+    "test:tauri-skeleton": "node tests/tauri-skeleton.cjs",
+    "test:tauri-skeleton:built": "node tests/tauri-skeleton.cjs --built",
     "test:baseline": "node tests/electron-baseline.cjs",
     "watch": "node scripts/watch.js",
+    "dev:electron": "npm run watch",
+    "build:electron": "npm run build",
+    "dev:renderer": "cross-env PICPORTAL_RUNTIME=tauri MODE=development vite --config packages/renderer/vite.config.js",
+    "build:renderer": "cross-env PICPORTAL_RUNTIME=tauri MODE=production vite build --config packages/renderer/vite.config.js",
+    "tauri": "tauri",
+    "dev:tauri": "tauri dev",
+    "build:tauri": "tauri build",
     "lint": "eslint . --ext js,ts,vue",
     "pretypecheck": "npm run buildEnvTypes",
     "typecheck-main": "tsc --noEmit -p packages/main/tsconfig.json",
@@ -35,6 +46,7 @@
     "Chrome 91"
   ],
   "devDependencies": {
+    "@tauri-apps/cli": "2.12.1",
     "@types/electron-devtools-installer": "^2.2.0",
     "@types/lodash": "^4.14.182",
     "@types/path-browserify": "^1.0.0",
@@ -48,10 +60,10 @@
     "electron": "^18.1.0",
     "electron-builder": "^23.0.3",
     "electron-devtools-installer": "^3.2.0",
+    "esbuild": "0.15.18",
     "eslint": "^7.32.0",
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-vue": "^8.6.0",
-    "esbuild": "0.15.18",
     "naive-ui": "^2.33.5",
     "prettier": "^2.2.1",
     "spectron": "^15.0.0",
@@ -63,6 +75,9 @@
     "windicss": "^3.5.6"
   },
   "dependencies": {
+    "@tauri-apps/api": "2.12.1",
+    "@tauri-apps/plugin-dialog": "2.8.1",
+    "@tauri-apps/plugin-opener": "2.7.0",
     "@vueuse/core": "^9.5.0",
     "electron-store": "^8.0.1",
     "electron-updater": "^4.4.5",

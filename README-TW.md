@@ -18,9 +18,15 @@ This is [Picnel.io-2](https://github.com/Proladon/Picnel.io-2) next version.
 
 ## Tauri 2 遷移
 
-已開始建立資料基線與桌面 API 抽象，目前仍以 Electron 執行。使用 `npm ci` 安裝，`npm run watch` 開發，`npm run build` 建置。
+已建立資料基線、桌面 API 抽象與 Tauri 2 執行骨架。使用 `npm ci` 安裝前端依賴；Tauri 需要 Rust 1.90 以上、Windows C++ 建置工具與 WebView2。本機以 Rust 1.97.1 驗證。
+
+- Electron：`npm run dev:electron`／`npm run build:electron`，仍可作為比對入口。
+- Tauri：`npm run dev:tauri`；`npm run build:tauri -- --debug --no-bundle` 建立含正式前端產物的測試執行檔。安裝包驗收安排於階段 6。
+- 骨架目前支援視窗操作、版本／平台資訊與外部網址；專案、圖片掃描、設定與檔案處理會顯示 `NOT_IMPLEMENTED`，待後續階段接上。
 
 檢查指令：`npm run typecheck`、`npm run lint`、`npm run test:desktop`、建置後執行 `npm run test:baseline`。詳見 [遷移計畫](docs/tauri-2-migration-plan.md)與 [實作紀錄](docs/tauri-2-migration-progress.md)。
+
+Tauri 檢查：`npm run test:tauri-adapter`、`npm run test:tauri-skeleton`、`npm run test:tauri-skeleton:built`。原生 smoke 限 Windows／Node 22 以上，使用隔離的暫存 WebView profile；開發測試需空出 `127.0.0.1:5173`。
 
 [vite]: https://github.com/vitejs/vite/
 [electron]: https://github.com/electron/electron

@@ -43,6 +43,7 @@ import { NScrollbar, NButton, useNotification, NSpin } from 'naive-ui'
 import { onMounted, ref } from '@vue/runtime-core'
 import { importProjectDialog } from '/@/utils/browserDialog'
 import { useDesktop } from '/@/desktop'
+import { reportDesktopError } from '/@/desktop/status'
 import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid/async'
 import { useAppStore } from '/@/store/appStore'
@@ -105,10 +106,15 @@ const getProjects = async () => {
 // => 重新整理專案列表
 const refreshProjects = async () => {
   loading.value = true
-  const projects = await getProjects()
-  if (!projects) await userStore.set('projects', [])
-  projectsList.value = projects || []
-  loading.value = false
+  try {
+    const projects = await getProjects()
+    if (!projects) await userStore.set('projects', [])
+    projectsList.value = projects || []
+  } catch (error) {
+    reportDesktopError(error)
+  } finally {
+    loading.value = false
+  }
 }
 
 // --- Mounted ---

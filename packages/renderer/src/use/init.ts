@@ -3,6 +3,8 @@ import { useAppStore } from '../store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import type { DesktopSettings } from '/@/desktop'
 import { getSettings } from './settings'
+import { DesktopNotImplementedError } from '/@/desktop/errors'
+import { reportDesktopError } from '/@/desktop/status'
 import useLocale from '/@/use/locale'
 
 export default () => {
@@ -11,9 +13,13 @@ export default () => {
   const portalPaneStore = usePortalPaneStore()
   const appStore = useAppStore()
   return {
-    init: async (): Promise<DesktopSettings> => {
-      const settings = await getSettings()
-      changeLocale(settings.general.locale)
+    init: async (): Promise<DesktopSettings | null> => {
+      const settings = await getSettings().catch((error) => {
+        if (!(error instanceof DesktopNotImplementedError)) throw error
+        reportDesktopError(error)
+        return null
+      })
+      if (settings) changeLocale(settings.general.locale)
 
       hotkeys('esc', (event) => {
         event.preventDefault()

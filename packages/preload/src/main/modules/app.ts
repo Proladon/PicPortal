@@ -1,5 +1,4 @@
 import { ipcMain, BrowserWindow, app, shell } from 'electron'
-import { simpleGit, SimpleGit } from 'simple-git'
 
 const ipc = ipcMain
 
@@ -26,8 +25,7 @@ const appWindow = () => {
   })
 
   ipc.handle('Get-App-Version', (e) => {
-    const git: SimpleGit = simpleGit()
-    return git.tag()
+    return app.getVersion()
   })
 }
 

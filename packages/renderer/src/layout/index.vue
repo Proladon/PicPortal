@@ -1,6 +1,9 @@
 <template>
   <div class="layout">
     <TitleBar />
+    <n-alert v-if="desktopError" class="desktop-status" type="warning" closable @close="desktopError = ''">
+      {{ desktopError }}
+    </n-alert>
 
     <section class="main-wrapper">
       <Navbar />
@@ -15,6 +18,8 @@
 import TitleBar from './components/TitleBar.vue'
 import Navbar from './components/NavBar.vue'
 import StatusBar from './components/StatusBar.vue'
+import { NAlert } from 'naive-ui'
+import { desktopError } from '/@/desktop/status'
 </script>
 
 <style lang="postcss" scoped>

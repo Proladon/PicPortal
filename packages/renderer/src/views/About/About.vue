@@ -29,9 +29,8 @@
           </div>
 
           <div class="text-base">
-            <p>Node: {{ platform.node }}</p>
-            <p>Electron: {{ platform.electron }}</p>
-            <p>Chorme: {{ platform.chrome }}</p>
+            <p>平台：{{ desktopPlatform.os }}</p>
+            <p v-for="(value, name) in platform" :key="name">{{ name }}: {{ value }}</p>
           </div>
         </n-alert>
 
@@ -40,7 +39,7 @@
           <img src="../../../assets/about/tools/vite.svg" alt="vite" />
           <img src="../../../assets/about/tools/vue.svg" alt="vue" />
           <img src="../../../assets/about/tools/typescript.svg" alt="ts" />
-          <img src="../../../assets/about/tools/electron.png" alt="electron" />
+          <img v-if="runtime === 'electron'" src="../../../assets/about/tools/electron.png" alt="electron" />
         </section>
       </div>
       <div class="right-pane"></div>
@@ -55,7 +54,7 @@ import { NIcon, NAlert, NScrollbar } from 'naive-ui'
 import { ref } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useDesktop } from '/@/desktop'
-const { appWindow, platform: desktopPlatform } = useDesktop()
+const { appWindow, platform: desktopPlatform, runtime } = useDesktop()
 
 const version = ref('')
 const platform = desktopPlatform.versions

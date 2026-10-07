@@ -16,6 +16,7 @@ export function createElectronAdapter(
   bridge: Readonly<ElectronApi>
 ): DesktopApi {
   return {
+    initialize: () => Promise.resolve(),
     runtime: 'electron',
     platform: {
       os: bridge.platform.platform,
@@ -97,6 +98,7 @@ export function createElectronAdapter(
       maximum: async () => {
         await bridge.appWindow.maximum()
       },
+      startDragging: () => Promise.resolve(),
       getAppVersion: () => bridge.appWindow.getAppVersion(),
     },
     toImageUrl: (path) =>

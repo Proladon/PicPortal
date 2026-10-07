@@ -4,7 +4,7 @@
       <div class="pane left">
         <n-menu v-model:value="activeTab" :options="menuOptions" />
       </div>
-      <div class="pane right" v-if="formData.general">
+      <div class="pane right" v-if="loaded">
         <GeneralSettings
           v-if="activeTab === 'general'"
           v-model:model="formData.general"
@@ -36,6 +36,7 @@ import HotKeysSettings from './HotKeysSettings/HotKeysSettings.vue'
 import ViewerSettings from './ViewerSettings/ViewerSettings.vue'
 import { reactive, ref, computed } from '@vue/reactivity'
 import { useDesktop } from '/@/desktop'
+import { reportDesktopError } from '/@/desktop/status'
 import { createDefaultSettings, getSettings } from '/@/use/settings'
 import useLocale from '/@/use/locale'
 import { onMounted } from '@vue/runtime-core'
@@ -51,6 +52,7 @@ const { userStore } = useDesktop()
 const activeTab = ref('general')
 const showSave = ref(false)
 const loading = ref(false)
+const loaded = ref(false)
 const menuOptions = ref()
 const formData = reactive(createDefaultSettings())
 const config = ref<any>(null)
@@ -58,6 +60,7 @@ const config = ref<any>(null)
 watch(
   formData,
   () => {
+    if (!loaded.value) return
     if (isEqual(config.value, formData)) showSave.value = false
     else showSave.value = true
   },
@@ -83,6 +86,7 @@ const generateMenu = () => {
 }
 
 const save = async () => {
+  if (!loaded.value) return
   await userStore.set('settings', dataClone(formData))
   await syncUserConfig()
   showSave.value = false
@@ -106,9 +110,15 @@ const syncUserConfig = async () => {
 
 onMounted(async () => {
   loading.value = true
-  await syncUserConfig()
   generateMenu()
-  loading.value = false
+  try {
+    await syncUserConfig()
+    loaded.value = true
+  } catch (error) {
+    reportDesktopError(error)
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 

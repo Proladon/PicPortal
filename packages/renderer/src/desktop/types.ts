@@ -28,6 +28,7 @@ export interface DesktopSettings {
 }
 
 export interface DesktopApi {
+  initialize(): Promise<void>
   readonly runtime: 'electron' | 'tauri'
   readonly platform: {
     os: string
@@ -82,6 +83,7 @@ export interface DesktopApi {
     close(): Promise<void>
     minimum(): Promise<void>
     maximum(): Promise<void>
+    startDragging(): Promise<void>
     getAppVersion(): Promise<string>
   }
   toImageUrl(path?: string): string

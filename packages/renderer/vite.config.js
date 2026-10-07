@@ -9,6 +9,7 @@ import vue from '@vitejs/plugin-vue'
 import WindiCSS from 'vite-plugin-windicss'
 
 const PACKAGE_ROOT = __dirname
+const isTauri = process.env.PICPORTAL_RUNTIME === 'tauri'
 
 /**
  * Vite looks for `.env.[mode]` files only in `PACKAGE_ROOT` directory.
@@ -27,18 +28,19 @@ export default defineConfig({
     }
   },
   plugins: [vue(), WindiCSS()],
+  clearScreen: false,
 
   base: '',
   server: {
-    fsServe: {
-      root: join(PACKAGE_ROOT, '../../')
-    }
+    ...(isTauri ? { host: '127.0.0.1', port: 5173, strictPort: true, watch: { ignored: ['**/src-tauri/**'] } } : {}),
+    fs: { allow: [join(PACKAGE_ROOT, '../../')] }
   },
   build: {
     sourcemap: true,
-    target: `chrome${chrome}`,
+    target: isTauri ? ['chrome105', 'safari13'] : `chrome${chrome}`,
     outDir: 'dist',
     assetsDir: '.',
+    minify: 'terser',
     terserOptions: {
       ecma: 2020,
       compress: {
@@ -47,7 +49,7 @@ export default defineConfig({
       safari10: false
     },
     rollupOptions: {
-      external: [...builtinModules]
+      external: isTauri ? [] : [...builtinModules]
     },
     emptyOutDir: true
   }
