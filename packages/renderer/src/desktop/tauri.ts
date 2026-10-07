@@ -36,8 +36,54 @@ export function createTauriAdapter(): DesktopApi {
     versions: {} as Record<string, string>
   }
   let initialization: Promise<void> | undefined
+  let session: string | null = null
+  let connection = 0
+  const projectResult = <T>(command: string, args: Record<string, unknown>, token: string | null) =>
+    nativeResult<T>(command, { ...args, session: token || '' })
+  const database = (token: () => string | null): DesktopApi['database'] => ({
+    readOnly: false,
+    async connect(path) {
+      const request = ++connection
+      const previous = session
+      session = null
+      const [response, error] = await nativeResult<{ data: DBData; session: string }>('project_connect', { path })
+      if (request !== connection) return [null, 'STALE_PROJECT: 專案已切換']
+      if (error || !response) {
+        session = previous
+        return [null, error || '無法讀取專案']
+      }
+      session = response.session
+      return [response.data, null]
+    },
+    getSourceFolder: () => projectResult('project_source', {}, token()),
+    setSourceFolder: (path) => projectResult('project_set_source', { path }, token()),
+    save: (key, data) => projectResult('project_save', { keys: [key], data }, token()),
+    deepSave: (keys, data) => projectResult('project_save', {
+      keys: Array.isArray(keys) ? keys : keys.match(/[^.[\]]+/g) || [], data
+    }, token()),
+    slice: (key, index) => projectResult('project_slice', { key, index }, token()),
+    get: (key) => projectResult('project_get', { key }, token()),
+    pullDockings: (data) => projectResult('project_pull_dockings', { data }, token())
+  })
+  const fileSystem = (token: () => string | null): DesktopApi['fileSystem'] => ({
+    openFolder: () => unavailableResult('開啟資料夾（階段 5）'),
+    createFile: (path) => nativeResult('file_create', { path }),
+    writeJson: (path, data) => nativeResult('project_create', { path, data }),
+    copyFile: (source, destination) => projectResult('file_transfer', { source, destination, moveSource: false, overwrite: false }, token()),
+    moveFile: (source, destination) => projectResult('file_transfer', { source, destination, moveSource: true, overwrite: false }, token()),
+    overrideFile: async (source, destination, mode = 'move') => {
+      const [, error] = await projectResult('file_transfer', { source, destination, moveSource: mode === 'move', overwrite: true }, token())
+      return error ? [null, error] : ['ok', null]
+    },
+    deleteFile: (path) => projectResult('file_delete', { path }, token()),
+    checkExist: (path) => projectResult('file_exists', { path }, token())
+  })
 
   return {
+    captureProject() {
+      const captured = session
+      return { database: database(() => captured), fileSystem: fileSystem(() => captured) }
+    },
     runtime: 'tauri',
     platform,
     initialize() {
@@ -68,33 +114,14 @@ export function createTauriAdapter(): DesktopApi {
     },
     browserDialog: {
       open: (options = {}) => invoke('desktop_open_dialog', { options }),
-      save: async () => unavailable('儲存對話框（階段 4）')
+      save: (options = {}) => invoke('desktop_save_dialog', { options })
     },
     scanner: {
       scanImages: (directory, extensions) =>
         invoke('scan_images', { directory, extensions })
     },
-    database: {
-      readOnly: true,
-      connect: (path) => nativeResult('project_connect', { path }),
-      getSourceFolder: () => nativeResult('project_source'),
-      setSourceFolder: (path) => nativeResult('project_set_source', { path }),
-      save: () => unavailableResult('專案儲存（階段 4）'),
-      deepSave: () => unavailableResult('分類儲存（階段 4）'),
-      slice: () => unavailableResult('分類刪除（階段 4）'),
-      get: (key) => nativeResult('project_get', { key }),
-      pullDockings: () => unavailableResult('待處理資料清理（階段 4）')
-    },
-    fileSystem: {
-      openFolder: () => unavailableResult('開啟資料夾（階段 5）'),
-      createFile: () => unavailableResult('建立檔案（階段 4）'),
-      copyFile: () => unavailableResult('複製檔案（階段 4）'),
-      moveFile: () => unavailableResult('搬移檔案（階段 4）'),
-      deleteFile: () => unavailableResult('刪除檔案（階段 4）'),
-      overrideFile: () => unavailableResult('覆寫檔案（階段 4）'),
-      checkExist: (path) => nativeResult('file_exists', { path }),
-      writeJson: () => unavailableResult('JSON 寫入（階段 4）')
-    },
+    database: database(() => session),
+    fileSystem: fileSystem(() => session),
     appWindow: {
       openExternal: (url) => openUrl(url),
       close: () => window.close(),

@@ -1,13 +1,15 @@
 import { defineStore } from 'pinia'
 import { useDesktop } from '/@/desktop'
 import { useAppStore } from '/@/store/appStore'
-import { difference, map, filter, intersection } from 'lodash'
-const { scanner, fileSystem } = useDesktop()
-import { wrapingQueue, filesExistQueue } from '/@/queue'
-import PQueue from 'p-queue'
+import { map, filter, intersection } from 'lodash'
+const { scanner } = useDesktop()
+import { wrapingQueue } from '/@/queue'
+import { processBatchItem, BatchItem, ConflictAction, ConflictDecision } from '/@/desktop/batch'
 import { filePathKey } from '/@/utils/file'
 import { reportDesktopError } from '/@/desktop/status'
 let scanRequest = 0
+let conflictId = 0
+let resolveConflict: ((decision: ConflictDecision) => void) | undefined
 
 export type ViewerTypes =
   | 'GridView'
@@ -31,13 +33,13 @@ interface ViewerStoreState {
     totalWrap: number
     curWrap: number
     errWrap: number
+    skipWrap: number
     filesExist: any[]
     sameOperation: {
       enable: boolean
       action: null | 'skip' | 'plusNum' | 'delete' | 'override'
     }
   }
-  pullList: any[]
   filter: {
     onlyDockings: boolean
     portals: string[]
@@ -64,13 +66,13 @@ export const useViewerStore = defineStore('viewer', {
       totalWrap: 0,
       curWrap: 0,
       errWrap: 0,
+      skipWrap: 0,
       filesExist: [],
       sameOperation: {
         enable: false,
         action: null
       }
     },
-    pullList: [], // files need to pull after portal
     filter: {
       onlyDockings: false,
       portals: [],
@@ -87,9 +89,6 @@ export const useViewerStore = defineStore('viewer', {
     },
     SET_LAST_VIEWER_TYPE(type: ViewerTypes) {
       this.lastViewerType = type
-    },
-    UpdatePullList(pullList: any[]) {
-      this.pullList = pullList
     },
     async GetFolderAllFiles({ fileTypes }: { fileTypes?: string[] }) {
       const request = ++scanRequest
@@ -122,50 +121,56 @@ export const useViewerStore = defineStore('viewer', {
       await appStore.SaveToDB({ key: 'dockings', data: [] })
       await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
     },
-    async PurgeFiles(purgeList: any[]) {
-      const newFileList = difference(this.folderFiles, purgeList)
-      this.folderFiles = newFileList
-    },
-    async Wraping({
-      mode,
-      filePath,
-      destPath
-    }: {
-      mode: 'copy' | 'move'
-      filePath: string
-      destPath: string
-    }) {
-      const task = async (mode: 'move' | 'copy') => {
-        const func = mode === 'copy' ? 'copyFile' : 'moveFile'
-        const [, err] = await fileSystem[func](filePath, destPath)
-        if (err) {
-          if (err === 'FILE_EXIST')
-            this.wrap.filesExist.push({
-              mode: mode,
-              filePath,
-              destPath
-            })
-          return Promise.reject(new Error(err))
+    async StartBatch(items: BatchItem[]) {
+      if (this.wrap.wraping || !items.length) return
+      const bound = useDesktop().captureProject()
+      const appStore = useAppStore()
+      const project = appStore.openProject?.path
+      const isCurrent = () => project === appStore.openProject?.path
+      Object.assign(this.wrap, {
+        wraping: true, totalWrap: items.length, curWrap: 0,
+        errWrap: 0, skipWrap: 0, filesExist: [],
+        sameOperation: { enable: false, action: null }
+      })
+      const job = wrapingQueue.add(async () => {
+        for (const item of items) {
+          try {
+            const result = await processBatchItem(item, bound, (data) => {
+              if (this.wrap.sameOperation.enable && this.wrap.sameOperation.action)
+                return Promise.resolve({ action: this.wrap.sameOperation.action })
+              this.wrap.filesExist = [{ ...data, id: ++conflictId }]
+              return new Promise<ConflictDecision>((resolve) => { resolveConflict = resolve })
+            }, isCurrent)
+            if (result === 'skip') this.wrap.skipWrap++
+            else this.wrap.curWrap++
+          } catch (error) {
+            this.wrap.errWrap++
+            reportDesktopError(error)
+          }
         }
+      })
+      wrapingQueue.start()
+      try { await job } finally {
+        wrapingQueue.pause()
+        resolveConflict = undefined
+        this.wrap.filesExist = []
+        if (isCurrent()) {
+          const [dockings, error] = await bound.database.get('dockings')
+          if (error) reportDesktopError(error)
+          else if (appStore.dbData) appStore.dbData.dockings = dockings as Docking[]
+          await this.GetFolderAllFiles({})
+        }
+        this.wrap.wraping = false
+        this.signal.refresh = true
       }
-
-      if (mode === 'copy') wrapingQueue.add(() => task('copy'))
-      if (mode === 'move') wrapingQueue.add(() => task('move'))
     },
-    PushToFileExistQueue(task: any) {
-      filesExistQueue.add(task)
-    },
-    StartWraping(type: 'normal' | 'fileExist') {
-      let usingQueue = wrapingQueue
-      if (type === 'fileExist') usingQueue = filesExistQueue
-      this.wrap.totalWrap = 0
-      this.wrap.curWrap = 0
-      this.wrap.errWrap = 0
-      this.wrap.totalWrap = usingQueue.size
-      this.wrap.wraping = true
-      this.wrap.sameOperation.enable = false
-      this.wrap.sameOperation.action = null
-      usingQueue.start()
+    ResolveConflict(id: number, action: ConflictAction, name?: string) {
+      if (this.wrap.filesExist[0]?.id !== id || !resolveConflict) return
+      if (this.wrap.sameOperation.enable && action !== 'rename') this.wrap.sameOperation.action = action
+      const resolve = resolveConflict
+      resolveConflict = undefined
+      this.wrap.filesExist = []
+      resolve({ action, name })
     }
   },
   getters: {
@@ -203,7 +208,7 @@ export const useViewerStore = defineStore('viewer', {
           filter(dockings, (i: any) => i.portals.length),
           'target'
         )
-        if (useDesktop().database.readOnly) {
+        if (useDesktop().runtime === 'tauri') {
           const scanned = new Map<string, string>(
             files.map((file: string) => [filePathKey(file), file])
           )
@@ -223,46 +228,4 @@ export const useViewerStore = defineStore('viewer', {
       return appStore.dbData.dockings
     }
   }
-})
-
-let count = 0
-wrapingQueue.on('completed', () => {
-  count += 1
-  const viewerStore = useViewerStore()
-  viewerStore.wrap.curWrap = count
-})
-
-wrapingQueue.on('idle', async () => {
-  count = 0
-  const viewerStore = useViewerStore()
-  const appStore = useAppStore()
-  await appStore.DBPullDockings(viewerStore.pullList)
-  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
-  wrapingQueue.pause()
-  viewerStore.wrap.wraping = false
-  viewerStore.signal.refresh = true
-})
-
-wrapingQueue.on('error', (error) => {
-  console.error('queue error', error)
-  const viewerStore = useViewerStore()
-  viewerStore.wrap.errWrap += 1
-})
-
-let fileExistCount = 0
-filesExistQueue.on('completed', () => {
-  fileExistCount += 1
-  const viewerStore = useViewerStore()
-  viewerStore.wrap.curWrap = fileExistCount
-})
-
-filesExistQueue.on('idle', async () => {
-  fileExistCount = 0
-  const viewerStore = useViewerStore()
-  const appStore = useAppStore()
-  await appStore.DBPullDockings(viewerStore.pullList)
-  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
-  filesExistQueue.pause()
-  viewerStore.wrap.wraping = false
-  viewerStore.signal.refresh = true
 })

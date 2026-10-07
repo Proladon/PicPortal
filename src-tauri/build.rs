@@ -9,6 +9,14 @@ fn main() {
             "project_set_source",
             "scan_images",
             "file_exists",
+            "desktop_save_dialog",
+            "project_save",
+            "project_slice",
+            "project_pull_dockings",
+            "file_create",
+            "project_create",
+            "file_transfer",
+            "file_delete",
         ]),
     ))
     .expect("無法建立桌面命令權限");

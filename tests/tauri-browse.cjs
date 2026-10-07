@@ -83,7 +83,7 @@ async function main() {
     await evaluate(`location.hash = '#/projects'`)
     await waitFor(() => evaluate(`!!document.querySelector('.projects .btn-container button')`))
     console.log(`ACTION select project: ${path.join(dataset.root, name)}`)
-    await evaluate(`document.querySelector('.projects .btn-container button').click()`)
+    await evaluate(`document.querySelector('.projects .btn-container button:last-child').click()`)
     await waitFor(() => evaluate(`location.hash.includes('/grid-view') && $app.openProject?.name === ${JSON.stringify(path.parse(name).name)}`), 600000)
     await evaluate(`globalThis.$viewer = $pinia._s.get('viewer')`)
   }
@@ -111,6 +111,10 @@ async function main() {
     assert.equal(await code('project_connect', { path: normal }), 'OUTSIDE_SCOPE')
     assert.equal(await code('scan_images', { directory: dataset.source, extensions: ['png'] }), 'NO_PROJECT')
     await chooseProject('normal.db')
+    if (process.argv.includes('--write')) {
+      await require('./tauri-write.cjs').exerciseWrites({ dataset, evaluate, invoke, code, waitFor, chooseProject, close, start, loadedImages, imageLoaded })
+      return
+    }
     await waitFor(() => evaluate(`$viewer.folderFiles.length === 5`))
     assert.equal(await evaluate('$app.dbData.extraProject.keep'), true)
     assert.equal(await evaluate('$app.dbData.portals[0].childs[0].extraPortal'), true)
@@ -123,7 +127,9 @@ async function main() {
     }
     assert.equal(await code('scan_images', { directory: dataset.root, extensions: ['png'] }), 'OUTSIDE_SCOPE')
     assert.equal(await code('file_exists', { path: path.join(dataset.root, 'config.json') }), 'OUTSIDE_SCOPE')
-    assert.equal(await code('project_set_source', { path: dataset.destination }), 'OUTSIDE_SCOPE')
+    const nativeSession = (await invoke('project_connect', { path: normal })).session
+    assert.equal(await code('project_set_source', { path: dataset.destination, session: nativeSession }), 'OUTSIDE_SCOPE')
+    await evaluate('$app.ConnectProjectDB()')
     const imageUrl = await evaluate(`window.__TAURI_INTERNALS__.convertFileSrc(${JSON.stringify(dataset.image)}, 'asset')`)
     assert.match(imageUrl, /^http:\/\/asset\.localhost/)
     assert.equal(await imageLoaded(imageUrl), true)
@@ -141,12 +147,12 @@ async function main() {
       await evaluate(`location.hash = '#/editor/viewer/${route}'`)
       await loadedImages(selector)
       if (route !== 'focus-view') assert.equal(await evaluate(`document.querySelectorAll(${JSON.stringify(selector)}).length`), 5)
-      assert.equal(await evaluate(`!!document.querySelector('.read-only-status')`), true)
+      assert.equal(await evaluate(`!!document.querySelector('.read-only-status')`), false)
       // Each mode uses the same normalized legacy docking paths and filters.
       await evaluate(`$viewer.filter.onlyDockings=true`)
       await waitFor(() => evaluate(`document.querySelectorAll(${JSON.stringify(selector)}).length===1 && document.querySelector('.tag')?.textContent.includes('收藏')`))
       await loadedImages(selector)
-      assert.equal(await evaluate(`!!document.querySelector('.tag .n-tag__close')`), false)
+      assert.equal(await evaluate(`!!document.querySelector('.tag .n-tag__close')`), true)
       await evaluate(`$viewer.filter.onlyDockings=false`)
       await waitFor(() => evaluate(`$viewer.showFiles.length===5`))
     }
@@ -177,9 +183,10 @@ async function main() {
     await evaluate(`document.querySelector('button.main-folder-btn').click()`)
     await waitFor(() => evaluate(`$viewer.folderFiles.length===5`), 600000)
     await loadedImages('.image-item img')
-    assert.deepEqual(await fs.readFile(path.join(dataset.root, 'empty.db')), emptyBytes)
-    assert.equal(await evaluate(`$app.dbData.mainFolder`), '')
-    console.log('PASS empty project and session-only folder selection (original .db unchanged)')
+    const savedEmpty = JSON.parse(await fs.readFile(path.join(dataset.root, 'empty.db'), 'utf8'))
+    assert.equal(savedEmpty.mainFolder.path, dataset.source)
+    assert.equal(await evaluate(`$app.dbData.mainFolder.path`), dataset.source)
+    console.log('PASS empty project and persisted source folder selection')
     await close()
     assetResponses.clear()
     await start()

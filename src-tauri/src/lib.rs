@@ -16,6 +16,14 @@ pub fn run() {
             commands::project_set_source,
             commands::scan_images,
             commands::file_exists,
+            commands::desktop_save_dialog,
+            commands::project_save,
+            commands::project_slice,
+            commands::project_pull_dockings,
+            commands::file_create,
+            commands::project_create,
+            commands::file_transfer,
+            commands::file_delete,
         ])
         .run(tauri::generate_context!())
         .expect("無法啟動 PicPortal");

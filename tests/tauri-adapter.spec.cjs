@@ -13,6 +13,7 @@ async function main() {
     global.isTauri = true
     mockWindows('main')
     const commands = []
+    let sessionIndex = 0
     mockIPC((command, payload) => {
       commands.push([command, payload])
       if (command === 'runtime_platform') return 'win32'
@@ -25,8 +26,11 @@ async function main() {
       }
       if (command === 'project_connect') {
         if (payload.path === 'bad') throw { code: 'INVALID_JSON', message: '專案 JSON 損毀' }
-        return { id: 'old-id', mainFolder: '', portals: [], dockings: [], extra: true }
+        return { session: String(++sessionIndex), data: { id: 'old-id', mainFolder: '', portals: [], dockings: [], extra: true } }
       }
+      if (command === 'desktop_save_dialog') return payload.options.title === 'cancel' ? null : 'new.db'
+      if (['project_save', 'project_slice', 'project_pull_dockings', 'file_delete'].includes(command)) return 'success'
+      if (command === 'file_transfer' && payload.destination === 'conflict') throw { code: 'FILE_EXIST' }
       if (command === 'project_source') return null
       if (command === 'project_set_source') return { name: '圖片', path: dataset.source }
       if (command === 'project_get') return ['old-id']
@@ -50,7 +54,7 @@ async function main() {
     assert.deepEqual(commands.map(([command]) => command), ['runtime_platform', 'plugin:app|tauri_version', 'plugin:app|version', 'plugin:window|minimize', 'plugin:window|toggle_maximize', 'plugin:window|start_dragging', 'plugin:opener|open_url', 'plugin:window|close'])
     assert.equal(desktop.toImageUrl(), '')
     assert.equal(desktop.toImageUrl(dataset.image), `asset://${encodeURIComponent(dataset.image)}`)
-    assert.equal(desktop.database.readOnly, true)
+    assert.equal(desktop.database.readOnly, false)
     assert.equal(await desktop.browserDialog.open({ title: 'cancel' }), null)
     assert.deepEqual(await desktop.browserDialog.open({ directory: true, multiple: true }), [dataset.image])
     assert.deepEqual(await desktop.scanner.scanImages(dataset.source, ['png', 'JPG']), [dataset.image])
@@ -62,17 +66,27 @@ async function main() {
     assert.deepEqual(await desktop.database.setSourceFolder(dataset.source), [{ name: '圖片', path: dataset.source }, null])
     assert.deepEqual(await desktop.database.get('dockings'), [['old-id'], null])
     assert.deepEqual(await desktop.fileSystem.checkExist('missing'), [false, null])
+    assert.equal(await desktop.browserDialog.save({ title: 'cancel' }), null)
+    assert.equal(await desktop.browserDialog.save(), 'new.db')
+    const bound = desktop.captureProject()
+    await desktop.database.connect('normal.db')
+    await bound.database.deepSave('[dockings][0][portals]', '[]')
+    assert.deepEqual(commands.at(-1), ['project_save', { keys: ['dockings', '0', 'portals'], data: '[]', session: '1' }])
+    await desktop.database.save('dockings', '[]')
+    assert.equal(commands.at(-1)[1].session, '2')
+    assert.deepEqual(await desktop.fileSystem.moveFile('a', 'conflict'), [null, 'FILE_EXIST'])
+    await bound.fileSystem.overrideFile('a', 'b', 'copy')
+    assert.deepEqual(commands.at(-1), ['file_transfer', { source: 'a', destination: 'b', moveSource: false, overwrite: true, session: '1' }])
+    await desktop.fileSystem.moveFile('a', 'b')
+    assert.deepEqual(commands.at(-1), ['file_transfer', { source: 'a', destination: 'b', moveSource: true, overwrite: false, session: '2' }])
+    await desktop.fileSystem.createFile('new.db')
+    await desktop.fileSystem.writeJson('new.db', { id: 'new' })
+    assert.deepEqual(commands.at(-1), ['project_create', { path: 'new.db', data: { id: 'new' } }])
     const before = commands.length
-    for (const operation of [() => desktop.userStore.get('projects'), () => desktop.userStore.set('projects', []), () => desktop.browserDialog.save()]) {
+    for (const operation of [() => desktop.userStore.get('projects'), () => desktop.userStore.set('projects', [])])
       await assert.rejects(operation, (error) => error.code === 'NOT_IMPLEMENTED')
-    }
-    for (const operation of [() => desktop.database.save('dockings', '[]'), () => desktop.fileSystem.createFile('sample.db'), () => desktop.fileSystem.moveFile('a', 'b')]) {
-      const [value, error] = await operation()
-      assert.equal(value, null)
-      assert.match(error, /^NOT_IMPLEMENTED:/)
-    }
     assert.throws(() => desktop.getDroppedPaths([]), (error) => error.code === 'NOT_IMPLEMENTED')
-    assert.equal(commands.length, before, 'Unsupported actions must not call native commands or create fake data')
+    assert.equal(commands.length, before, 'Unsupported actions must not call native commands')
     clearMocks()
     console.log('PASS Tauri adapter: runtime selection, initialization, window controls, versions, URLs and unsupported operations')
   } finally {

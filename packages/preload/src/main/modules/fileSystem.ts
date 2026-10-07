@@ -55,9 +55,10 @@ const fileSystem = () => {
     }
   })
 
-  ipc.handle('Override-File', async (e, filePath: string, destPath: string) => {
+  ipc.handle('Override-File', async (e, filePath: string, destPath: string, mode = 'move') => {
     try {
-      await fs.move(filePath, destPath, { overwrite: true })
+      if (mode === 'copy') await fs.copy(filePath, destPath, { overwrite: true })
+      else await fs.move(filePath, destPath, { overwrite: true })
       return ['ok', null]
     } catch (error) {
       return [null, error]

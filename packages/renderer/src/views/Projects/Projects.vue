@@ -13,11 +13,12 @@
           <ProjectCard newBtnCard @newProject="showCreateProjectModal = true" />
         </div>
         <p v-else class="p-10 text-center">
-          唯讀開啟既有 .db 專案。分類與檔案操作將於下一階段開放。
+          開啟或建立 .db 專案，管理分類與批次整理圖片。
         </p>
       </n-spin>
     </n-scrollbar>
     <section class="btn-container">
+      <n-button v-if="desktop.runtime === 'tauri'" :disabled="loading" @click="showCreateProjectModal = true">新增專案</n-button>
       <n-button
         secondary
         type="primary"
@@ -37,6 +38,7 @@
     v-if="showCreateProjectModal"
     @close="showCreateProjectModal = false"
     @refresh="refreshProjects"
+    @created="openCreatedProject"
   />
   <EditProjectModal
     v-if="showImportProjectEditModal"
@@ -58,7 +60,7 @@ import { useDesktop } from '/@/desktop'
 import { reportDesktopError } from '/@/desktop/status'
 import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid/async'
-import { useAppStore } from '/@/store/appStore'
+import { useAppStore, DBQueue } from '/@/store/appStore'
 import useLocale from '/@/use/locale'
 import { getFileName } from '/@/utils/file'
 import { useViewerStore } from '/@/store/viewerStore'
@@ -102,6 +104,7 @@ const openProject = async (project: any) => {
 }
 
 const importProject = async () => {
+  if (useViewerStore().wrap.wraping) return notify.warning({ content: '請先完成批次作業與衝突處理' })
   if (loading.value) return
   loading.value = true
   try {
@@ -109,6 +112,7 @@ const importProject = async () => {
     if (!open) return
     const filePath = open[0]
     if (desktop.runtime === 'tauri') {
+      await DBQueue.onIdle()
       const [dbData, error] = await desktop.database.connect(filePath)
       if (error || !dbData)
         return notify.error({ content: error || '無法讀取專案' })
@@ -144,6 +148,19 @@ const importProject = async () => {
 }
 
 // => 取得專案列表
+const openCreatedProject = async (project: Project) => {
+  await DBQueue.onIdle()
+  const [data, error] = await desktop.database.connect(project.path)
+  if (error || !data) return notify.error({ content: error || '無法開啟新專案' })
+  appStore.SetOpenProject(project)
+  appStore.sourceFolder = null
+  await appStore.SyncDBData({ dbData: data })
+  useViewerStore().folderFiles = []
+  usePortalPaneStore().ResetActivePortal()
+  showCreateProjectModal.value = false
+  await router.push({ name: 'GridView' })
+}
+
 const getProjects = async () => {
   return await userStore.get('projects')
 }

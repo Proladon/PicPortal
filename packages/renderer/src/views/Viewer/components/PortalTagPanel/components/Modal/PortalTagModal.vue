@@ -27,6 +27,7 @@
               <n-input
                 type="text"
                 v-model:value="formData.link"
+                :readonly="desktop.runtime === 'tauri'"
                 :placeholder="
                   translate('portalPane.portalModal.placeholder.link')
                 "
@@ -49,7 +50,7 @@
         </n-tab-pane>
         <!-- Drop Tab -->
         <n-tab-pane
-          v-if="mode === 'create'"
+          v-if="mode === 'create' && desktop.runtime === 'electron'"
           name="drop"
           :tab="translate('portalPane.portalModal.mode.drop')"
           class="flex flex-col h-full"
@@ -137,7 +138,8 @@ const props = defineProps({
   mode: String,
   data: { type: Object as PropType<{ groupId: string; portal?: Portal }>, default: () => ({ groupId: '' }) },
 })
-const { browserDialog, getDroppedPaths } = useDesktop()
+const desktop = useDesktop()
+const { browserDialog, getDroppedPaths } = desktop
 const message = useMessage()
 const appStore = useAppStore()
 const portalPanelStore = usePortalPaneStore()

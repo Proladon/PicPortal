@@ -44,8 +44,8 @@ import { computed, ref } from '@vue/reactivity'
 import { useViewerStore } from '/@/store/viewerStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
-import { useDesktop } from '/@/desktop'
-const readOnly = useDesktop().database.readOnly
+import { useAppStore } from '/@/store/appStore'
+const readOnly = computed(() => useAppStore().readOnly)
 
 // ANCHOR Use
 const viewerStore = useViewerStore()

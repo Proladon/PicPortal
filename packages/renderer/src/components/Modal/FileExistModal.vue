@@ -2,6 +2,7 @@
   <n-modal
     v-model:show="showModal"
     :mask-closable="false"
+    :close-on-esc="false"
     :on-update:show="updateModalShow"
   >
     <div class="modal-body">
@@ -21,7 +22,7 @@
       </div>
       <div class="py-[10px]">
         <n-checkbox v-model:checked="viewerStore.wrap.sameOperation.enable">
-          以下 {{ viewerStore.wrap.filesExist.length }} 個檔案皆同樣操作
+          後續衝突皆同樣操作
         </n-checkbox>
       </div>
       <div v-if="!rename" class="grid grid-cols-5 gap-[20px]">
@@ -38,7 +39,7 @@
           class="option-btn"
           secondary
           type="info"
-          @click="renameFileWithNumber(data.mode)"
+          @click="renameFileWithNumber"
         >
           檔名 +(1)
         </n-button>
@@ -76,7 +77,7 @@
           :disabled="disableRename"
           ghost
           type="primary"
-          @click="renameFile(data.mode)"
+          @click="renameFile"
         >
           {{ translate('common.confirm') }}
         </n-button>
@@ -92,20 +93,16 @@ import {
   NButton,
   NIcon,
   NInput,
-  useNotification,
 } from 'naive-ui'
 import { Warning } from '@vicons/ionicons5'
 import { computed, onMounted, ref } from '@vue/runtime-core'
 import { useModal } from '/@/use/modal'
 import useLocale from '/@/use/locale'
-import { localFile, getFileName, getFileDir, getFileExt } from '/@/utils/file'
-import { useDesktop } from '/@/desktop'
+import { localFile, getFileName } from '/@/utils/file'
 import { useViewerStore } from '/@/store/viewerStore'
 
-const notify = useNotification()
 const viewerStore = useViewerStore()
 const { translate } = useLocale()
-const { fileSystem } = useDesktop()
 const emit = defineEmits(['close', 'confirm'])
 const props = defineProps({
   data: {
@@ -117,127 +114,29 @@ const { updateModalShow, showModal } = useModal(emit)
 
 const rename = ref<boolean>(false)
 const newFileName = ref<string>('')
-const fileExistError = ref<boolean>(false)
 const renameError = computed(() => {
   if (!newFileName.value) return 'error'
-  if (newFileName.value.includes('/')) return 'error'
-  if (fileExistError.value) return 'error'
+  if (/[\\/:*?"<>|]/.test(newFileName.value) || /[. ]$/.test(newFileName.value)) return 'error'
   return ''
 })
 const disableRename = computed(() => {
   if (newFileName.value === getFileName(props.data.filePath)) return true
   if (!newFileName.value) return true
-  if (newFileName.value.includes('/')) return true
+  if (/[\\/:*?"<>|]/.test(newFileName.value) || /[. ]$/.test(newFileName.value)) return true
   return false
 })
 
-const fileExt = computed(() => getFileExt(props.data.filePath))
-
-const renameFile = async (mode: 'move' | 'copy') => {
-  if (renameError.value) return
-  const filePath = props.data.filePath
-  const destPath = `${getFileDir(props.data.destPath)}/${newFileName.value}${
-    fileExt.value
-  }`
-  const func = mode === 'copy' ? 'copyFile' : 'moveFile'
-  const task = async () => {
-    const [, err] = await fileSystem[func](filePath, destPath)
-    if (err) {
-      console.log(err)
-      notify.error({
-        content: err,
-      })
-      if (err === 'FILE_EXIST') fileExistError.value = true
-      return
-    }
-  }
-  viewerStore.PushToFileExistQueue(task)
-  updateModalShow(false)
+const decide = (action: 'skip' | 'plusNum' | 'delete' | 'override' | 'rename') => {
+  viewerStore.ResolveConflict(props.data.id, action, newFileName.value)
 }
-
-const renameFileWithNumber = async (mode: 'move' | 'copy') => {
-  if (viewerStore.wrap.sameOperation.enable) {
-    viewerStore.wrap.sameOperation.action = 'plusNum'
-  }
-  if (renameError.value) return
-  const filePath = props.data.filePath
-  const dirPath = props.data.destPath
-  const task = async () => {
-    let count = 1
-    let pass = false
-    const func = mode === 'copy' ? 'copyFile' : 'moveFile'
-    while (!pass) {
-      const destPath = `${getFileDir(dirPath)}/${newFileName.value}(${count})${
-        fileExt.value
-      }`
-      const [, err] = await fileSystem[func](filePath, destPath)
-      if (err) {
-        if (err === 'FILE_EXIST') count++
-      }
-      if (!err) pass = true
-    }
-  }
-  viewerStore.PushToFileExistQueue(task)
-  updateModalShow(false)
-}
-
-const handleSkip = () => {
-  if (viewerStore.wrap.sameOperation.enable) {
-    viewerStore.wrap.sameOperation.action = 'skip'
-  }
-  updateModalShow(false)
-}
-
-const handleDelete = async () => {
-  if (viewerStore.wrap.sameOperation.enable) {
-    viewerStore.wrap.sameOperation.action = 'delete'
-  }
-  const filePath = props.data.filePath
-  const task = async () => {
-    const [, err] = await fileSystem.deleteFile(filePath)
-    if (err) {
-      notify.error({
-        content: err,
-      })
-      return
-    }
-  }
-  viewerStore.PushToFileExistQueue(task)
-  updateModalShow(false)
-}
-
-const handleOverride = async () => {
-  if (viewerStore.wrap.sameOperation.enable) {
-    viewerStore.wrap.sameOperation.action = 'override'
-  }
-  const filePath = props.data.filePath
-  const dirPath = props.data.destPath
-  const task = async () => {
-    const destPath = `${getFileDir(dirPath)}/${newFileName.value}${
-      fileExt.value
-    }`
-    const [, err] = await fileSystem.overrideFile(filePath, destPath)
-    if (err) {
-      notify.error({
-        content: err,
-      })
-      return
-    }
-  }
-  viewerStore.PushToFileExistQueue(task)
-  updateModalShow(false)
-}
+const renameFile = () => { if (!renameError.value) decide('rename') }
+const renameFileWithNumber = () => decide('plusNum')
+const handleSkip = () => decide('skip')
+const handleDelete = () => decide('delete')
+const handleOverride = () => decide('override')
 
 onMounted(() => {
   newFileName.value = getFileName(props.data.destPath)
-  if (viewerStore.wrap.sameOperation.enable) {
-    const action = viewerStore.wrap.sameOperation.action
-    if (action === 'plusNum') renameFileWithNumber(props.data.mode)
-    else if (action === 'delete') handleDelete()
-    else if (action === 'override') handleOverride()
-    else if (action === 'skip') updateModalShow(false)
-    return
-  }
   showModal.value = true
 })
 </script>

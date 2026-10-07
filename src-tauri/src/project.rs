@@ -1,4 +1,4 @@
-//! Read-only project sessions. Paths can be authorized only by native selection
+//! Project sessions. Paths can be authorized only by native selection
 //! or by the validated source folder in an explicitly selected project.
 use serde::Serialize;
 use serde_json::Value;
@@ -11,6 +11,7 @@ use walkdir::WalkDir;
 
 #[cfg(test)]
 mod tests;
+mod write;
 
 pub const IMAGE_TYPES: &[&str] = &["png", "jpg", "jpeg", "gif", "webp"];
 
@@ -29,8 +30,9 @@ pub fn error(code: &'static str, message: impl Into<String>) -> Error {
 fn io_error(e: std::io::Error) -> Error {
     let (code, message) = match e.kind() {
         std::io::ErrorKind::NotFound => ("NOT_FOUND", "檔案或資料夾不存在"),
-        std::io::ErrorKind::PermissionDenied => ("ACCESS_DENIED", "沒有讀取檔案或資料夾的權限"),
-        _ => ("IO_ERROR", "無法讀取檔案或資料夾"),
+        std::io::ErrorKind::PermissionDenied => ("ACCESS_DENIED", "沒有讀取或寫入檔案的權限"),
+        std::io::ErrorKind::AlreadyExists => ("FILE_EXIST", "目的檔案已存在"),
+        _ => ("IO_ERROR", "無法讀取或寫入檔案"),
     };
     error(code, format!("{message}：{e}"))
 }
@@ -52,11 +54,16 @@ pub struct ProjectState {
     selected_files: HashMap<String, PathBuf>,
     selected_folders: HashMap<String, PathBuf>,
     active: Option<Session>,
+    generation: u64,
+    save_targets: HashMap<String, PathBuf>,
 }
 struct Session {
     data: Value,
     file: PathBuf,
     source: Option<PathBuf>,
+    bytes: Vec<u8>,
+    destinations: Vec<write::Root>,
+    token: String,
 }
 
 impl ProjectState {
@@ -120,10 +127,15 @@ impl ProjectState {
                 source_folder(&path)
             })
             .transpose()?;
+        let destinations = write::roots(&data, &file)?;
+        self.generation += 1;
         self.active = Some(Session {
             data: data.clone(),
             file,
             source,
+            bytes,
+            destinations,
+            token: self.generation.to_string(),
         });
         Ok(data)
     }
@@ -144,11 +156,14 @@ impl ProjectState {
         Ok(self.session()?.source.as_deref().map(Folder::from))
     }
     pub fn set_source(&mut self, path: &str) -> Result<Folder> {
-        self.session()?;
+        let token = self.token()?;
         let source = source_folder(&self.selected_path(path, true)?)?;
         let folder = Folder::from(source.as_path());
+        let mut data = self.session()?.data.clone();
+        data["mainFolder"] = serde_json::to_value(&folder).unwrap();
+        data["dockings"] = serde_json::json!([]);
+        self.commit(&token, data)?;
         self.active.as_mut().unwrap().source = Some(source);
-        // Session override only: keep the original JSON, dockings and IDs intact.
         Ok(folder)
     }
     pub fn scan(&self, directory: &str, extensions: &[String]) -> Result<Vec<PathBuf>> {
@@ -163,30 +178,7 @@ impl ProjectState {
         scan(source, extensions)
     }
     pub fn exists(&self, path: &str) -> Result<bool> {
-        let session = self.session()?;
-        let path = Path::new(path);
-        path_key(path)?;
-        let in_source = session
-            .source
-            .as_ref()
-            .is_some_and(|root| path.starts_with(root));
-        if path != session.file && !in_source {
-            return Err(error("OUTSIDE_SCOPE", "路徑不在目前專案的允許範圍"));
-        }
-        match canonical(path) {
-            Ok(resolved)
-                if resolved == session.file
-                    || session.source.as_ref().is_some_and(|root| {
-                        resolved.starts_with(root)
-                            && dunce::canonicalize(root).ok().as_ref() == Some(root)
-                    }) =>
-            {
-                Ok(true)
-            }
-            Ok(_) => Err(error("OUTSIDE_SCOPE", "路徑連結指向允許範圍之外")),
-            Err(e) if e.code == "NOT_FOUND" => Ok(false),
-            Err(e) => Err(e),
-        }
+        self.scoped_exists(path)
     }
 }
 

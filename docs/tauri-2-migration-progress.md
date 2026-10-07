@@ -1,6 +1,6 @@
 # Tauri 2 遷移實作紀錄
 
-更新日期：2026-10-07（台灣時間）。已完成階段 0 基線、階段 1 API 抽象及階段 2 Tauri 執行骨架。Electron 開發、建置與發布入口保留；專案讀寫與設定等 Tauri 功能仍待後續階段接上。
+更新日期：2026-10-07（台灣時間）。已完成階段 0–4，里程碑 B 在 Windows 通過。Electron 開發、建置與發布入口保留；設定遷移與原生拖入留待階段 5。
 
 提交方式：`refactor` 分支，每階段各一個 commit；提交不代表尚未執行的手動驗收已完成。階段 0 已提交為 `cef0b6f`，階段 1 專門記錄桌面 API 抽象。
 
@@ -223,3 +223,62 @@ npm run build:tauri -- --debug --no-bundle
 里程碑 A 已在 Windows 通過。分類與資料寫入、檔案批次處理留待階段 4；設定／專案清單持久化、外部拖入留待階段 5。這次未驗收安裝包、release profile 或更新。
 
 回退：`npm run dev:electron`，或 checkout 階段 2 commit `b238ec3`。階段 3 未修改舊 `.db` 或使用者設定，沒有資料回退步驟。
+
+## 階段 4：資料寫入與批次檔案處理
+
+### 實作範圍
+
+- 開放 Tauri 專案新增、分類儲存、深層更新、陣列刪除及 dockings 清理。新增專案透過 Rust 原生 save dialog 授權精確 `.db` 位置；`createFile` 僅驗證新位置，`writeJson` 一次提交完整空白專案，不先建立空檔。已有檔案回傳 `FILE_EXIST`，不覆蓋既有專案。
+- 專案選取來源現在會持久化 `mainFolder`，並在同一次寫入清除舊 dockings。Portal 新增／改變目的地需透過原生資料夾對話框；既有專案內的目的地由後端解析，支援尚未建立的目錄與專案相對路徑，原 JSON 路徑文字不改寫。外部拖入仍待階段 5。
+- JSON 保留原有 `id`／`project` 與頂層、群組、Portal、Docking 的未知欄位。以穩定 ID／target 合併 UI 未認得的欄位；分類刪除會移除該筆記錄。既有專案 ID 不可透過一般更新命令更改。
+- Rust mutex 序列化 connect、scan、讀寫與圖片檔案操作；commands 的阻塞 I/O 留在 `spawn_blocking`。寫入同目錄暫存檔、`sync_all`，再使用 tempfile 在 Windows 的 `MoveFileExW` 替換流程。沒有先刪原 JSON；提交成功後才改記憶體資料。寫入前比對開啟時／上次提交的 bytes，外部修改回傳 `PROJECT_CHANGED`。
+- 每次 connect 產生新的工作階段編號；`captureProject()` 在加入 DB／批次佇列前綁定介面。Rust 拒絕 `STALE_PROJECT`，包含重新開啟同一路徑。Electron adapter 也加入過期檢查，UI 等待 DB queue 後才切換連線；仍保留 Electron 後端供回退。
+- 圖片 copy／move 預設不覆蓋，先寫同目的目錄暫存檔並同步，再以不覆蓋方式提交。move 統一使用複製、提交、刪來源流程，適用跨磁碟。來源 identity 改變、複製／提交失敗都不刪來源；來源刪除失敗時保留兩份完整檔案並回報失敗。相同路徑或 hardlink 回傳 `SAME_FILE`。
+- 讀寫只接受目前專案 JSON、來源圖片與驗證的 Portal 圖片目的地。不存在的目的目錄固定最近既有祖先；操作前與提交前再次解析，拒絕 `..` 越界請求、符號連結、junction／reparse points 與 Windows alternate data streams。不能由前端新增任意路徑授權。複製衝突與成功目的檔只授予精確圖片 asset 權限，讓衝突預覽可顯示；不擴大為整個目的目錄。
+- 前端 PQueue 逐張處理圖片：前幾個 Portal 必須複製成功後才搬到最後一個。衝突暫停該圖片；支援略過、重新命名、加序號、刪來源、覆寫與後續套用同一選項。`overrideFile` 明確傳入 copy／move；Electron 也修正 copy overwrite 誤搬來源。序號命名遇到非 `FILE_EXIST` 錯誤立即停止。
+- 以「來源圖片」為進度單位：成功、失敗、略過各自計數。只在整張圖片成功或明確刪來源成功後清理該 target 的 dockings；失敗／略過保留。UI 不再預先移除圖片，結束後重新掃描實際來源；批次／衝突尚未完成時限制專案切換與分類修改。部分目的已複製但後續失敗時不自動刪掉完整副本，重試會進入既有衝突流程。
+
+### 驗證與重現
+
+環境延用 Windows x86_64／WebView2、Node 24.6.0、Rust 1.97.1、Tauri 2.12.1。將既有 lockfile 中的 tempfile、same-file 納入正常 Rust 依賴，未升級前端套件。
+
+```powershell
+npm run typecheck
+npm run lint -- --quiet
+npm run test:desktop
+npm run test:tauri-adapter
+npm run test:batch
+npm run test:tauri-write
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+$env:PICPORTAL_TEST_OTHER_VOLUME = 'D:\Coding\Repos\Proladon\PicPortal\src-tauri\target'
+cargo test --manifest-path src-tauri/Cargo.toml --locked
+cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets -- -D warnings
+npm run build:electron
+npm run test:baseline
+npm run build:tauri -- --debug --no-bundle
+```
+
+跨磁碟測試環境變數必須指定與 Windows `%TEMP%` 不同磁碟的可寫目錄；本機為 C → D。測試在該目錄建立獨立 tempfile 並清理。未設定時該項不執行實際跨磁碟驗證，不能僅以測試 exit 0 宣告跨磁碟通過。
+
+| 驗證 | 結果與界線 |
+| --- | --- |
+| TypeScript、lint、Rust fmt／clippy | 通過；lint 0 errors，仍保留既有格式與未使用項目的 warnings |
+| Desktop／Tauri adapter、batch | 通過；驗證綁定 token、copy overwrite 模式、失敗阻止搬移、未解決衝突等待、略過保留、序號錯誤停止與清理條件 |
+| 21 個 Rust 資料／檔案測試 | JSON／ID／未知欄位保存、legacy project 欄位、schema 與外部修改拒絕、新建不覆蓋、陣列刪除、複製／搬移／覆寫、hardlink、範圍、junction、過期工作階段與 12 個並行深層寫入通過 |
+| Windows 鎖檔與跨磁碟 | 獨占 JSON／目的檔造成失敗時保留原 bytes；來源無刪除權限時保留兩份完整內容；實際 C → D 搬移與目的衝突保留來源通過。不修改系統或使用者 ACL |
+| 真正 Tauri 程序重啟 | 分類名稱、原 ID、未知欄位與 10 個並行 IPC 寫入保存；舊 token 的寫入拒絕 |
+| 原生批次 UI | 真正 WrapingButton／確認視窗、搬移結果與計數、略過、序號、copy overwrite、重新命名、目的圖片預覽與失敗保留 dockings 通過；刪來源以原生 command 及 batch 契約測試驗證 |
+| 原生新專案儲存 | 真正 Rust save picker／Vue 表單建立完整 JSON 並開啟成功；新檔 ID 存在，mainFolder／portals／dockings 格式正確 |
+| 圖片與檔案授權回歸 | 原生命令範圍檢查與 asset HTTP 403（JSON、設定、隱藏圖片、非圖片）通過，新增寫入沒有放寬這些範圍 |
+| Electron 回退 | 建置與隔離資料基線通過；原有 updater 的 Store-Get 重複註冊問題未處理，仍留待階段 6 |
+
+`test:tauri-write` 共用 Windows 原生 smoke harness，使用含正式前端產物的 debug exe，沒有 Vite、Git 或 Node sidecar。專案開啟／儲存對話框必須使用印出的匿名副本路徑實際選取，沒有測試專用授權 command；這次使用 computer-use 操作原生對話框，CDP 執行真實 Vue／Pinia 與 IPC 檢查。資料與隔離 WebView profile 保留供診斷，normal.db 在 finally 還原匿名模板。正式使用者的專案與設定未被修改。
+
+### 界線與後續
+
+- 本輪只驗證 Windows；macOS／Linux、release profile、安裝包與更新維持未驗證。設定／專案清單持久化、外部拖入、single-instance、關閉時等待批次與儲存仍屬階段 5。批次中直接關閉程序的完整復原流程尚未實作。
+- 原 JSON 替換失敗不破壞原檔；不宣告作業系統斷電後的完整 durability 保證。路徑與來源 identity 在操作／提交前重驗，未驗證惡意外部程序在檢查與系統呼叫間持續競態替換檔案的情境。
+- 圖片授權延用階段 3 的程序內精確檔案累積語意；程序結束後重建。設定檔、專案 JSON 與任意目錄不取得圖片或寫入權限。
+- 回退使用 `npm run dev:electron` 或階段 3 commit `fc7d503`。JSON 格式仍相容；在正式專案套用前先複製 `.db` 與圖片目錄。已搬移／刪除的圖片不能只靠退回程式碼復原，須由資料副本還原。
+
+里程碑 B 已在 Windows 通過；下一階段為設定遷移與完整互動整合。交付前以預設 Tauri config 重建，移除 smoke 的隔離 profile 設定。

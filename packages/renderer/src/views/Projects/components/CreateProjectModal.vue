@@ -20,6 +20,7 @@
           <!-- TODO default save dialog file name -->
           <n-input
             v-model:value="formData.path"
+            :readonly="desktop.runtime === 'tauri'"
             :placeholder="
               translate('projects.createProject.placeholder.projectPath')
             "
@@ -61,7 +62,8 @@ import useLocale from '/@/use/locale'
 const emit = defineEmits(['refresh', 'close', 'created'])
 
 // ANCHOR Use
-const { fileSystem, userStore } = useDesktop()
+const desktop = useDesktop()
+const { fileSystem, userStore } = desktop
 const notify = useNotification()
 const { translate } = useLocale()
 // ANCHOR Data
@@ -131,6 +133,12 @@ const createNewProject = async () => {
       id: projectId,
       path: filePath,
       color: formData.color,
+    }
+
+    if (desktop.runtime === 'tauri') {
+      emit('created', newProject)
+      updateModalShow(false)
+      return
     }
 
     const projects = await userStore.get('projects')

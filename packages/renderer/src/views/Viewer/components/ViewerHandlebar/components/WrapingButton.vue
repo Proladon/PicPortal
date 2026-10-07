@@ -32,9 +32,10 @@ import { NButton, NIcon } from 'naive-ui'
 import WarningModal from '/@/components/Modal/WarningModal.vue'
 import { RocketSharp } from '@vicons/ionicons5'
 import { useViewerStore } from '/@/store/viewerStore'
-import { forEach, find } from 'lodash-es'
+import path from 'path-browserify'
 import { dataClone } from '/@/utils/data'
-import { getFileName } from '/@/utils/data'
+import { getFileDir } from '/@/utils/file'
+import { useAppStore, DBQueue } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
 import { reactive, computed } from 'vue'
@@ -56,30 +57,25 @@ const wraping = async () => {
   modal.warning = false
   if (readOnly || !dockings.value.length) return
   if (wrapingStatus.value) return
-  const dockingsData = dataClone(dockings.value)
-  const waitRemove: string[] = []
-  forEach(dockingsData, async (dock) => {
-    const src = dock.target
-    let count = 0
-    forEach(dock.portals, async (portal) => {
-      count += 1
-      const targetFolder = find(
-        flattenPortals.value,
-        (item) => item.id === portal
-      )?.link
-      if (!targetFolder) return
-
-      await viewerStore.Wraping({
-        mode: count === dock.portals.length ? 'move' : 'copy',
-        filePath: src,
-        destPath: targetFolder.replace(/\\/g, '/') + '/' + getFileName(src)
-      })
+  await DBQueue.onIdle()
+  const projectDir = getFileDir(useAppStore().openProject?.path || '')
+  const items = dataClone(dockings.value).filter(d => d.portals.length).map(dock => ({
+    target: dock.target,
+    destinations: [...new Set(dock.portals)].map(id => {
+      const link = flattenPortals.value.find(p => p.id === id)?.link
+      if (!link) return ''
+      const normalized = link.replace(/\\/g, '/')
+      const folder = /^(?:[a-z]:[\\/]|[\\/])/i.test(link) ? normalized : `${projectDir}/${normalized}`
+      const filename = dock.target.replace(/\\/g, '/').split('/').pop()
+      // path-browserify uses POSIX normalization; preserve Windows UNC prefix.
+      const uncPrefix = folder.startsWith('//') ? '/' : ''
+      return uncPrefix + path.normalize(`${folder}/${filename}`)
     })
-    waitRemove.push(src)
-  })
-  viewerStore.UpdatePullList(waitRemove)
-  viewerStore.PurgeFiles(waitRemove)
-  viewerStore.StartWraping('normal')
+  }))
+  if (items.some(item => item.destinations.some(path => !path))) {
+    return alert('部分分類的 Portal 已不存在，請先修正分類')
+  }
+  await viewerStore.StartBatch(items)
 }
 </script>
 

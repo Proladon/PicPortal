@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory, RouteRecord } from 'vue-router'
 import Layout from '../layout/index.vue'
 import viewerRoutes from './modules/viewer'
 import hotkeys from 'hotkeys-js'
+import { useViewerStore } from '/@/store/viewerStore'
 
 const routes = [
   {
@@ -50,6 +51,10 @@ const routes = [
 const router = createRouter({
   routes,
   history: createWebHashHistory(),
+})
+
+router.beforeEach((to) => {
+  if (useViewerStore().wrap.wraping && !to.matched.some(route => route.name === 'Editor')) return false
 })
 
 router.afterEach((to, from) => {

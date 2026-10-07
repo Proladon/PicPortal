@@ -15,7 +15,20 @@ async function result<T>(
 export function createElectronAdapter(
   bridge: Readonly<ElectronApi>
 ): DesktopApi {
-  return {
+  let generation = 0
+  const bind = <T extends object>(target: T, captured: number): T => new Proxy(target, {
+    get(target, key) {
+      const value = Reflect.get(target, key)
+      if (typeof value !== 'function') return value
+      return (...args: unknown[]) => captured === generation
+        ? Reflect.apply(value, target, args)
+        : Promise.resolve([null, 'STALE_PROJECT: 專案已切換'])
+    }
+  })
+  const api: DesktopApi = {
+    captureProject() {
+      return { database: bind(api.database, generation), fileSystem: bind(api.fileSystem, generation) }
+    },
     initialize: () => Promise.resolve(),
     runtime: 'electron',
     platform: {
@@ -79,7 +92,11 @@ export function createElectronAdapter(
         )
         return error ? [null, error] : [folder, null]
       },
-      connect: (path) => result(() => bridge.database.connect(path)),
+      connect: async (path) => {
+        const response = await result<DBData>(() => bridge.database.connect(path))
+        if (!response[1]) generation++
+        return response
+      },
       save: (key, data) => result(() => bridge.database.save(key, data)),
       deepSave: (keys, data) =>
         result(() => bridge.database.deepSave(keys, data)),
@@ -95,8 +112,8 @@ export function createElectronAdapter(
       moveFile: (source, destination) =>
         result(() => bridge.fileSystem.moveFile(source, destination)),
       deleteFile: (path) => result(() => bridge.fileSystem.deleteFile(path)),
-      overrideFile: (source, destination) =>
-        result(() => bridge.fileSystem.overrideFile(source, destination)),
+      overrideFile: (source, destination, mode = 'move') =>
+        result(() => bridge.fileSystem.overrideFile(source, destination, mode)),
       checkExist: (path) => result(() => bridge.fileSystem.checkExist(path)),
       writeJson: (path, data) =>
         result(() => bridge.fileSystem.writeJson(path, data))
@@ -128,4 +145,5 @@ export function createElectronAdapter(
         .map((file) => (file as File & { path?: string }).path)
         .filter((path): path is string => Boolean(path))
   }
+  return api
 }

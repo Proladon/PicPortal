@@ -5,6 +5,7 @@
         <template #trigger>
           <button
             class="btn open-project-btn"
+            :disabled="wrapingStatus"
             @click="$router.push('/projects')"
           >
             <n-icon>
@@ -27,6 +28,7 @@
           <button
             v-show="projectName"
             class="btn main-folder-btn"
+            :disabled="wrapingStatus"
             @click="changeMainFolder"
           >
             <n-icon>
@@ -57,12 +59,13 @@
           :processing="wrapingStatus"
           type="line"
           status="success"
-          :percentage="(curWrap / totalWrap) * 100"
+          :percentage="totalWrap ? ((curWrap + errWrap + viewerStore.wrap.skipWrap) / totalWrap) * 100 : 0"
         >
           <span>{{ curWrap }} / {{ totalWrap }}</span>
         </n-progress>
 
         <span class="text-rose-300">{{ errWrap }}</span>
+        <span v-if="viewerStore.wrap.skipWrap">略過 {{ viewerStore.wrap.skipWrap }}</span>
       </div>
       <div class="btn open-project-btn">
         <n-icon size="20"><Book /></n-icon>
@@ -117,10 +120,11 @@ const choseMainFolder = async () => {
     })
 
     if (res) {
-      if (database.readOnly) {
+      if (useDesktop().runtime === 'tauri' || database.readOnly) {
         const [folder, error] = await database.setSourceFolder(res[0])
         if (error) throw new Error(error)
         appStore.sourceFolder = folder
+        await appStore.SyncDBDataToState({ syncKeys: ['mainFolder', 'dockings'] })
         return
       }
       const folder = {
@@ -139,6 +143,7 @@ const choseMainFolder = async () => {
 }
 
 const changeMainFolder = () => {
+  if (viewerStore.wrap.wraping) return
   if (database.readOnly) return choseMainFolder()
   if (mainFolder.value.name) {
     showWarningModal.value = true

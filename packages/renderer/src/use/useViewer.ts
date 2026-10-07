@@ -71,7 +71,7 @@ const useViewer = (
 
   // docking protals
   const selectItem = async (e: any, row: any): Promise<void> => {
-    if (appStore.readOnly) return
+    if (appStore.readOnly || viewerStore.wrap.wraping) return
     const ignore = ['I', 'path', 'svg']
     const htmlTarget = e.target.tagName
     if (ignore.includes(htmlTarget)) return

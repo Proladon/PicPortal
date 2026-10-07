@@ -28,6 +28,8 @@ export interface DesktopSettings {
 }
 
 export interface DesktopApi {
+  /** Bind queued operations to the session that is open at enqueue time. */
+  captureProject(): Pick<DesktopApi, 'database' | 'fileSystem'>
   initialize(): Promise<void>
   readonly runtime: 'electron' | 'tauri'
   readonly platform: {
@@ -73,10 +75,11 @@ export interface DesktopApi {
     copyFile(source: string, destination: string): Promise<DesktopResult<void>>
     moveFile(source: string, destination: string): Promise<DesktopResult<void>>
     deleteFile(path: string): Promise<DesktopResult<string>>
-    /** Legacy override moves the source, including in copy conflict mode. */
+    /** Overwrite keeps copy/move semantics; omitted mode preserves legacy move. */
     overrideFile(
       source: string,
-      destination: string
+      destination: string,
+      mode?: 'copy' | 'move'
     ): Promise<DesktopResult<string>>
     checkExist(path: string): Promise<DesktopResult<boolean>>
     writeJson(path: string, data: unknown): Promise<DesktopResult<void>>
