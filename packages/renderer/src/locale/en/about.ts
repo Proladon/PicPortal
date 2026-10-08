@@ -4,6 +4,5 @@ export default {
   developer: 'Developer',
   system: 'System',
   platform: 'Platform',
-  runtime: 'Runtime',
   builtWith: 'Built with',
 }

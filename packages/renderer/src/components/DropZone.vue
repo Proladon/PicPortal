@@ -23,7 +23,7 @@ import { useDesktop } from '/@/desktop'
 import { reportDesktopError } from '/@/desktop/status'
 
 const dropZoneRef = ref<HTMLDivElement>()
-const emit = defineEmits(['drop', 'paths'])
+const emit = defineEmits(['paths'])
 const props = defineProps({
   projects: Boolean,
   hint: { type: String, default: '' },
@@ -33,7 +33,6 @@ let disposed = false
 let unlisten: (() => void) | undefined
 const mountedAt = Date.now()
 onMounted(async () => {
-  if (desktop.runtime !== 'tauri') return
   try {
     const stop = await desktop.onFileDrop((drop) => {
       const bounds = dropZoneRef.value?.getBoundingClientRect()
@@ -65,10 +64,6 @@ onUnmounted(() => {
   unlisten?.()
 })
 
-const onDrop = (files: File[] | null) => {
-  if (desktop.runtime === 'tauri') return
-  emit('drop', files)
-}
-
-const { isOverDropZone } = useDropZone(dropZoneRef, onDrop)
+// Paths come from the native drop event above; this only drives the hover style.
+const { isOverDropZone } = useDropZone(dropZoneRef)
 </script>

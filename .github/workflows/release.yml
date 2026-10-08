@@ -43,7 +43,6 @@ jobs:
           exit 0
       - run: npm run typecheck
       - run: npm run lint -- --quiet
-      - run: npm run test:desktop
       - run: npm run test:tauri-adapter
       - run: npm run test:batch
       - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check

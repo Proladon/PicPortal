@@ -30,8 +30,7 @@ if (sync) {
   assert.equal(lock.packages[''].version, version)
 }
 assert.equal(JSON.parse(read('src-tauri/tauri.conf.json')).version, '../package.json')
-assert.equal(require('../electron-builder.config.js').extraMetadata.version, version)
 if (process.env.GITHUB_REF?.startsWith('refs/tags/')) {
   assert.equal(process.env.GITHUB_REF, `refs/tags/v${version}`, 'Release tag must match package.json')
 }
-console.log(`PASS version ${version}: package, lockfiles, Cargo, Tauri and Electron`)
+console.log(`PASS version ${version}: package, lockfiles, Cargo and Tauri`)

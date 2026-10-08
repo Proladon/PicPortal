@@ -11,10 +11,5 @@ export function createDefaultSettings(): DesktopSettings {
 
 export async function getSettings(): Promise<DesktopSettings> {
   const { userStore } = useDesktop()
-  const saved = await userStore.get('settings')
-  if (saved) return saved
-  const defaults = createDefaultSettings()
-  if (useDesktop().runtime === 'electron')
-    await userStore.set('settings', defaults)
-  return defaults
+  return (await userStore.get('settings')) || createDefaultSettings()
 }

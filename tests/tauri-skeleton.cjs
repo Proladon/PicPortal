@@ -44,7 +44,6 @@ async function main() {
     await new Promise((resolve) => portServer.listen(0, '127.0.0.1', resolve))
     const debugPort = portServer.address().port
     await new Promise((resolve) => portServer.close(resolve))
-    process.env.PICPORTAL_RUNTIME = 'tauri'
     process.env.MODE = 'development'
     if (!built) {
       const { createServer } = require('vite')

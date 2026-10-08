@@ -47,7 +47,6 @@ export interface DesktopApi {
   /** Bind queued operations to the session that is open at enqueue time. */
   captureProject(): Pick<DesktopApi, 'database' | 'fileSystem'>
   initialize(): Promise<void>
-  readonly runtime: 'electron' | 'tauri'
   readonly platform: {
     os: string
     isWindows: boolean
@@ -64,7 +63,7 @@ export interface DesktopApi {
     clear(): Promise<void>
   }
   readonly browserDialog: {
-    /** Cancellation is always null, never an Electron response object. */
+    /** Cancellation is always null. */
     open(options?: OpenDialogOptions): Promise<string[] | null>
     save(options?: SaveDialogOptions): Promise<string | null>
   }
@@ -110,6 +109,4 @@ export interface DesktopApi {
     finishClose(): Promise<void>
   }
   toImageUrl(path?: string): string
-  /** Electron HTML drop paths; Tauri will use native drop events in stage 5. */
-  getDroppedPaths(files: File[]): string[]
 }

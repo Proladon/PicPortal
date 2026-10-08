@@ -1,6 +1,6 @@
 # Contributing
 
-First and foremost, thank you! We appreciate that you want to contribute to vite-electron-builder, your time is valuable, and your contributions mean a lot to us.
+First and foremost, thank you! We appreciate that you want to contribute to PicPortal, your time is valuable, and your contributions mean a lot to us.
 
 ## Issues
 
@@ -17,11 +17,11 @@ _It can't be understated how frustrating and draining it can be to maintainers t
 
 
 ## Repo Setup
-The package manager used to install and link dependencies must be npm v7 or later.
+Requires Node 22+, npm 10+, Rust 1.90+, and on Windows the MSVC C++ build tools and WebView2.
 
-1. Clone repo
-1. `npm run watch` start electron app in watch mode.
-1. `npm run compile` build app but for local debugging only.
+1. Clone repo and run `npm ci`.
+1. `npm run dev` start the Tauri app in watch mode.
+1. `npm run build -- --debug --no-bundle` build app but for local debugging only.
 1. `npm run lint` lint your code.
 1. `npm run typecheck` Run typescript check.
 1. `npm run test` Run app test.

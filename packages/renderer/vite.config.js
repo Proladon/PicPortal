@@ -1,15 +1,12 @@
 /* eslint-env node */
 
-import { chrome } from '../../electron-vendors.config.json'
 import { join } from 'path'
-import { builtinModules } from 'module'
 import { defineConfig } from 'vite'
 import { loadAndSetEnv } from '../../scripts/loadAndSetEnv.mjs'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 
 const PACKAGE_ROOT = __dirname
-const isTauri = process.env.PICPORTAL_RUNTIME === 'tauri'
 
 /**
  * Vite looks for `.env.[mode]` files only in `PACKAGE_ROOT` directory.
@@ -41,12 +38,15 @@ export default defineConfig({
 
   base: '',
   server: {
-    ...(isTauri ? { host: '127.0.0.1', port: 5173, strictPort: true, watch: { ignored: ['**/src-tauri/**'] } } : {}),
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    watch: { ignored: ['**/src-tauri/**'] },
     fs: { allow: [join(PACKAGE_ROOT, '../../')] }
   },
   build: {
     sourcemap: true,
-    target: isTauri ? ['chrome105', 'safari13'] : `chrome${chrome}`,
+    target: ['chrome105', 'safari13'],
     outDir: 'dist',
     assetsDir: '.',
     minify: 'terser',
@@ -56,9 +56,6 @@ export default defineConfig({
         passes: 2
       },
       safari10: false
-    },
-    rollupOptions: {
-      external: isTauri ? [] : [...builtinModules]
     },
     emptyOutDir: true
   }

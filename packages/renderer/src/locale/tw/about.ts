@@ -4,6 +4,5 @@ export default {
   developer: '開發者',
   system: '系統資訊',
   platform: '平台',
-  runtime: '執行環境',
   builtWith: '使用技術',
 }

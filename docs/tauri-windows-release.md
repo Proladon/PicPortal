@@ -1,6 +1,6 @@
 # Tauri Windows 建置與交付
 
-目前提供 Windows x64、目前使用者模式的 NSIS 安裝包。產品名稱為 `PicPortal Tauri`，應用識別碼仍為 `io.github.proladon.picportal`；標題列仍顯示 PicPortal。選擇不同安裝名稱是為了保留 Electron PicPortal 的預設安裝位置、捷徑與回退入口。
+目前提供 Windows x64、目前使用者模式的 NSIS 安裝包。產品名稱為 `PicPortal Tauri`，應用識別碼仍為 `io.github.proladon.picportal`；標題列仍顯示 PicPortal。選擇不同安裝名稱，避免覆蓋使用者已安裝的 Electron 版 PicPortal 的預設安裝位置與捷徑。
 
 ## 建置與自動驗證
 
@@ -23,7 +23,7 @@ npm run build:installer
 
 測試透過真正的設定匯入授權已保存的專案，再點擊專案卡片，沒有測試專用授權 command，也不合成 OS 拖入事件。原生選檔、存檔 picker 與外部拖入不屬於無人值守 CI 的驗收範圍。release 沒有編譯 Tauri `devtools` feature，window config 也明確設為 `devtools: false`；CDP 只由測試子程序的 WebView2 環境變數開啟。
 
-測試保留匿名資料、WebView profile 及隔離設定以供診斷。`PICPORTAL_TEST_REPORT_DIR` 可指定 CI 診斷輸出位置，保存 log、失敗畫面及匿名 `.db`。smoke 建置會使用暫時的應用識別，測試後務必執行 `npm run build:installer`，重建正常 identity 的交付產物。Electron 與 Tauri 共用 renderer dist，兩種建置須依序執行。
+測試保留匿名資料、WebView profile 及隔離設定以供診斷。`PICPORTAL_TEST_REPORT_DIR` 可指定 CI 診斷輸出位置，保存 log、失敗畫面及匿名 `.db`。smoke 建置會使用暫時的應用識別，測試後務必執行 `npm run build:installer`，重建正常 identity 的交付產物。
 
 跨磁碟 Rust 測試需設定 `PICPORTAL_TEST_OTHER_VOLUME` 為與 `%TEMP%` 不同磁碟的可寫目錄；未設定不能宣告跨磁碟測試通過。Windows CI 以 workspace 所在磁碟作為目的磁碟，兩者若相同會明確失敗。
 
@@ -36,9 +36,9 @@ npm run version:sync
 npm run version:check
 ```
 
-同步 Cargo.toml、Cargo.lock 中的 PicPortal 版本與前端 lockfile；Tauri 直接引用 package.json，Electron builder 亦使用同一版本。tag 使用 `v<version>`。不要繼續使用舊的日曆版本產生方式。
+同步 Cargo.toml、Cargo.lock 中的 PicPortal 版本與前端 lockfile；Tauri 直接引用 package.json。tag 使用 `v<version>`。不要繼續使用舊的日曆版本產生方式。
 
-GitHub **Tauri Windows checks** 包含前端、Rust、release 安裝／解除安裝與 Electron 回退檢查，涵蓋 Rust、前端、lockfile、設定及 scripts 變更。
+GitHub **Tauri Windows checks** 包含前端、Rust 與 release 安裝／解除安裝檢查，涵蓋 Rust、前端、lockfile、設定及 scripts 變更。
 
 **Tauri release draft** 僅由 `workflow_dispatch` 手動啟動。它自行重跑檢查與安裝測試，再建正常產品名稱的安裝包、保存 workflow artifact，最後才建立或更新相同版本的 prerelease 草稿。已正式發布的版本拒絕修改。人工確認產物與驗收後，正式發布屬後續操作；本輪不啟動 workflow 或建立遠端 release。
 
@@ -55,8 +55,12 @@ GitHub **Tauri Windows checks** 包含前端、Rust、release 安裝／解除安
 
 2026-10-08 使用者決定先完成 CI 與安裝包，尚未提供更新簽章公鑰／端點。updater plugin、更新產物簽章、manifest、兩版本更新與失敗情境維持未完成，不開啟自動更新。Windows 程式碼簽章也尚未設定，交付安裝包為 unsigned；Tauri 更新產物簽章與 Windows 程式碼簽章是不同設定。[官方 updater 文件](https://v2.tauri.app/plugin/updater/)
 
-Electron → Tauri 首次切換使用安裝包與設定匯入，沒有透過 Electron updater 直接交接。Electron 的已知 `Store-Get` 重複註冊 updater 問題仍保留；CI 回退基線通過也不代表 Electron 更新已驗證。
+Electron → Tauri 首次切換使用安裝包與設定匯入，沒有透過 Electron updater 直接交接。
 
-回退可使用 `npm run dev:electron` 或階段 5 commit `39c8b78`，正式安裝時使用原 Electron 安裝包。Tauri 解除安裝後保留資料；若測試已搬移或刪除圖片，需由備份還原，單純換回應用程式不會復原檔案。
+Electron 已於階段 7 移除，程式庫不再提供 Electron 開發或建置入口。回退方式：
 
-階段 6 的完整里程碑仍等待 GitHub CI 真正執行、乾淨環境／WebView2 分支、更新設定與驗收、效能比較。本輪不進入階段 7、不移除 Electron。
+- 應用程式：重新安裝原 Electron 安裝包。Tauri 安裝名稱不同，兩者可並存；不要讓兩者同時開啟同一份專案。
+- 原始碼：checkout 階段 7 前的 commit `e2c8f77`，重新執行 `npm ci` 後使用 `npm run dev:electron`／`npm run build:electron`。
+- 資料：Tauri 解除安裝後保留資料；Electron `config.json` 只被讀取、未被修改。若已搬移或刪除圖片，需由備份還原，單純換回應用程式不會復原檔案。
+
+階段 6 的完整里程碑仍等待 GitHub CI 真正執行、乾淨環境／WebView2 分支、更新設定與驗收、效能比較。2026-10-08 使用者決定在里程碑 D 未完成時進入階段 7；上述項目維持未完成。

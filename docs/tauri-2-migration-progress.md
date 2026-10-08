@@ -1,6 +1,6 @@
 # Tauri 2 遷移實作紀錄
 
-更新日期：2026-10-08（台灣時間）。階段 6 的 CI／安裝包實作與本機 release 安裝測試已完成；GitHub CI 已於 PR #19 啟動驗證，最新結果見 PR checks。乾淨環境／WebView2 分支與 updater 驗收仍待完成。使用者決定先完成 CI 與安裝包，尚未設定更新簽章／端點。階段 5 外部資料夾與 `.db` 拖入仍延期、不宣告通過。Electron 開發與建置入口保留，release workflow 改為 Tauri 手動草稿；不進入階段 7。
+更新日期：2026-10-08（台灣時間）。階段 6 的 CI／安裝包實作與本機 release 安裝測試已完成；GitHub CI 已於 PR #19 啟動驗證，最新結果見 PR checks。乾淨環境／WebView2 分支與 updater 驗收仍待完成。使用者決定先完成 CI 與安裝包，尚未設定更新簽章／端點。階段 5 外部資料夾與 `.db` 拖入仍延期、不宣告通過。release workflow 改為 Tauri 手動草稿。階段 7 依使用者指示已移除 Electron（見文末）。
 
 提交方式：`refactor` 分支，按階段提交，驗收補充與收尾可另行提交；提交不代表尚未執行的手動驗收已完成。階段 0 已提交為 `cef0b6f`，階段 1 專門記錄桌面 API 抽象。
 
@@ -418,3 +418,57 @@ GitHub Windows runner 的 TEMP 使用 `C:\Users\RUNNER~1\...`，但 Tauri 後端
 Rust fixture 現在先解析 TEMP 與跨磁碟目的根目錄，再建立暫存目錄。Node 匿名資料、smoke profile 也使用 `fs.realpath`，清理資料時比較解析後的 TEMP 父目錄，保留目錄名稱前綴檢查。修正限於測試資料／harness，沒有放寬應用程式的路徑權限或跳過失敗測試。
 
 本機建立具有 Windows 8.3 alias 的獨立暫存目錄，設定子程序 TEMP／TMP 後成功重現原先 `OUTSIDE_SCOPE` 失敗。修正後 25 個 Rust tests（含實際 C → K 跨磁碟）、fmt／clippy、Node fixture canonical path 與安全清理檢查通過；同一短 TEMP 下的完整 release NSIS 安裝／前端 IPC／批次／重啟／解除安裝也通過。遠端完整 Windows 驗證結果以 [PR #19 checks](https://github.com/Proladon/PicPortal/pull/19/checks) 為準。
+
+## 階段 7：移除 Electron
+
+2026-10-08 使用者指示「移除 Electron，進行階段 7」。里程碑 D 仍未完成（GitHub CI 真正執行、乾淨環境／WebView2 分支、updater、效能比較），依使用者決定作為例外進入；這些項目沒有因本階段而視為通過。分支 `claude/remove-electron-stage7`，以 `dev` 的 `e2c8f77`（PR #20 合併後）為基礎。
+
+### 實作範圍
+
+- 移除 `packages/main`、`packages/preload`、Electron adapter（`desktop/electron.ts`）與 `window.electron` bridge 型別。`useDesktop()` 只在 Tauri 中建立 adapter，其他環境丟出 `DESKTOP_UNAVAILABLE`。
+- `DesktopApi` 移除 `runtime` 與 Electron 專用的 `getDroppedPaths()`（`File.path`）。所有 `runtime === 'tauri'` 分支改為固定 Tauri 行為，刪除只供 Electron 使用的路徑：標題列 CSS 拖曳、HTML drop 事件、舊專案開啟／匯入表單（`importMode`）、Electron 寫入預設設定、非 Tauri 的來源資料夾寫入及 onlyDockings 篩選。外部拖入只走原生 `onFileDrop()`；`DropZone` 保留 hover 樣式。對應的未使用語系字串一併刪除。
+- About 移除 Electron 圖示與 runtime 列，改顯示固定的 Tauri 標籤；版本列表仍來自 Tauri。
+- 移除 `electron`、`electron-builder`、`electron-updater`、`electron-devtools-installer`（含型別）、`electron-store`、`spectron`、`fs-extra`、`fast-glob`、`lowdb`、`simple-git`。npm lockfile 只刪除套件（668 → 375），剩餘套件版本完全不變；`fast-glob` 仍為其他工具的間接依賴。
+- 刪除 `scripts/build.js`、`scripts/watch.js`、`scripts/update-electron-vendors.js`、`electron-builder.config.js`、`electron-vendors.config.json`、`buildResources/`、`.env.development`（只供 main process 的 `VITE_DEV_SERVER_URL`）、`update-electron-vendors.yml`、`tests/electron-baseline.cjs`、`tests/desktop.spec.cjs` 與追蹤中的舊 `yarn-error.log`。保留仍有使用的 `buildEnvTypes.js`、`loadAndSetEnv.mjs`。
+- renderer Vite 設定移除 `PICPORTAL_RUNTIME` 切換與 Electron Chrome 91 target，固定 `127.0.0.1:5173` 與 `chrome105`／`safari13`；移除 package.json 的 `main`、`browserslist`。
+- npm scripts：預設入口改為 `npm run dev`（`tauri dev`）、`npm run build`（`tauri build`，前置 `version:check`）、`npm run typecheck`（只有 renderer）；`build:installer` 改呼叫 `build`。移除 `dev:tauri`／`build:tauri`、所有 Electron 入口、`test:desktop`、`test:baseline`。`npm test` 改為 adapter、batch 與 release smoke；原 `test:desktop` 的「無桌面環境時拒絕」檢查併入 Tauri adapter 測試，新增一般瀏覽器（非 Tauri）也拒絕的斷言。
+- `version:check` 不再比對 Electron builder 版本。CI 移除 Electron 回退步驟與 `test:desktop`，typechecking workflow 改用 `npm run typecheck`；renovate 移除 Electron 群組；pnpm `allowBuilds` 只保留 esbuild、vue-demi。
+- 保留：專案頁「匯入 Electron 設定」、Rust 讀取 `%APPDATA%/PicPortal/config.json` 的遷移流程與匿名 Electron config fixture——這是使用者資料遷移，不依賴 Electron 執行環境。安裝名稱仍為 `PicPortal Tauri`，避免覆蓋已安裝的 Electron 版。
+- 更新 README、README-TW、contributing、`desktop/README.md` 與 [Windows 交付說明](./tauri-windows-release.md)的開發入口與回退方式。
+
+### 驗證與重現
+
+Windows 11、Node 24.12.0、npm 11.6.2、Rust／Cargo 1.97.1、Tauri 2.12.1。新 worktree 從 lockfile 安裝。
+
+```powershell
+npm ci --no-audit --no-fund
+npm run version:check
+npm run typecheck
+npm run lint -- --quiet
+npm run test:tauri-adapter
+npm run test:batch
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets -- -D warnings
+$env:PICPORTAL_TEST_OTHER_VOLUME = '<與 %TEMP% 不同磁碟的 src-tauri\target>'
+cargo test --manifest-path src-tauri/Cargo.toml --locked
+npm run test:tauri-skeleton
+npm run test:tauri-installer
+npm run build:installer
+```
+
+| 驗證 | 結果與界線 |
+| --- | --- |
+| 依賴與 lockfile | `npm ci` 從新 lockfile 安裝 309 packages 通過；lockfile 不含 Electron、Spectron、builder、lowdb、fs-extra、simple-git |
+| 版本、型別、lint | 通過；lint 0 errors，修改檔案只有既有的 `any`／CRLF 格式 warnings |
+| Tauri adapter、batch | 通過，含非 Tauri 環境拒絕建立 adapter |
+| Rust fmt／clippy／25 tests | 通過，含實際 C → K 跨磁碟搬移 |
+| 開發模式原生 smoke | `tauri dev` + Vite HMR：路由、樣式、版本、預設設定、視窗按鈕與標題列拖曳隔離通過 |
+| release NSIS 安裝 smoke | 隔離安裝、設定匯入、五種瀏覽模式、大圖、asset／command 範圍、損毀 JSON、寫入／並行 IPC／重啟、批次與衝突、設定持久化、關閉流程、解除安裝保留資料全部通過 |
+| 正常交付安裝包 | `npm run build:installer` 建出 `PicPortal Tauri_0.1.0_x64-setup.exe`，約 4.46 MiB；未簽章 |
+| 殘留檢查 | 原始碼、依賴、scripts 與生效的 workflow 不再引用 Electron；剩餘字樣只在設定遷移、歷史說明與本文件 |
+
+### 尚未完成與回退
+
+- 沿用階段 6：GitHub CI 尚未對本分支執行；乾淨 Windows、缺少 WebView2 的下載分支、updater／簽章、兩版本更新與效能比較未完成。外部資料夾與 `.db` 原生拖入仍為延期例外，本階段只移除 Electron 的 HTML drop 路徑，沒有重新做 OS 拖入驗收。
+- 已不能再以 Electron 比對行為；需要時 checkout `e2c8f77` 重新 `npm ci`，使用 `npm run dev:electron`。
+- 使用者資料不受影響：Electron `config.json` 只讀，Tauri 設定在獨立識別碼目錄；已搬移或刪除的圖片仍須由備份還原。

@@ -13,9 +13,7 @@
           </h1>
           <p class="text-sm text-muted-foreground">{{ t('about.tagline') }}</p>
         </div>
-        <Badge variant="outline" class="ml-auto capitalize">{{
-          runtime
-        }}</Badge>
+        <Badge variant="outline" class="ml-auto">Tauri</Badge>
       </section>
 
       <div class="grid gap-4 md:grid-cols-2">
@@ -54,8 +52,6 @@
               <dd class="font-mono text-xs leading-5">
                 {{ desktopPlatform.os }}
               </dd>
-              <dt class="text-muted-foreground">{{ t('about.runtime') }}</dt>
-              <dd class="font-mono text-xs leading-5">{{ runtime }}</dd>
               <template v-for="(value, name) in platform" :key="name">
                 <dt class="text-muted-foreground">{{ name }}</dt>
                 <dd class="font-mono text-xs leading-5 break-all">
@@ -87,12 +83,6 @@
             src="../../../assets/about/tools/typescript.svg"
             alt="ts"
           />
-          <img
-            v-if="runtime === 'electron'"
-            class="h-8"
-            src="../../../assets/about/tools/electron.png"
-            alt="electron"
-          />
         </CardContent>
       </Card>
     </div>
@@ -109,7 +99,7 @@ import { Badge } from '/@/components/ui/badge'
 import { Button } from '/@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '/@/components/ui/card'
 import { useDesktop } from '/@/desktop'
-const { appWindow, platform: desktopPlatform, runtime } = useDesktop()
+const { appWindow, platform: desktopPlatform } = useDesktop()
 
 const { t } = useI18n()
 const version = ref('')

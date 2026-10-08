@@ -16,7 +16,6 @@
       </div>
       <section class="btn-container flex flex-wrap items-center gap-2">
         <Button
-          v-if="desktop.runtime === 'tauri'"
           class="import-settings-btn"
           variant="ghost"
           :disabled="loading"
@@ -32,11 +31,7 @@
           @click="importProject"
         >
           <FolderOpen />
-          {{
-            desktop.runtime === 'tauri'
-              ? t('projects.openExisting')
-              : t('projects.import')
-          }}
+          {{ t('projects.openExisting') }}
         </Button>
         <Button
           class="new-project-btn"
@@ -81,11 +76,7 @@
             </Button>
             <Button size="sm" variant="outline" @click="importProject">
               <FolderOpen />
-              {{
-                desktop.runtime === 'tauri'
-                  ? t('projects.openExisting')
-                  : t('projects.import')
-              }}
+              {{ t('projects.openExisting') }}
             </Button>
           </EmptyContent>
         </Empty>
@@ -98,7 +89,7 @@
       </div>
     </div>
 
-    <footer v-if="desktop.runtime === 'tauri'" class="px-8 pb-6">
+    <footer class="px-8 pb-6">
       <DropZone
         projects
         class="h-14"
@@ -111,15 +102,7 @@
   <CreateProjectModal
     v-if="showCreateProjectModal"
     @close="showCreateProjectModal = false"
-    @refresh="refreshProjects"
     @created="openCreatedProject"
-  />
-  <EditProjectModal
-    v-if="showImportProjectEditModal"
-    importMode
-    :project="importProjectData"
-    @refresh="refreshProjects"
-    @close="showImportProjectEditModal = false"
   />
 </template>
 
@@ -127,7 +110,6 @@
 import ProjectCard from './components/ProjectCard.vue'
 import DropZone from '/@/components/DropZone.vue'
 import CreateProjectModal from './components/CreateProjectModal.vue'
-import EditProjectModal from './components/EditProjectModal.vue'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
@@ -157,7 +139,7 @@ import { useTheme } from '/@/use/theme'
 
 // ANCHOR Use
 const desktop = useDesktop()
-const { fileSystem, userStore } = desktop
+const { userStore } = desktop
 const router = useRouter()
 const appStore = useAppStore()
 const { t } = useI18n()
@@ -167,37 +149,19 @@ const loading = ref<boolean>(false)
 const loaded = ref<boolean>(false)
 const projectsList = ref<Project[]>([])
 const showCreateProjectModal = ref(false)
-const showImportProjectEditModal = ref(false)
-const importProjectData = ref<any>(null)
 
 // --- Methods ---
 
 const openProject = async (project: any) => {
-  if (desktop.runtime === 'tauri') {
-    if (loading.value || useViewerStore().wrap.wraping) return
-    loading.value = true
-    try {
-      await openNativeProject(project.path, project)
-    } catch (error) {
-      reportDesktopError(error)
-    } finally {
-      loading.value = false
-    }
-    return
+  if (loading.value || useViewerStore().wrap.wraping) return
+  loading.value = true
+  try {
+    await openNativeProject(project.path, project)
+  } catch (error) {
+    reportDesktopError(error)
+  } finally {
+    loading.value = false
   }
-  const [file, fileError] = await fileSystem.checkExist(project.path)
-  if (fileError) return toast.error(fileError)
-  if (!file) {
-    return toast.error(t('projects.notify.notFoundProject'), {
-      duration: 3000,
-    })
-  }
-  appStore.SetOpenProject(project)
-  // TODO Loading
-  const [dbData, dbError] = await appStore.ConnectProjectDB()
-  if (dbError) return toast.error(String(dbError))
-  await appStore.SyncDBData({ dbData })
-  router.push({ name: 'GridView' })
 }
 
 const importProject = async () => {
@@ -208,18 +172,7 @@ const importProject = async () => {
   try {
     const open = await importProjectDialog()
     if (!open) return
-    const filePath = open[0]
-    if (desktop.runtime === 'tauri') {
-      await openNativeProject(filePath)
-      return
-    }
-    importProjectData.value = {
-      id: await nanoid(10),
-      name: null,
-      path: filePath,
-      color: null,
-    }
-    showImportProjectEditModal.value = true
+    await openNativeProject(open[0])
   } catch (error) {
     reportDesktopError(error)
   } finally {

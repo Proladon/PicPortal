@@ -4,25 +4,19 @@
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
           <Pencil class="size-4 text-muted-foreground" />
-          {{
-            importMode
-              ? t('projects.editProject.importTitle')
-              : t('projects.editProject.title')
-          }}
+          {{ t('projects.editProject.title') }}
         </DialogTitle>
         <DialogDescription>{{
           t('projects.createProject.description')
         }}</DialogDescription>
       </DialogHeader>
-      <form class="grid gap-4" @submit.prevent="handleConfirm">
+      <form class="grid gap-4" @submit.prevent="updateProject">
         <ProjectFormFields
           v-model:name="formData.name"
           v-model:path="formData.path"
           v-model:color="formData.color"
           :errors="errors"
-          :browsable="!importMode"
-          :path-disabled="importMode"
-          :path-readonly="desktop.runtime === 'tauri'"
+          path-readonly
           @browse="browseFolder"
         />
         <DialogFooter>
@@ -34,11 +28,7 @@
             {{ t('common.cancel') }}
           </Button>
           <Button type="submit" class="modal-submit">
-            {{
-              importMode
-                ? t('projects.editProject.import')
-                : t('projects.editProject.update')
-            }}
+            {{ t('projects.editProject.update') }}
           </Button>
         </DialogFooter>
       </form>
@@ -64,15 +54,11 @@ import {
 } from '/@/components/ui/dialog'
 import { useDesktop } from '/@/desktop'
 import { useAppStore } from '/@/store/appStore'
-import { saveProjectDialog, importProjectDialog } from '/@/utils/browserDialog'
+import { importProjectDialog } from '/@/utils/browserDialog'
 import { useModal } from '/@/use/modal'
 
-const emit = defineEmits(['refresh', 'close', 'created'])
+const emit = defineEmits(['refresh', 'close'])
 const props = defineProps({
-  importMode: {
-    type: Boolean,
-    default: false,
-  },
   project: {
     type: Object,
     default: () => ({}),
@@ -84,8 +70,7 @@ const props = defineProps({
 })
 
 // ANCHOR Use
-const desktop = useDesktop()
-const { userStore } = desktop
+const { userStore } = useDesktop()
 const { t } = useI18n()
 const { showModal, updateModalShow } = useModal(emit)
 // ANCHOR Data
@@ -108,6 +93,7 @@ const validate = () => {
 
 // => 更新專案資訊
 const updateProject = async () => {
+  if (!validate()) return
   const projects = (await userStore.get('projects')) || []
   const project = find(projects, { id: props.project.id })
   if (!project) return toast.error(t('projects.notify.notFoundProject'))
@@ -122,32 +108,8 @@ const updateProject = async () => {
   updateModalShow(false)
 }
 
-const importProject = async () => {
-  const projects = (await userStore.get('projects')) || []
-  projects.push({
-    id: props.project.id,
-    name: formData.name,
-    color: formData.color,
-    path: formData.path,
-  })
-
-  await userStore.set('projects', projects)
-  toast.success(t('projects.notify.importSuccess'), { duration: 1500 })
-  emit('refresh')
-  updateModalShow(false)
-}
-
-const handleConfirm = async () => {
-  if (!validate()) return
-  if (props.importMode) await importProject()
-  else await updateProject()
-}
-
 const browseFolder = async (): Promise<void> => {
-  const save =
-    desktop.runtime === 'tauri'
-      ? (await importProjectDialog())?.[0] || null
-      : await saveProjectDialog()
+  const save = (await importProjectDialog())?.[0] || null
   if (save === null) return
   formData.path = save
   errors.path = undefined

@@ -2,7 +2,6 @@ export default {
   pageTitle: '專案',
   description: '選擇一個專案開始分類圖片',
   count: '{count} 個專案',
-  import: '導入專案',
   openExisting: '開啟既有專案 (.db)',
   importElectron: '匯入 Electron 設定',
   newProject: '新建專案',
@@ -20,7 +19,6 @@ export default {
     notFoundProject: '專案檔已不存在',
     deleteSuccess: '專案已刪除',
     updateSuccess: '專案已更新',
-    importSuccess: '專案已導入',
     createSuccess: '專案已建立',
     busy: '請先完成批次作業與衝突處理',
     settingsImported: '設定匯入完成，新增 {count} 個專案；已存在的設定已保留',
@@ -31,8 +29,6 @@ export default {
   },
   editProject: {
     title: '編輯專案',
-    importTitle: '導入專案',
-    import: '導入',
     update: '更新',
   },
   createProject: {

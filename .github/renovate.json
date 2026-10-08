@@ -45,15 +45,6 @@
       ],
       "automerge": true,
       "groupName": "eslint"
-    },
-    {
-      "matchPackageNames": [
-        "electron",
-        "electron-releases",
-        "spectron"
-      ],
-      "separateMajorMinor": false,
-      "groupName": "electron"
     }
   ],
   "rangeStrategy": "bump"

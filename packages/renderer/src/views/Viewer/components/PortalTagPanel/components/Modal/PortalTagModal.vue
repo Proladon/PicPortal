@@ -45,7 +45,7 @@
                     id="portal-link"
                     v-model="formData.link"
                     class="font-mono text-xs"
-                    :readonly="desktop.runtime === 'tauri'"
+                    readonly
                     :aria-invalid="!!errors.link || undefined"
                     :placeholder="t('portalPane.portalModal.placeholder.link')"
                   />
@@ -109,7 +109,6 @@
             <DropZone
               :class="dropList.length ? 'h-16' : 'h-36'"
               :hint="t('portalPane.portalModal.dropHint')"
-              @drop="onDrop"
               @paths="(paths: string[]) => dropList.push(...paths.filter(path => !dropList.includes(path)))"
             />
             <div v-if="dropList.length" class="flex flex-col gap-2">
@@ -217,8 +216,7 @@ const props = defineProps({
     default: () => ({ groupId: '' }),
   },
 })
-const desktop = useDesktop()
-const { browserDialog, getDroppedPaths } = desktop
+const { browserDialog } = useDesktop()
 const appStore = useAppStore()
 const portalPanelStore = usePortalPaneStore()
 const { t } = useI18n()
@@ -327,16 +325,6 @@ const updatePortal = async () => {
   portals[groupIndex].childs[portalIndex] = portal
   await updateDBData(portals)
   updateModalShow(false)
-}
-
-const onDrop = (files: File[] | null) => {
-  const ignore = ['image', 'video', 'audio']
-  if (!files) return
-  const folders = files.filter(
-    (file) => !ignore.includes(file.type.split('/')[0])
-  )
-  const paths = getDroppedPaths(folders)
-  dropList.value.push(...paths.filter((path) => !dropList.value.includes(path)))
 }
 
 const removeDropped = (folder: string) => {
