@@ -29,8 +29,8 @@
 
 <script lang="ts" setup>
 import GridItem from './components/GridItem.vue'
-import { computed, ref } from '@vue/reactivity'
-import { onMounted, onUnmounted, watch } from '@vue/runtime-core'
+import { computed, ref } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 import { NScrollbar, NPagination, NEmpty, NSpin } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
 import { chunk, map, get } from 'lodash-es'

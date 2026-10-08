@@ -10,7 +10,7 @@
 
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
-import { onMounted, onUnmounted } from '@vue/runtime-core'
+import { onMounted, onUnmounted } from 'vue'
 import { subscribeClose, cancelClose } from '/@/desktop/lifecycle'
 import { reportDesktopError } from '/@/desktop/status'
 import PortalCommander from '/@/components/Commander/PortalCommander.vue'

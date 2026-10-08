@@ -1,0 +1,8 @@
+# pnpm 11 必須明確指定依賴安裝腳本的執行設定。
+allowBuilds:
+  electron: true
+  electron-chromedriver: false
+  esbuild: true
+  puppeteer: false
+  spectron: false
+  vue-demi: true

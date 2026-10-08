@@ -39,8 +39,8 @@
 <script lang="ts" setup>
 import { sameFilePath } from '/@/utils/file'
 import { toImageUrl } from '/@/desktop'
-import { computed, ref } from '@vue/reactivity'
-import { onMounted, watch } from '@vue/runtime-core'
+import { computed, ref } from 'vue'
+import { onMounted, watch } from 'vue'
 import { NTag, NIcon } from 'naive-ui'
 import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull } from 'lodash-es'

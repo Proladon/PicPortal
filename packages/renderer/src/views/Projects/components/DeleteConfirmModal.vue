@@ -29,8 +29,8 @@
 <script setup lang="ts">
 import { NModal, NButton, NIcon } from 'naive-ui'
 import { Warning } from '@vicons/ionicons5'
-import { onMounted } from '@vue/runtime-core'
-import { ref } from '@vue/reactivity'
+import { onMounted } from 'vue'
+import { ref } from 'vue'
 import useLocale from '/@/use/locale'
 
 const emit = defineEmits(['close', 'delete'])

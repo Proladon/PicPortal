@@ -21,7 +21,7 @@
 import ModeChangeModal from './ModeChangeModal.vue'
 import { NButton, NIcon } from 'naive-ui'
 import { BrowsersOutline } from '@vicons/ionicons5'
-import { ref } from '@vue/reactivity'
+import { ref } from 'vue'
 
 const showModeChangeModal = ref<boolean>(false)
 </script>

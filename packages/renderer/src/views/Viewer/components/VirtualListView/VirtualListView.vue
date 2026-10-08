@@ -36,9 +36,9 @@
 <script lang="ts" setup>
 import VirtualListItem from './components/VirtualListItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
-import { ref } from '@vue/reactivity'
+import { ref } from 'vue'
 import { map } from 'lodash-es'
-import { onMounted, watch } from '@vue/runtime-core'
+import { onMounted, watch } from 'vue'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'

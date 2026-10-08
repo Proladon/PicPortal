@@ -43,7 +43,7 @@ import QuickActions from './components/QuickActions.vue'
 import PerPageControl from './components/PerPageControl.vue'
 import { NButton, NIcon, NSlider, NTag } from 'naive-ui'
 import { Filter, Refresh } from '@vicons/ionicons5'
-import { ref, computed } from '@vue/reactivity'
+import { ref, computed } from 'vue'
 import { useAppStore } from '/@/store/appStore'
 const readOnly = computed(() => useAppStore().readOnly)
 import { useViewerStore } from '/@/store/viewerStore'

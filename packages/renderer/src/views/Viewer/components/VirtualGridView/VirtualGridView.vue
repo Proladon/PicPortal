@@ -42,9 +42,9 @@
 <script lang="ts" setup>
 import VirtualGridItem from './components/VirtualGridItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
-import { ref } from '@vue/reactivity'
+import { ref } from 'vue'
 import { chunk, map } from 'lodash-es'
-import { onMounted, watch } from '@vue/runtime-core'
+import { onMounted, watch } from 'vue'
 import { NSpin, NEmpty } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'

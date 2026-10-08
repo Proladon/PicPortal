@@ -159,7 +159,7 @@ import {
   ListSharp,
   Grid,
 } from '@vicons/ionicons5'
-import { computed, ref } from '@vue/reactivity'
+import { computed, ref } from 'vue'
 import PortalTag from './PortalTag.vue'
 import PortalTagModal from './Modal/PortalTagModal.vue'
 import { filter, findIndex, find, random } from 'lodash-es'

@@ -22,6 +22,8 @@ Tauri 已支援舊專案、圖片瀏覽、分類與批次檔案操作、設定�
 
 使用 Node 22 以上與 npm 10 以上執行 `npm ci`；Windows 需要 Rust 1.90 以上、MSVC C++ 建置工具與 WebView2。CI 固定 Node 24.12.0、Rust 1.97.1 及 Windows Server 2022。
 
+使用 pnpm 11 時，可執行 `pnpm install`／`pnpm tauri dev`。`pnpm-workspace.yaml` 已設定 esbuild、vue-demi 與 Electron 的安裝腳本；已退役的 Spectron／chromedriver／Puppeteer 腳本停用。CI 仍以 npm lockfile 為基線。
+
 - Electron：`npm run dev:electron`／`npm run build:electron`，仍可作為比對入口。
 - Tauri：`npm run dev:tauri`；`npm run build:installer` 建立 Windows x64 NSIS release 安裝包，位於 `src-tauri/target/release/bundle/nsis/`。
 - 安裝名稱為 **PicPortal Tauri**，使用目前使用者模式，與 Electron 的 PicPortal 安裝名稱及設定目錄分開。安裝包目前沒有程式碼簽章；缺少 WebView2 時需連網下載。

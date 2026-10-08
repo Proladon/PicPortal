@@ -55,9 +55,11 @@ pub fn validate(data: &Value) -> Result<()> {
                             .extension()
                             .is_some_and(|e| e.eq_ignore_ascii_case("db"))
                 })
-                || ["name", "color"]
-                    .iter()
-                    .any(|key| project.get(*key).is_some_and(|v| !v.is_string()))
+                || project.get("name").is_some_and(|v| !v.is_string())
+                // Electron's import form saves null when no color is selected.
+                || project
+                    .get("color")
+                    .is_some_and(|v| !v.is_string() && !v.is_null())
             {
                 return Err(invalid());
             }
@@ -288,6 +290,21 @@ fn known_key(key: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn legacy_null_project_colors_survive_import_and_retry() {
+        let old = json!({"projects":[{"id":"a","path":"C:/images/a.db","name":"legacy","color":null,"extra":true}]});
+        let bytes = serde_json::to_vec(&old).unwrap();
+        assert_eq!(parse(&bytes).unwrap(), old);
+        let (merged, added) = merge_import(&json!({"projects":[]}), &old).unwrap();
+        assert_eq!(added, 1);
+        assert_eq!(merged["projects"][0], old["projects"][0]);
+        assert_eq!(merge_import(&merged, &old).unwrap(), (merged, 0));
+        for invalid in [json!(false), json!(123), json!({}), json!([])] {
+            let mut data = old.clone();
+            data["projects"][0]["color"] = invalid;
+            assert!(validate(&data).is_err());
+        }
+    }
     #[test]
     fn migration_preserves_existing_settings_unknowns_and_deduplicates() {
         let old = json!({"settings":{"general":{"locale":"tw","theme":"picportal"},"extra":42},"projects":[{"id":"a","path":"C:/images/a.db","extra":true}],"future":{"keep":true}});

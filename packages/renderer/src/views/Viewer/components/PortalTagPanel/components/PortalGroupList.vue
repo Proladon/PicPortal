@@ -22,7 +22,7 @@
 import Draggable from 'vuedraggable'
 import PortalGroup from './PortalGroup.vue'
 import { NScrollbar } from 'naive-ui'
-import { computed } from '@vue/reactivity'
+import { computed } from 'vue'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 

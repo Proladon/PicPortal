@@ -74,7 +74,7 @@ import EditProjectModal from './EditProjectModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { Add, Pencil } from '@vicons/ionicons5'
 import { useDesktop } from '/@/desktop'
-import { ref } from '@vue/reactivity'
+import { ref } from 'vue'
 import { useNotification } from 'naive-ui'
 import useLocale from '/@/use/locale'
 

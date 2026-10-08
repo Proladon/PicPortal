@@ -95,7 +95,7 @@ import {
   NInput,
 } from 'naive-ui'
 import { Warning } from '@vicons/ionicons5'
-import { computed, onMounted, ref } from '@vue/runtime-core'
+import { computed, onMounted, ref } from 'vue'
 import { useModal } from '/@/use/modal'
 import useLocale from '/@/use/locale'
 import { localFile, getFileName } from '/@/utils/file'

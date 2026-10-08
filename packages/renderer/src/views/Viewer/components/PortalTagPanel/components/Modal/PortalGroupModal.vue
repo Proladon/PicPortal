@@ -35,10 +35,10 @@
 
 <script lang="ts" setup>
 import type { PropType } from 'vue'
-import { computed, reactive, ref } from '@vue/reactivity'
+import { computed, reactive, ref } from 'vue'
 import { NModal, NButton, NForm, NFormItem, NInput } from 'naive-ui'
 import { nanoid } from 'nanoid/async'
-import { onMounted } from '@vue/runtime-core'
+import { onMounted } from 'vue'
 import { findIndex } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
@@ -73,6 +73,7 @@ const modalTitle = computed(() => {
     return translate('portalPane.portalGroupModal.title.edit')
   if (mode === 'create')
     return translate('portalPane.portalGroupModal.title.create')
+  return ''
 })
 
 // --- Methods ---

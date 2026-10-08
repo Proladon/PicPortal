@@ -402,3 +402,11 @@ npm run build:installer
 GitHub CI／草稿 workflow 尚未真正執行，不能以本機結果宣告遠端 CI 可重現。乾淨 Windows、缺少 WebView2 的下載分支、離線首次部署、一般桌面安裝位置／Electron 並存的實機驗收仍待完成。自動更新、更新簽章／Windows 程式碼簽章、兩版本更新與失敗情境、階段 0 效能比較仍未完成。外部資料夾／`.db` 拖入沿用階段 5 延期例外。
 
 本輪依使用者指示交付 CI 與安裝包，保留 Electron；不進入階段 7。回退可使用 `npm run dev:electron` 或階段 5 commit `39c8b78`。正式套用前備份 `.db` 與所有圖片，已搬移／刪除的檔案須由備份復原。
+
+### 2026-10-08：pnpm 開發啟動修復
+
+- 使用者以 pnpm 11.10.0 安裝後執行 `pnpm tauri dev`，在啟動 CLI 前因 `ERR_PNPM_IGNORED_BUILDS` 中止。新增的 pnpm workspace 設定仍含 `set this to true or false` 佔位文字；改為明確允許 esbuild、vue-demi、Electron 安裝腳本，停用已退役的 Spectron／chromedriver／Puppeteer 腳本。`pnpm install --frozen-lockfile` 與必要套件 rebuild 通過，未重新解析或改寫使用者的 pnpm lockfile。
+- 實際 Electron 設定中，未選顏色的舊專案保存 `color: null`。Rust 原先只接受字串，導致整份匯入回傳 `INVALID_SETTINGS`。現在接受並保留 null，其他不合法的顏色型別仍拒絕；新增匯入／重試／未知欄位保存回歸測試。真正啟動後已匯入四個原有清單項目，Electron config 的 SHA256 前後相同；沒有直接修改來源設定或專案 `.db`。
+- npm 切換 pnpm 後殘留的根目錄 `@vue/reactivity`／`@vue/runtime-core` 與 pnpm 的 `vue` 是兩份模組；實測 `vue.ref`、`vue.onMounted` 與獨立模組的函式 identity 不同，造成後端清單已有資料而 Vue 畫面沒有更新。37 個前端檔案統一由宣告的 `vue` 依賴匯入公開 API，實機專案卡片恢復顯示；另補 computed title 的空字串 fallback，通過 Vue lint。
+- 驗證：`pnpm tauri dev` 真正啟動 Vite／Rust／WebView2，專案頁與原有清單顯示正常，沒有 `INVALID_SETTINGS`；三個 TypeScript targets、lint、Rust fmt／clippy 與三個 preferences tests 通過。使用 computer-use 確認開發視窗，測試結束後正常關閉，釋放 5173 port。
+- npm lockfile 與 CI 基線保持原設定；使用者新增的 `pnpm-lock.yaml` 保留。本次修復只更新開發原始碼，先前 stage 6 安裝包未重建；新安裝包需另執行建置。

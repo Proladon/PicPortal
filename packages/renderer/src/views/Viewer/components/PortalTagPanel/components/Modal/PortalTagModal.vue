@@ -105,8 +105,8 @@
 
 <script lang="ts" setup>
 import { FolderOpenOutline, Archive } from '@vicons/ionicons5'
-import { computed, reactive, ref } from '@vue/reactivity'
-import { onMounted } from '@vue/runtime-core'
+import { computed, reactive, ref } from 'vue'
+import { onMounted } from 'vue'
 import {
   NButton,
   NForm,

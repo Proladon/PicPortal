@@ -63,7 +63,7 @@ import InfoIcon from '/@/assets/icon/info.svg'
 import RecordIcon from '/@/assets/icon/book.svg'
 import { NPopover } from 'naive-ui'
 import { useViewerStore } from '/@/store/viewerStore'
-import { computed } from '@vue/reactivity'
+import { computed } from 'vue'
 
 const viewerStore = useViewerStore()
 const lastViewerType = computed(() => viewerStore.lastViewerType)

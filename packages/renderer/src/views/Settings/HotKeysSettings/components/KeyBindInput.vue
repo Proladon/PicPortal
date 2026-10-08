@@ -14,7 +14,7 @@
 import { NInput } from 'naive-ui'
 import { ref } from 'vue'
 import { get } from 'lodash-es'
-import { computed } from '@vue/reactivity'
+import { computed } from 'vue'
 
 const emit = defineEmits(['update:model'])
 const props = defineProps({

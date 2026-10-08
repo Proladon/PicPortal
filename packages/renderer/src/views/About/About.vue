@@ -51,8 +51,8 @@
 import avatar from '/@/assets/Oreki.png'
 import { LogoGithub } from '@vicons/ionicons5'
 import { NIcon, NAlert, NScrollbar } from 'naive-ui'
-import { ref } from '@vue/reactivity'
-import { onMounted } from '@vue/runtime-core'
+import { ref } from 'vue'
+import { onMounted } from 'vue'
 import { useDesktop } from '/@/desktop'
 const { appWindow, platform: desktopPlatform, runtime } = useDesktop()
 

@@ -58,8 +58,8 @@ import {
   NColorPicker,
 } from 'naive-ui'
 import { FolderOpenOutline, Pencil } from '@vicons/ionicons5'
-import { reactive, ref } from '@vue/reactivity'
-import { onMounted } from '@vue/runtime-core'
+import { reactive, ref } from 'vue'
+import { onMounted } from 'vue'
 import { find } from 'lodash-es'
 import { useDesktop } from '/@/desktop'
 import { useAppStore } from '/@/store/appStore'

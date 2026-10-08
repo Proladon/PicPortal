@@ -40,7 +40,7 @@
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
 import { NIcon, NButton, NInput } from 'naive-ui'
 import { EnterSharp, Folder, Search, ChevronBack } from '@vicons/ionicons5'
-import { computed, ref } from '@vue/reactivity'
+import { computed, ref } from 'vue'
 import { useViewerStore } from '/@/store/viewerStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'

@@ -29,9 +29,9 @@
 
 <script lang="ts" setup>
 import FocusItem from './components/FocusItem.vue'
-import { ref } from '@vue/reactivity'
+import { ref } from 'vue'
 import { map } from 'lodash-es'
-import { onMounted, watch } from '@vue/runtime-core'
+import { onMounted, watch } from 'vue'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'

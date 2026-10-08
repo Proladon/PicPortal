@@ -38,13 +38,13 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref } from '@vue/reactivity'
+import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { NModal, NIcon, NButton } from 'naive-ui'
 import { AppsSharp, ListSharp, ImageOutline } from '@vicons/ionicons5'
 import type { ViewerTypes } from '/@/store/viewerStore'
 import { useViewerStore } from '/@/store/viewerStore'
-import { onMounted } from '@vue/runtime-core'
+import { onMounted } from 'vue'
 
 const emit = defineEmits(['close'])
 const props = defineProps({

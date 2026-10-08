@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from '@vue/reactivity'
+import { computed, ref } from 'vue'
 import { NIcon, NButton, NBadge, NRadioGroup, NRadioButton } from 'naive-ui'
 import { Layers, CopySharp } from '@vicons/ionicons5'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'

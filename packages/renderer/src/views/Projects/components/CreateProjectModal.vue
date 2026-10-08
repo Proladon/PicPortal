@@ -52,9 +52,9 @@ import {
   useNotification,
 } from 'naive-ui'
 import { FolderOpenOutline } from '@vicons/ionicons5'
-import { reactive, ref } from '@vue/reactivity'
+import { reactive, ref } from 'vue'
 import { nanoid } from 'nanoid/async'
-import { onMounted } from '@vue/runtime-core'
+import { onMounted } from 'vue'
 import { useDesktop } from '/@/desktop'
 import { saveProjectDialog } from '/@/utils/browserDialog'
 import useLocale from '/@/use/locale'

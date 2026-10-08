@@ -38,8 +38,8 @@
 <script setup lang="ts">
 import { sameFilePath } from '/@/utils/file'
 import { toImageUrl } from '/@/desktop'
-import { computed, ref } from '@vue/reactivity'
-import { onMounted, watch } from '@vue/runtime-core'
+import { computed, ref } from 'vue'
+import { onMounted, watch } from 'vue'
 import { NTag } from 'naive-ui'
 import { find, map, findIndex, pull } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
