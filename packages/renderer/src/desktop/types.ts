@@ -22,7 +22,7 @@ export interface SaveDialogOptions {
 }
 
 export interface DesktopSettings {
-  general: { locale: string; theme: string }
+  general: { locale: string; theme: string; appearance?: string }
   viewer: { portalPanelPosition: 'left' | 'right' }
   hotkeys: Record<string, unknown>
 }

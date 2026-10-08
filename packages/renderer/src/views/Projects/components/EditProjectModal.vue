@@ -1,71 +1,71 @@
 <template>
-  <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
-    <div class="p-[20px] bg-primary-bg">
-      <p class="title">
-        <n-icon><Pencil /></n-icon>
-        <span>{{ translate('projects.editProject.title') }}</span>
-      </p>
-      <n-form
-        ref="formRef"
-        :model="formData"
-        :rules="formRules"
-        :show-label="false"
-      >
-        <n-form-item path="name">
-          <n-input
-            v-model:value="formData.name"
-            :placeholder="
-              translate('projects.createProject.placeholder.projectName')
-            "
-          />
-        </n-form-item>
-        <n-form-item path="path">
-          <n-input
-            :disabled="importMode"
-            :readonly="desktop.runtime === 'tauri'"
-            v-model:value="formData.path"
-            :placeholder="
-              translate('projects.createProject.placeholder.projectPath')
-            "
-          />
-          <n-button v-if="!importMode" @click="browseFolder">
-            <n-icon><FolderOpenOutline /></n-icon>
-          </n-button>
-        </n-form-item>
-        <n-form-item>
-          <n-color-picker v-model:value="formData.color" :show-alpha="true" />
-        </n-form-item>
-      </n-form>
-      <n-button block secondary @click="handleConfirm" type="primary">
-        {{
-          importMode
-            ? translate('projects.editProject.import')
-            : translate('projects.editProject.update')
-        }}
-      </n-button>
-    </div>
-  </n-modal>
+  <Dialog :open="showModal" @update:open="updateModalShow">
+    <DialogContent class="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle class="flex items-center gap-2">
+          <Pencil class="size-4 text-muted-foreground" />
+          {{
+            importMode
+              ? t('projects.editProject.importTitle')
+              : t('projects.editProject.title')
+          }}
+        </DialogTitle>
+        <DialogDescription>{{
+          t('projects.createProject.description')
+        }}</DialogDescription>
+      </DialogHeader>
+      <form class="grid gap-4" @submit.prevent="handleConfirm">
+        <ProjectFormFields
+          v-model:name="formData.name"
+          v-model:path="formData.path"
+          v-model:color="formData.color"
+          :errors="errors"
+          :browsable="!importMode"
+          :path-disabled="importMode"
+          :path-readonly="desktop.runtime === 'tauri'"
+          @browse="browseFolder"
+        />
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            @click="updateModalShow(false)"
+          >
+            {{ t('common.cancel') }}
+          </Button>
+          <Button type="submit" class="modal-submit">
+            {{
+              importMode
+                ? t('projects.editProject.import')
+                : t('projects.editProject.update')
+            }}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import {
-  NModal,
-  NForm,
-  NFormItem,
-  NButton,
-  NIcon,
-  NInput,
-  NColorPicker,
-} from 'naive-ui'
-import { FolderOpenOutline, Pencil } from '@vicons/ionicons5'
-import { reactive, ref } from 'vue'
-import { onMounted } from 'vue'
+import { reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
 import { find } from 'lodash-es'
+import { Pencil } from '@lucide/vue'
+import ProjectFormFields from './ProjectFormFields.vue'
+import { Button } from '/@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '/@/components/ui/dialog'
 import { useDesktop } from '/@/desktop'
 import { useAppStore } from '/@/store/appStore'
 import { saveProjectDialog, importProjectDialog } from '/@/utils/browserDialog'
-import { useNotification } from 'naive-ui'
-import useLocale from '/@/use/locale'
+import { useModal } from '/@/use/modal'
 
 const emit = defineEmits(['refresh', 'close', 'created'])
 const props = defineProps({
@@ -86,56 +86,38 @@ const props = defineProps({
 // ANCHOR Use
 const desktop = useDesktop()
 const { userStore } = desktop
-const notify = useNotification()
-const { translate } = useLocale()
+const { t } = useI18n()
+const { showModal, updateModalShow } = useModal(emit)
 // ANCHOR Data
-const formRef = ref<any>(null)
-const showModal = ref<boolean>(false)
-const formData = reactive<{ [key: string]: any }>({
-  name: null,
-  path: null,
-  color: null,
+const formData = reactive({
+  name: '',
+  path: '',
+  color: '',
 })
-const formRules = {
-  name: {
-    required: true,
-    trigger: 'change',
-    message: 'Please input project name',
-  },
-  path: {
-    required: true,
-    trigger: 'change',
-    message: 'Please choose a folder',
-  },
-}
-// ANCHOR Methods
-const updateModalShow = (show: boolean) => {
-  if (!show) {
-    setTimeout(() => {
-      emit('close')
-    }, 300)
-  }
-  showModal.value = show
+const errors = reactive<{ name?: string; path?: string }>({})
+
+const validate = () => {
+  errors.name = formData.name?.trim()
+    ? undefined
+    : t('projects.createProject.validation.name')
+  errors.path = formData.path
+    ? undefined
+    : t('projects.createProject.validation.path')
+  return !errors.name && !errors.path
 }
 
 // => 更新專案資訊
 const updateProject = async () => {
   const projects = (await userStore.get('projects')) || []
   const project = find(projects, { id: props.project.id })
-  if (!project)
-    return notify.error({
-      content: translate('projects.notify.notFoundProject'),
-    })
+  if (!project) return toast.error(t('projects.notify.notFoundProject'))
   project.name = formData.name
   project.color = formData.color
   project.path = formData.path
   await userStore.set('projects', projects)
   if (useAppStore().openProject?.id === project.id)
     useAppStore().SetOpenProject(project)
-  notify.success({
-    content: translate('projects.notify.updateSuccess'),
-    duration: 1500,
-  })
+  toast.success(t('projects.notify.updateSuccess'), { duration: 1500 })
   emit('refresh')
   updateModalShow(false)
 }
@@ -150,20 +132,15 @@ const importProject = async () => {
   })
 
   await userStore.set('projects', projects)
-  notify.success({
-    content: translate('projects.notify.importSuccess'),
-    duration: 1500,
-  })
+  toast.success(t('projects.notify.importSuccess'), { duration: 1500 })
   emit('refresh')
   updateModalShow(false)
 }
 
 const handleConfirm = async () => {
-  formRef.value.validate(async (errors: any) => {
-    if (errors) return
-    if (props.importMode) await importProject()
-    else await updateProject()
-  })
+  if (!validate()) return
+  if (props.importMode) await importProject()
+  else await updateProject()
 }
 
 const browseFolder = async (): Promise<void> => {
@@ -173,24 +150,14 @@ const browseFolder = async (): Promise<void> => {
       : await saveProjectDialog()
   if (save === null) return
   formData.path = save
-}
-
-const syncData = (keys: string[]) => {
-  const values = { ...props.project }
-  for (const key of keys) {
-    formData[key] = values[key]
-  }
+  errors.path = undefined
 }
 
 // ANCHOR Mounted
 onMounted(() => {
   showModal.value = true
-  syncData(['name', 'path', 'color'])
+  formData.name = props.project.name || ''
+  formData.path = props.project.path || ''
+  formData.color = props.project.color || ''
 })
 </script>
-
-<style scoped lang="postcss">
-.title {
-  @apply text-[18px] mb-[20px] flex gap-[5px];
-}
-</style>

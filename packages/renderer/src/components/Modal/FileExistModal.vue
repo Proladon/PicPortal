@@ -1,108 +1,135 @@
 <template>
-  <n-modal
-    v-model:show="showModal"
-    :mask-closable="false"
-    :close-on-esc="false"
-    :on-update:show="updateModalShow"
-  >
-    <div class="modal-body">
-      <div class="header">
-        <n-icon size="24"><Warning /></n-icon>
-        <p>{{ translate('common.warning') }} - {{ data.mode }}</p>
-      </div>
-      <div class="modal-content">
-        <div class="preview-container">
-          <img class="preview-img" :src="localFile(data.filePath)" />
-          <div class="preview-path">{{ data.filePath }}</div>
-        </div>
-        <div class="preview-container">
-          <img class="preview-img" :src="localFile(data.destPath)" />
-          <div class="preview-path">{{ data.destPath }}</div>
-        </div>
-      </div>
-      <div class="py-[10px]">
-        <n-checkbox v-model:checked="viewerStore.wrap.sameOperation.enable">
-          後續衝突皆同樣操作
-        </n-checkbox>
-      </div>
-      <div v-if="!rename" class="grid grid-cols-5 gap-[20px]">
-        <n-button
-          :disabled="viewerStore.wrap.sameOperation.enable"
-          class="option-btn"
-          secondary
-          type="primary"
-          @click=";(newFileName = getFileName(data.destPath)), (rename = true)"
+  <Dialog :open="showModal" @update:open="updateModalShow">
+    <DialogContent
+      class="modal-body sm:max-w-2xl"
+      :show-close-button="false"
+      @escape-key-down.prevent
+      @pointer-down-outside.prevent
+      @interact-outside.prevent
+    >
+      <DialogHeader>
+        <DialogTitle class="flex items-center gap-2">
+          <TriangleAlert class="size-4 text-warning" />
+          {{ t('viewer.conflict.title') }}
+          <Badge variant="secondary" class="font-mono">{{ data.mode }}</Badge>
+        </DialogTitle>
+        <DialogDescription>{{
+          t('viewer.conflict.description')
+        }}</DialogDescription>
+      </DialogHeader>
+
+      <div class="modal-content grid grid-cols-2 gap-4">
+        <figure
+          v-for="item in previews"
+          :key="item.label"
+          class="preview-container flex min-w-0 flex-col gap-2"
         >
-          重新命名
-        </n-button>
-        <n-button
-          class="option-btn"
-          secondary
-          type="info"
-          @click="renameFileWithNumber"
-        >
-          檔名 +(1)
-        </n-button>
-        <n-button
-          class="option-btn"
-          type="error"
-          secondary
-          @click="handleDelete"
-        >
-          刪除檔案
-        </n-button>
-        <n-button
-          class="option-btn"
-          type="warning"
-          secondary
-          @click="handleOverride"
-        >
-          覆蓋
-        </n-button>
-        <n-button class="option-btn" secondary @click="handleSkip">
-          忽略
-        </n-button>
+          <figcaption
+            class="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+          >
+            <component :is="item.icon" class="size-3.5" />
+            {{ item.label }}
+          </figcaption>
+          <div
+            class="aspect-[4/3] overflow-hidden rounded-lg bg-muted ring-1 ring-foreground/10"
+          >
+            <img
+              class="preview-img size-full object-contain"
+              :src="localFile(item.path)"
+            />
+          </div>
+          <p
+            class="preview-path font-mono text-[11px] leading-relaxed break-all text-muted-foreground"
+          >
+            {{ item.path }}
+          </p>
+        </figure>
       </div>
 
-      <div v-if="rename">
-        <p class="text-border">New filename</p>
-        <n-input clearable :status="renameError || undefined" v-model:value="newFileName" />
-      </div>
+      <template v-if="!rename">
+        <label class="flex items-center gap-2 text-sm">
+          <Checkbox v-model="viewerStore.wrap.sameOperation.enable" />
+          {{ t('viewer.conflict.sameOperation') }}
+        </label>
+        <div class="grid grid-cols-5 gap-2">
+          <Button
+            v-for="option in options"
+            :key="option.action"
+            type="button"
+            variant="outline"
+            class="option-btn h-auto flex-col gap-1.5 py-3 whitespace-normal"
+            :class="option.class"
+            :data-action="option.action"
+            :disabled="option.disabled"
+            @click="option.run"
+            ><component :is="option.icon" class="size-5" />{{
+              option.label
+            }}</Button
+          >
+        </div>
+      </template>
 
-      <div class="modal-footer" v-if="rename">
-        <n-button @click="rename = false">
-          {{ translate('common.cancel') }}
-        </n-button>
-        <n-button
-          :disabled="disableRename"
-          ghost
-          type="primary"
-          @click="renameFile"
-        >
-          {{ translate('common.confirm') }}
-        </n-button>
-      </div>
-    </div>
-  </n-modal>
+      <form v-else class="grid gap-4" @submit.prevent="renameFile">
+        <Field :data-invalid="!!renameError || undefined">
+          <FieldLabel for="conflict-rename">{{
+            t('viewer.conflict.newFileName')
+          }}</FieldLabel>
+          <Input
+            id="conflict-rename"
+            v-model="newFileName"
+            class="rename-input"
+            autocomplete="off"
+            :aria-invalid="!!renameError || undefined"
+          />
+          <FieldError v-if="renameError">{{
+            t('viewer.conflict.invalidFileName')
+          }}</FieldError>
+        </Field>
+        <DialogFooter class="modal-footer">
+          <Button type="button" variant="outline" @click="rename = false">
+            {{ t('common.cancel') }}
+          </Button>
+          <Button type="submit" :disabled="disableRename">
+            {{ t('common.confirm') }}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import {
-  NModal,
-  NCheckbox,
-  NButton,
-  NIcon,
-  NInput,
-} from 'naive-ui'
-import { Warning } from '@vicons/ionicons5'
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import {
+  CopyPlus,
+  FileInput,
+  FileOutput,
+  PencilLine,
+  Replace,
+  SkipForward,
+  Trash2,
+  TriangleAlert,
+} from '@lucide/vue'
+import { Badge } from '/@/components/ui/badge'
+import { Button } from '/@/components/ui/button'
+import { Checkbox } from '/@/components/ui/checkbox'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '/@/components/ui/dialog'
+import { Field, FieldError, FieldLabel } from '/@/components/ui/field'
+import { Input } from '/@/components/ui/input'
 import { useModal } from '/@/use/modal'
-import useLocale from '/@/use/locale'
 import { localFile, getFileName } from '/@/utils/file'
 import { useViewerStore } from '/@/store/viewerStore'
 
 const viewerStore = useViewerStore()
-const { translate } = useLocale()
+const { t } = useI18n()
 const emit = defineEmits(['close', 'confirm'])
 const props = defineProps({
   data: {
@@ -116,59 +143,93 @@ const rename = ref<boolean>(false)
 const newFileName = ref<string>('')
 const renameError = computed(() => {
   if (!newFileName.value) return 'error'
-  if (/[\\/:*?"<>|]/.test(newFileName.value) || /[. ]$/.test(newFileName.value)) return 'error'
+  if (/[\\/:*?"<>|]/.test(newFileName.value) || /[. ]$/.test(newFileName.value))
+    return 'error'
   return ''
 })
 const disableRename = computed(() => {
   if (newFileName.value === getFileName(props.data.filePath)) return true
   if (!newFileName.value) return true
-  if (/[\\/:*?"<>|]/.test(newFileName.value) || /[. ]$/.test(newFileName.value)) return true
+  if (/[\\/:*?"<>|]/.test(newFileName.value) || /[. ]$/.test(newFileName.value))
+    return true
   return false
 })
 
-const decide = (action: 'skip' | 'plusNum' | 'delete' | 'override' | 'rename') => {
+const previews = computed(() => [
+  {
+    label: t('viewer.conflict.source'),
+    path: props.data.filePath,
+    icon: FileOutput,
+  },
+  {
+    label: t('viewer.conflict.destination'),
+    path: props.data.destPath,
+    icon: FileInput,
+  },
+])
+
+const decide = (
+  action: 'skip' | 'plusNum' | 'delete' | 'override' | 'rename'
+) => {
   viewerStore.ResolveConflict(props.data.id, action, newFileName.value)
 }
-const renameFile = () => { if (!renameError.value) decide('rename') }
+const renameFile = () => {
+  if (!renameError.value) decide('rename')
+}
 const renameFileWithNumber = () => decide('plusNum')
 const handleSkip = () => decide('skip')
 const handleDelete = () => decide('delete')
 const handleOverride = () => decide('override')
+const startRename = () => {
+  newFileName.value = getFileName(props.data.destPath)
+  rename.value = true
+}
+
+const options = computed(() => [
+  {
+    action: 'rename',
+    label: t('viewer.conflict.rename'),
+    icon: PencilLine,
+    disabled: viewerStore.wrap.sameOperation.enable,
+    class: '',
+    run: startRename,
+  },
+  {
+    action: 'plusNum',
+    label: t('viewer.conflict.plusNum'),
+    icon: CopyPlus,
+    disabled: false,
+    class: '',
+    run: renameFileWithNumber,
+  },
+  {
+    action: 'delete',
+    label: t('viewer.conflict.delete'),
+    icon: Trash2,
+    disabled: false,
+    class: 'text-destructive hover:bg-destructive/10 hover:text-destructive',
+    run: handleDelete,
+  },
+  {
+    action: 'override',
+    label: t('viewer.conflict.override'),
+    icon: Replace,
+    disabled: false,
+    class: 'text-warning hover:bg-warning/10 hover:text-warning',
+    run: handleOverride,
+  },
+  {
+    action: 'skip',
+    label: t('viewer.conflict.skip'),
+    icon: SkipForward,
+    disabled: false,
+    class: '',
+    run: handleSkip,
+  },
+])
 
 onMounted(() => {
   newFileName.value = getFileName(props.data.destPath)
   showModal.value = true
 })
 </script>
-
-<style lang="postcss" scoped>
-.modal-body {
-  @apply bg-primary-bg p-5 min-w-[300px];
-}
-
-.header {
-  @apply flex items-end justify-start gap-[10px] text-[20px] text-red-400;
-}
-
-.modal-content {
-  @apply py-[15px] flex justify-center gap-[50px];
-}
-
-.modal-footer {
-  @apply flex justify-end gap-[10px] mt-[20px];
-}
-
-.preview-container {
-  @apply flex items-center justify-start flex-col gap-[20px];
-}
-.preview-img {
-  @apply w-[200px] h-[200px] object-cover rounded-sm;
-}
-.preview-path {
-  @apply w-[200px] break-all;
-}
-
-.option-btn {
-  @apply flex-1 h-[100px];
-}
-</style>

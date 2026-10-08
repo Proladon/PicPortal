@@ -1,111 +1,125 @@
 <template>
-  <div class="navbar">
-    <div class="nav-list">
-      <n-popover trigger="hover" placement="right">
-        <template #trigger>
+  <nav
+    class="navbar flex w-12 shrink-0 select-none flex-col items-center justify-between border-r border-sidebar-border bg-sidebar py-2"
+  >
+    <div class="nav-list flex flex-col items-center gap-1">
+      <Tooltip v-for="item in items" :key="item.key">
+        <TooltipTrigger as-child>
           <router-link
-            :to="{ name: lastViewerType }"
+            :to="item.to"
             class="nav-btn"
-            :class="{ 'nav--actived': viewerTypes.includes(String($route.name || '')) }"
+            :class="{ 'nav--actived': item.active }"
+            :aria-label="t(`app.nav.${item.key}`)"
           >
-            <img :src="hh" alt="info" />
+            <component :is="item.icon" class="size-[18px]" />
           </router-link>
-        </template>
-        Viewer
-      </n-popover>
-
-      <n-popover trigger="hover" placement="right">
-        <template #trigger>
-          <router-link
-            :to="{ name: 'Projects' }"
-            class="nav-btn"
-            :class="{ 'nav--actived': $route.name === 'Projects' }"
-          >
-            <img :src="RecordIcon" alt="" />
-          </router-link>
-        </template>
-        Projects
-      </n-popover>
-
-      <n-popover trigger="hover" placement="right">
-        <template #trigger>
-          <router-link
-            to="/about"
-            class="nav-btn"
-            :class="{ 'nav--actived': $route.name === 'About' }"
-          >
-            <img class="h-full w-full" :src="InfoIcon" alt="info" />
-          </router-link>
-        </template>
-        About
-      </n-popover>
+        </TooltipTrigger>
+        <TooltipContent side="right">{{
+          t(`app.nav.${item.key}`)
+        }}</TooltipContent>
+      </Tooltip>
     </div>
 
-    <n-popover trigger="hover" placement="right">
-      <template #trigger>
+    <Tooltip>
+      <TooltipTrigger as-child>
         <router-link
           to="/settings"
           class="nav-btn"
           :class="{ 'nav--actived': $route.name === 'Settings' }"
+          :aria-label="t('app.nav.settings')"
         >
-          <img :src="SettingsIcon" alt="" />
+          <Settings class="size-[18px]" />
         </router-link>
-      </template>
-      Settings
-    </n-popover>
-  </div>
+      </TooltipTrigger>
+      <TooltipContent side="right">{{ t('app.nav.settings') }}</TooltipContent>
+    </Tooltip>
+  </nav>
 </template>
 
 <script lang="ts" setup>
-import hh from '/@/assets/icon/home.svg'
-import SettingsIcon from '/@/assets/icon/settings.svg'
-import InfoIcon from '/@/assets/icon/info.svg'
-import RecordIcon from '/@/assets/icon/book.svg'
-import { NPopover } from 'naive-ui'
-import { useViewerStore } from '/@/store/viewerStore'
 import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { FolderKanban, Images, Info, Settings } from '@lucide/vue'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '/@/components/ui/tooltip'
+import { useViewerStore } from '/@/store/viewerStore'
 
+const { t } = useI18n()
+const route = useRoute()
 const viewerStore = useViewerStore()
-const lastViewerType = computed(() => viewerStore.lastViewerType)
-const viewerTypes = ['GridView', 'VirtualGrid', 'VirtualList', 'FocusView']
+const viewerTypes = [
+  'GridView',
+  'ListView',
+  'VirtualGrid',
+  'VirtualList',
+  'FocusView',
+]
+
+const items = computed(() => [
+  {
+    key: 'viewer',
+    icon: Images,
+    to: { name: viewerStore.lastViewerType },
+    active: viewerTypes.includes(String(route.name || '')),
+  },
+  {
+    key: 'projects',
+    icon: FolderKanban,
+    to: { name: 'Projects' },
+    active: route.name === 'Projects',
+  },
+  {
+    key: 'about',
+    icon: Info,
+    to: '/about',
+    active: route.name === 'About',
+  },
+])
 </script>
 
-<style lang="postcss" scoped>
-.navbar {
-  width: 50px;
-  @apply flex flex-col justify-between items-center py-5 flex-shrink-0;
-  @apply bg-tertiary-bg;
-}
-
-.nav-list {
-  @apply flex flex-col gap-7;
-}
-
+<style scoped>
 .nav-btn {
-  @apply px-3 py-2;
-
-  img {
-    filter: grayscale(1);
-  }
+  position: relative;
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md, 0.5rem);
+  color: var(--muted-foreground);
+  transition: background-color 0.15s, color 0.15s;
 }
-
+.nav-btn:hover {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+}
+.nav-btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
 .nav--actived {
-  @apply relative bg-primary-hover;
-  transition: ease-in-out 0.3s;
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-primary);
 }
-.nav--actived::after {
+.nav--actived::before {
   content: '';
-  @apply absolute left-0 h-auto top-0 bottom-0 w-[4px] bg-primary;
-  @apply transition duration-300 ease-in;
-  animation: expand 0.3s;
+  position: absolute;
+  left: -0.375rem;
+  top: 50%;
+  height: 1.125rem;
+  width: 3px;
+  translate: 0 -50%;
+  border-radius: 9999px;
+  background-color: var(--sidebar-primary);
+  animation: nav-indicator 0.2s ease-out;
 }
-
-@keyframes expand {
-  0% {
-    @apply w-0;
-  }
-  100% {
-    @apply w-[4px];
+@keyframes nav-indicator {
+  from {
+    height: 0;
   }
 }
 </style>

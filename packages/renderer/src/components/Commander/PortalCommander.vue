@@ -1,123 +1,83 @@
 <template>
-  <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
-    <div class="modal-body">
-      <input
-        class="search-input"
-        v-model="searchPortalName"
-        :placeholder="translate('portalPane.search.placeholder')"
-        @keydown.up.prevent="onKeyUp"
-        @keydown.down.prevent="onKeyDown"
-        @keydown.enter.prevent="onSelect"
-      />
-      <n-divider />
-      <div
-        class="mt-[10px] max-h-[200px] overflow-y-auto"
-        v-if="matchPrtals.length"
+  <CommandDialog
+    :open="showModal"
+    :title="t('portalPane.commander.title')"
+    :description="t('portalPane.commander.placeholder')"
+    class="portal-commander sm:max-w-lg"
+    @update:open="updateModalShow"
+  >
+    <CommandInput :placeholder="t('portalPane.commander.placeholder')" />
+    <CommandList class="max-h-80">
+      <CommandEmpty>{{ t('portalPane.commander.empty') }}</CommandEmpty>
+      <CommandGroup
+        v-for="group in portalGroups"
+        :key="group.id"
+        :heading="group.group"
       >
-        <div
-          class="portal-option"
-          v-for="(portal, index) in matchPrtals"
+        <CommandItem
+          v-for="portal in group.childs"
           :key="portal.id"
-          :class="isSelected(index)"
-          @mouseover="selectIndex = index"
-          @click="selectPortal(index)"
+          class="portal-option"
+          :value="portal.id"
+          :data-checked="isActive(portal.id)"
+          @select.prevent="onSelect(portal.id, group.id)"
         >
-          {{ portal.name }} ({{ portal.group.group }})
-        </div>
-      </div>
+          <span
+            class="size-2.5 shrink-0 rounded-full border border-foreground/15"
+            :style="{ background: portal.bg || 'var(--muted)' }"
+          />
+          <span class="min-w-0 flex-1 truncate">{{ portal.name }}</span>
+          <span
+            class="max-w-[45%] truncate pl-4 font-mono text-[11px] text-muted-foreground"
+          >
+            {{ portal.link }}
+          </span>
+        </CommandItem>
+      </CommandGroup>
+    </CommandList>
+    <div
+      class="flex items-center gap-3 border-t px-3 py-2 text-xs text-muted-foreground"
+    >
+      <span class="flex items-center gap-1"><Kbd>↑</Kbd><Kbd>↓</Kbd></span>
+      <span class="flex items-center gap-1"><Kbd>Enter</Kbd></span>
+      <span class="ml-auto flex items-center gap-1"><Kbd>Esc</Kbd></span>
     </div>
-  </n-modal>
+  </CommandDialog>
 </template>
 
 <script setup lang="ts">
-import { NModal, NDivider } from 'naive-ui'
-import { onMounted, ref, computed, watch, nextTick } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '/@/components/ui/command'
+import { Kbd } from '/@/components/ui/kbd'
 import { useModal } from '/@/use/modal'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
-import useLocale from '/@/use/locale'
-import { find } from 'lodash-es'
 
 const emit = defineEmits(['close', 'confirm'])
 const portalPaneStore = usePortalPaneStore()
-const { translate } = useLocale()
+const { t } = useI18n()
 const { updateModalShow, showModal } = useModal(emit)
 
-const searchPortalName = ref('')
-const selectIndex = ref(0)
+const portalGroups = computed(() =>
+  portalPaneStore.portals.filter((group) => group.childs.length)
+)
 
-watch(selectIndex, async () => {
-  await nextTick()
-  const a = document.querySelector('.selected')
-  a?.scrollIntoView()
-})
+const isActive = (id: string) =>
+  portalPaneStore.activePortals.some((portal) => portal.id === id)
 
-const matchPrtals = computed(() => {
-  if (searchPortalName.value === '*') return portalPaneStore.flattenPortals
-  if (!searchPortalName.value.trim()) return []
-  return portalPaneStore.flattenPortals.filter((i) => {
-    const name = i.name.toLowerCase()
-    const searchName = searchPortalName.value.toLowerCase()
-    return name.includes(searchName)
-  })
-})
-
-const selectPortal = (index: number) => {
-  selectIndex.value = index
-  onSelect()
-}
-
-const onKeyUp = () => {
-  if (selectIndex.value > 0) selectIndex.value--
-  else if (selectIndex.value === 0) {
-    if (!matchPrtals.value.length) return
-    selectIndex.value = matchPrtals.value.length - 1
-  }
-}
-const onKeyDown = () => {
-  const last = matchPrtals.value.length - 1
-  if (selectIndex.value < last) selectIndex.value++
-  else if (selectIndex.value === last) selectIndex.value = 0
-}
-const onSelect = () => {
-  const portal: Portal = matchPrtals.value[selectIndex.value]
-  if (!portal) return
-  const portalGroup = portalPaneStore.portals.find(
-    (group) => group.childs.some((child) => child.id === portal.id)
-  )
-  if (portalGroup) {
-    portalPaneStore.AddActivedPortal({
-      id: portal.id,
-      group: portalGroup.id,
-    })
-  }
+const onSelect = (id: string, group: string) => {
+  if (!isActive(id)) portalPaneStore.AddActivedPortal({ id, group })
   updateModalShow(false)
-}
-
-const isSelected = (index: number) => {
-  if (index === selectIndex.value) return 'selected'
-  return ''
 }
 
 onMounted(() => {
   updateModalShow(true)
 })
 </script>
-
-<style scoped lang="postcss">
-.modal-body {
-  @apply bg-primary-bg p-5 min-w-[300px] rounded-lg text-base;
-  @apply fixed top-[30%] left-0 right-0 w-[500px];
-}
-
-.portal-option {
-  @apply p-[3px] text-[18px] cursor-pointer;
-}
-
-.selected {
-  @apply bg-primary text-dark rounded-sm;
-}
-
-.search-input {
-  @apply bg-transparent w-full border-none outline-none text-[30px];
-}
-</style>

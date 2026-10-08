@@ -6,7 +6,7 @@ import { builtinModules } from 'module'
 import { defineConfig } from 'vite'
 import { loadAndSetEnv } from '../../scripts/loadAndSetEnv.mjs'
 import vue from '@vitejs/plugin-vue'
-import WindiCSS from 'vite-plugin-windicss'
+import tailwindcss from '@tailwindcss/vite'
 
 const PACKAGE_ROOT = __dirname
 const isTauri = process.env.PICPORTAL_RUNTIME === 'tauri'
@@ -24,10 +24,19 @@ export default defineConfig({
   root: PACKAGE_ROOT,
   resolve: {
     alias: {
-      '/@/': join(PACKAGE_ROOT, 'src') + '/'
+      '/@/': join(PACKAGE_ROOT, 'src') + '/',
+      // shadcn-vue components use the `@/` alias (see components.json).
+      '@': join(PACKAGE_ROOT, 'src')
     }
   },
-  plugins: [vue(), WindiCSS()],
+  plugins: [vue(), tailwindcss()],
+  define: {
+    // Compile i18n messages without `new Function` (blocked by the CSP).
+    __INTLIFY_JIT_COMPILATION__: true,
+    __VUE_I18N_FULL_INSTALL__: true,
+    __VUE_I18N_LEGACY_API__: false,
+    __INTLIFY_PROD_DEVTOOLS__: false
+  },
   clearScreen: false,
 
   base: '',

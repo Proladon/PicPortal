@@ -1,26 +1,23 @@
 <template>
-  <section class="virtual-view">
-    <n-spin v-if="loading" class="full grid-center-items" />
-    <n-empty
-      v-else-if="!pngs.length"
-      description="No images found"
-      class="full flex-center-items"
-    />
-    <!-- <div v-if="loading" :style="`height: ${ch}px`" class="w-full"></div> -->
+  <section class="virtual-view h-full">
+    <ViewerState v-if="loading || !pngs.length" :loading="loading" />
     <div
-      v-if="pngs.length && !loading"
-      class="virtual-scroll-viewer"
+      v-else
       id="virtual-scroll-viewer"
+      class="virtual-scroll-viewer h-full px-4"
     >
-      <div class="list-container" :style="`height: ${ch}px`">
+      <div class="list-container h-full">
         <VirtualList
           :data="pngs"
-          :itemSize="190"
+          :itemSize="ITEM_SIZE"
           :poolBuffer="5"
           dataKey="path"
         >
           <template v-slot="{ item }">
-            <div class="item-container">
+            <div
+              class="item-container pb-2"
+              :style="{ height: `${ITEM_SIZE}px` }"
+            >
               <VirtualListItem
                 :img="item.path"
                 @click="selectItem($event, item)"
@@ -35,20 +32,17 @@
 
 <script lang="ts" setup>
 import VirtualListItem from './components/VirtualListItem.vue'
+import ViewerState from '../ViewerState.vue'
 import { VirtualList } from 'vue3-virtual-list'
-import { ref } from 'vue'
 import { map } from 'lodash-es'
 import { onMounted, watch } from 'vue'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
-import { NEmpty, NSpin } from 'naive-ui'
 
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
-// --- Data ---
-const ch = ref(0)
-const column = ref(1)
+const ITEM_SIZE = 140
 
 // --- Methods ---
 const chunkFiles = async () => {
@@ -73,28 +67,8 @@ watch(mainFolder, async () => {
 // --- Mounted ---
 onMounted(async () => {
   loading.value = true
-  ch.value = window.innerHeight
-  ch.value = window.innerHeight - 100
-  window.onresize = () => {
-    ch.value = window.innerHeight - 100
-  }
   await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
   loading.value = false
 })
 </script>
-
-<style lang="postcss">
-.vue3-virtual-list-item-container {
-  @apply grid;
-}
-</style>
-
-<style lang="postcss" scoped>
-.list-container {
-  @apply w-full m-auto;
-}
-.item-container {
-  @apply grid gap-10 items-center px-[15px];
-}
-</style>

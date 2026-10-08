@@ -1,166 +1,76 @@
 <template>
-  <div class="image-item" @contextmenu="openViewer(img)">
-    <div class="portals" v-if="targetPortals.length">
-      <div class="portal-tag-list">
-        <NPopover v-for="portal in targetPortals" :key="portal.id">
-          <template #trigger>
-            <n-tag
-              class="tag"
-              :title="portal.name"
-              :closable="!appStore.readOnly"
-              @close="removePortal(portal)"
-              :color="{
-                color: portal.bg,
-                textColor: portal.fg,
-                borderColor: portal.bg
-              }"
-            >
-              {{ portal.name }}
-            </n-tag>
-          </template>
-          <span>{{ portal.name }}</span>
-        </NPopover>
+  <div
+    class="image-item group relative cursor-pointer overflow-hidden rounded-lg bg-muted ring-1 ring-foreground/5 transition-shadow hover:ring-2 hover:ring-primary/70"
+    :class="{ 'ring-2 !ring-primary': targetPortals.length }"
+    :style="{ height: `${imgSize}px` }"
+    @contextmenu.prevent="openViewer(img)"
+  >
+    <img
+      class="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+      :src="toImageUrl(img)"
+      loading="lazy"
+      draggable="false"
+    />
+
+    <div
+      class="pointer-events-none absolute inset-x-0 top-0 truncate bg-gradient-to-b from-black/60 to-transparent px-2 pt-1.5 pb-4 text-[11px] text-white opacity-0 transition-opacity group-hover:opacity-100"
+    >
+      {{ fileName }}
+    </div>
+
+    <div
+      v-if="targetPortals.length"
+      class="portals absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent p-1.5 pt-6"
+    >
+      <div class="portal-tag-list flex flex-wrap gap-1">
+        <PortalBadge
+          v-for="portal in targetPortals"
+          :key="portal.id"
+          :portal="portal"
+          :closable="!appStore.readOnly"
+          @close="removePortal(portal)"
+        />
       </div>
     </div>
 
-    <n-button text class="magnifier" @click="openViewer(img)">
-      <NIcon size="20"><ExpandOutline /></NIcon>
-    </n-button>
-    <img
-      class="!w-full"
-      :style="`width: ${imgSize}px; height: ${imgSize}px`"
-      :src="toImageUrl(img)"
-      loading="lazy"
-    />
+    <Button
+      class="magnifier absolute top-1.5 right-1.5 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+      size="icon-xs"
+      variant="secondary"
+      :aria-label="t('viewer.item.preview')"
+      @click.stop="openViewer(img)"
+    >
+      <Expand />
+    </Button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { sameFilePath } from '/@/utils/file'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Expand } from '@lucide/vue'
+import PortalBadge from '/@/components/PortalBadge.vue'
+import { Button } from '/@/components/ui/button'
 import { toImageUrl } from '/@/desktop'
-import { computed, ref } from 'vue'
-import { onMounted, watch } from 'vue'
-import { NButton, NTag, NPopover, NIcon } from 'naive-ui'
-import { ExpandOutline } from '@vicons/ionicons5'
-import { find, map, findIndex, pull, compact } from 'lodash-es'
-import { dataClone } from '/@/utils/data'
 import { openViewer } from '/@/utils/image'
+import { getFileName, getFileExt } from '/@/utils/file'
 import { useAppStore } from '/@/store/appStore'
-import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { useViewerStore } from '/@/store/viewerStore'
+import { useDockedPortals } from '/@/use/dockedPortals'
 
 const props = defineProps({
   img: {
-    type: String
-  }
+    type: String,
+  },
 })
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
-const portalPanelStore = usePortalPaneStore()
+const { targetPortals, removePortal } = useDockedPortals(() => props.img)
 
-const targetPortals = ref<Portal[]>([])
-const target = ref<any>(null)
-
-const dockings = computed(() => viewerStore.dockings)
-const flattenPortals = computed(() => portalPanelStore.flattenPortals)
 const imgSize = computed(() => viewerStore.gridView.imgSize)
-
-// => 移除圖片上的 portal
-const removePortal = async (portal: any) => {
-  if (appStore.readOnly) return
-  const targetIndex = findIndex(dockings.value, (item: any) =>
-    sameFilePath(item.target, props.img)
-  )
-  const portalsRef: any = dataClone(target.value?.portals || [])
-  pull(portalsRef, portal.id)
-
-  if (!portalsRef.length) {
-    await appStore.DBSlice({ key: 'dockings', index: targetIndex })
-    await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
-    return
-  }
-
-  if (portalsRef.length) {
-    await appStore.DeepSaveToDB({
-      key: `[dockings][${targetIndex}][portals]`,
-      data: portalsRef
-    })
-    await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
-  }
-}
-
-// => 同步 docking
-const syncDockingsData = () => {
-  const exist = find(dockings.value, (item) =>
-    sameFilePath(item.target, props.img)
-  )
-
-  if (!exist) {
-    targetPortals.value = []
-    return
-  }
-  target.value = exist
-
-  targetPortals.value = compact(
-    exist.portals.flatMap((id) => {
-      const portal = flattenPortals.value.find((item) => item.id === id)
-      return portal ? [portal] : []
-    })
-  )
-}
-
-watch(dockings, () => {
-  syncDockingsData()
-})
-
-watch(props, () => {
-  syncDockingsData()
-})
-
-onMounted(() => {
-  syncDockingsData()
-})
+const fileName = computed(
+  () => `${getFileName(props.img || '')}${getFileExt(props.img || '')}`
+)
 </script>
-
-<style lang="postcss" scoped>
-.image-item {
-  /* @apply border-2  border-teal-400 rounded-md; */
-  @apply justify-self-center w-full h-full;
-  @apply relative cursor-pointer border-solid border-2 rounded-md border-transparent;
-  @apply hover:border-[var(--skyblue)] hover:shadow-blue-gray-50;
-  &:hover {
-    box-shadow: 1px 2px 20px 6px rgba(255, 255, 255, 0.29);
-    -webkit-box-shadow: 1px 2px 20px 6px rgba(255, 255, 255, 0.29);
-    -moz-box-shadow: 1px 2px 20px 6px rgba(255, 255, 255, 0.29);
-  }
-}
-img {
-  @apply object-cover rounded-md;
-}
-
-.portals {
-  @apply absolute top-0 left-0 w-full h-full py-2 px-3;
-  @apply bg-opacity-50 bg-gray-800;
-}
-
-.magnifier {
-  @apply absolute bottom-0 right-0;
-}
-
-.portal-tag-list {
-  @apply grid grid-cols-2 gap-2 opacity-70 w-full;
-}
-
-.el {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-:deep(.n-tag span) {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-</style>

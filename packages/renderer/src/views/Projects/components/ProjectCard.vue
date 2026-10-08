@@ -1,57 +1,71 @@
 <template>
   <div
-    class="project-card"
-    :class="{ selected: selected }"
-    v-if="!newBtnCard"
-    @mouseover="showBtn = true"
-    @mouseleave="showBtn = false"
+    class="project-card group relative flex min-h-36 cursor-pointer flex-col overflow-hidden rounded-xl border bg-card text-left text-card-foreground shadow-xs outline-none transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50"
+    :class="{ 'border-primary/60 ring-3 ring-primary/20': selected || isOpen }"
+    role="button"
+    tabindex="0"
     @click="$emit('open', project)"
+    @keydown.enter.self="$emit('open', project)"
   >
-    <div class="flex flex-col h-full overflow-hidden">
-      <div class="flex mb-[20px]">
-        <div class="bar" :style="`background: ${project.color}`"></div>
-        <p class="project-name">
-          <n-ellipsis>
-            {{ project.name }}
-          </n-ellipsis>
-        </p>
-      </div>
-      <n-scrollbar>
-        <div class="project-path h-full">
-          {{ project.path }}
+    <div
+      class="absolute inset-x-0 top-0 h-1"
+      :style="{ background: project.color || 'var(--border)' }"
+    />
+    <div class="flex flex-1 flex-col gap-3 p-4 pt-5">
+      <div class="flex items-start gap-3 pr-14">
+        <div
+          class="flex size-10 shrink-0 items-center justify-center rounded-lg"
+          :style="iconStyle"
+        >
+          <FolderKanban class="size-5" />
         </div>
-      </n-scrollbar>
+        <div class="min-w-0 flex-1">
+          <p
+            class="project-name truncate font-medium leading-snug"
+            :title="project.name"
+          >
+            {{ project.name }}
+          </p>
+          <p class="truncate text-xs text-muted-foreground">{{ fileName }}</p>
+        </div>
+      </div>
+      <p
+        class="project-path line-clamp-2 break-all font-mono text-[11px] leading-relaxed text-muted-foreground"
+        :title="project.path"
+      >
+        {{ project.path }}
+      </p>
+      <Badge v-if="isOpen" variant="secondary" class="mt-auto">
+        <CircleDot class="text-primary" />
+        {{ t('projects.card.current') }}
+      </Badge>
     </div>
 
-    <div v-show="showBtn || selected" class="flex justify-between pt-[10px]">
-      <n-button
-        size="small"
+    <div
+      class="absolute top-3 right-3 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+      :class="{ 'opacity-100': selected }"
+    >
+      <Button
+        size="icon-xs"
+        variant="secondary"
+        :aria-label="t('projects.card.edit')"
+        :title="t('projects.card.edit')"
         @click.stop=";(showEditModal = true), (selected = true)"
       >
-        <n-icon><Pencil /></n-icon>
-      </n-button>
-
-      <n-button
-        type="error"
-        secondary
-        size="small"
+        <Pencil />
+      </Button>
+      <Button
+        size="icon-xs"
+        variant="secondary"
+        class="hover:text-destructive"
+        :aria-label="t('projects.card.delete')"
+        :title="t('projects.card.delete')"
         @click.stop="showDeleteModal = true"
-        >{{ translate('common.delete') }}</n-button
       >
+        <Trash2 />
+      </Button>
     </div>
   </div>
-
-  <n-button
-    dashed
-    class="project-card !bg-transparent !justify-center"
-    v-if="newBtnCard"
-    @click="$emit('newProject')"
-  >
-    <div class="flex flex-col justify-center items-center">
-      <n-icon size="50"><Add /></n-icon>
-      <p>{{ translate('projects.newProject') }}</p>
-    </div>
-  </n-button>
 
   <EditProjectModal
     v-if="showEditModal"
@@ -60,44 +74,57 @@
     @close=";(showEditModal = false), (selected = false)"
   />
 
-  <DeleteConfirmModal
+  <ConfirmDialog
     v-if="showDeleteModal"
-    :project="project"
-    @delete="deleteProject"
+    :title="t('projects.deleteProject.title')"
+    :content="t('projects.deleteProject.content', { name: project.name })"
+    :confirm-text="t('common.delete')"
+    @confirm="deleteProject"
     @close="showDeleteModal = false"
   />
 </template>
 
 <script setup lang="ts">
-import { NButton, NEllipsis, NIcon, NScrollbar } from 'naive-ui'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
+import { CircleDot, FolderKanban, Pencil, Trash2 } from '@lucide/vue'
 import EditProjectModal from './EditProjectModal.vue'
-import DeleteConfirmModal from './DeleteConfirmModal.vue'
-import { Add, Pencil } from '@vicons/ionicons5'
+import ConfirmDialog from '/@/components/ConfirmDialog.vue'
+import { Badge } from '/@/components/ui/badge'
+import { Button } from '/@/components/ui/button'
 import { useDesktop } from '/@/desktop'
-import { ref } from 'vue'
-import { useNotification } from 'naive-ui'
-import useLocale from '/@/use/locale'
+import { useAppStore } from '/@/store/appStore'
+import { getFileName } from '/@/utils/file'
 
 const { userStore } = useDesktop()
-const notify = useNotification()
-const { translate } = useLocale()
+const { t } = useI18n()
 
 const props = defineProps({
-  newBtnCard: {
-    type: Boolean,
-    default: false,
-  },
   project: {
     type: Object,
     default: () => ({}),
   },
 })
-const emit = defineEmits(['open', 'newProject', 'refresh'])
+const emit = defineEmits(['open', 'refresh'])
 
 const showDeleteModal = ref<boolean>(false)
 const showEditModal = ref<boolean>(false)
-const showBtn = ref<boolean>(false)
 const selected = ref<boolean>(false)
+
+const fileName = computed(() => `${getFileName(props.project.path)}.db`)
+const isOpen = computed(
+  () => useAppStore().openProject?.id === props.project.id
+)
+const iconStyle = computed(() => {
+  const color = props.project.color
+  if (!color)
+    return { background: 'var(--muted)', color: 'var(--muted-foreground)' }
+  return {
+    background: `color-mix(in oklab, ${color} 18%, transparent)`,
+    color,
+  }
+})
 
 const deleteProject = async () => {
   const projects = (await userStore.get('projects')) || []
@@ -106,35 +133,7 @@ const deleteProject = async () => {
     return false
   })
   await userStore.set('projects', filterProjects)
-  notify.success({
-    content: translate('projects.notify.deleteSuccess'),
-    duration: 1500,
-  })
+  toast.success(t('projects.notify.deleteSuccess'), { duration: 1500 })
   emit('refresh')
 }
 </script>
-
-<style lang="postcss" scoped>
-.project-card {
-  @apply w-[150px] h-[200px] flex flex-col justify-between text-base;
-  @apply bg-tertiary-bg p-[10px] rounded-[4px] text-left cursor-pointer shadow-xl;
-  @apply transition duration-500 ease-in-out;
-  @apply border border-1  border-transparent hover:( border-primary );
-}
-
-.project-name {
-  @apply whitespace-nowrap overflow-hidden text-[20px];
-}
-
-.project-path {
-  @apply flex-1 break-all;
-}
-
-.bar {
-  @apply w-1 h-auto rounded-sm bg-primary mr-[10px];
-}
-
-.selected {
-  @apply border-emerald-200;
-}
-</style>

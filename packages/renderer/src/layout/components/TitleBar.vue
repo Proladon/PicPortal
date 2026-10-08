@@ -1,28 +1,78 @@
 <template>
-  <header class="title-bar" :style="desktop.runtime === 'electron' ? '-webkit-app-region: drag' : undefined" @mousedown="dragWindow">
-    <section class="app-logo">
-      <n-icon size="30">
-        <LogoGithub />
-      </n-icon>
+  <header
+    class="title-bar flex h-9 shrink-0 select-none items-center border-b border-sidebar-border bg-sidebar text-sidebar-foreground"
+    :style="
+      desktop.runtime === 'electron' ? '-webkit-app-region: drag' : undefined
+    "
+    @mousedown="dragWindow"
+  >
+    <section
+      class="app-logo flex h-full w-12 shrink-0 items-center justify-center"
+    >
+      <span
+        class="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm"
+      >
+        <Aperture class="size-4" />
+      </span>
     </section>
-    <section class="app-name">PicPortal</section>
-    <section class="win-btn-container" @mousedown.stop>
-      <div class="win-btn min" @click="minWin"></div>
-      <div class="win-btn max" @click="maxWin"></div>
-      <div class="win-btn close" @click="closeWin"></div>
+    <section class="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
+      <span class="font-semibold tracking-tight"
+        ><span class="app-name">PicPortal</span></span
+      >
+      <template v-if="appStore.projectName">
+        <ChevronRight class="size-3.5 shrink-0 text-muted-foreground" />
+        <span class="truncate text-muted-foreground">{{
+          appStore.projectName
+        }}</span>
+      </template>
+    </section>
+    <section
+      class="win-btn-container flex h-full shrink-0"
+      style="-webkit-app-region: no-drag"
+      @mousedown.stop
+    >
+      <button
+        type="button"
+        class="win-btn min"
+        :aria-label="t('app.window.minimize')"
+        @click="minWin"
+      >
+        <Minus class="size-4" />
+      </button>
+      <button
+        type="button"
+        class="win-btn max"
+        :aria-label="t('app.window.maximize')"
+        @click="maxWin"
+      >
+        <Square class="size-3.5" />
+      </button>
+      <button
+        type="button"
+        class="win-btn close hover:!bg-destructive hover:!text-white"
+        :aria-label="t('app.window.close')"
+        @click="closeWin"
+      >
+        <X class="size-4" />
+      </button>
     </section>
   </header>
 </template>
 
 <script setup lang="ts">
-import { NIcon } from 'naive-ui'
-import { LogoGithub } from '@vicons/ionicons5'
+import { useI18n } from 'vue-i18n'
+import { Aperture, ChevronRight, Minus, Square, X } from '@lucide/vue'
 import { useDesktop } from '/@/desktop'
+import { useAppStore } from '/@/store/appStore'
+
+const { t } = useI18n()
+const appStore = useAppStore()
 const desktop = useDesktop()
 const { appWindow } = desktop
 
 const dragWindow = async (event: MouseEvent) => {
-  if (desktop.runtime === 'tauri' && event.button === 0) await appWindow.startDragging()
+  if (desktop.runtime === 'tauri' && event.button === 0)
+    await appWindow.startDragging()
 }
 
 const closeWin = async () => {
@@ -38,40 +88,18 @@ const maxWin = async () => {
 }
 </script>
 
-<style lang="postcss" scoped>
-.title-bar {
-  @apply grid grid-cols-3   items-center;
-}
-
-.app-logo {
-  @apply text-left bg-border w-[50px] grid place-content-center py-2;
-}
-
-.app-name {
-  @apply text-base font-bold;
-}
-
-.min,
-.max,
-.close {
-  @apply w-[20px] h-[20px] rounded-full;
-}
-
-.win-btn-container {
-  @apply flex gap-[20px] justify-end px-[15px];
-}
+<style scoped>
 .win-btn {
-  @apply border-2 border-solid cursor-pointer;
-  -webkit-app-region: no-drag;
+  display: inline-flex;
+  height: 100%;
+  width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+  transition: background-color 0.15s, color 0.15s;
 }
-
-.min {
-  @apply border-[#649FA0];
-}
-.max {
-  @apply border-[#E2A739];
-}
-.close {
-  @apply border-[#D44172];
+.win-btn:hover {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
 }
 </style>

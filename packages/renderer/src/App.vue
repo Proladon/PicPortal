@@ -1,11 +1,17 @@
 <template>
-  <Provider>
+  <TooltipProvider :delay-duration="400">
     <router-view />
     <PortalCommander
       v-if="appStore.commander.portal"
       @close="appStore.commander.portal = false"
     />
-  </Provider>
+    <Toaster
+      position="top-right"
+      :offset="{ top: 48 }"
+      :theme="isDark ? 'dark' : 'light'"
+      rich-colors
+    />
+  </TooltipProvider>
 </template>
 
 <script lang="ts" setup>
@@ -14,13 +20,14 @@ import { onMounted, onUnmounted } from 'vue'
 import { subscribeClose, cancelClose } from '/@/desktop/lifecycle'
 import { reportDesktopError } from '/@/desktop/status'
 import PortalCommander from '/@/components/Commander/PortalCommander.vue'
-import Provider from '/@/components/Provider.vue'
+import { TooltipProvider } from '/@/components/ui/tooltip'
+import { Toaster } from '/@/components/ui/sonner'
 
 import useInit from '/@/use/init'
 import { useTheme } from '/@/use/theme'
 import { useAppStore } from '/@/store/appStore'
 
-const { setTheme } = useTheme()
+const { applySettings, isDark } = useTheme()
 const router = useRouter()
 const appStore = useAppStore()
 const { init, dispose } = useInit()
@@ -44,23 +51,7 @@ onMounted(async () => {
   if (disposed) return
   const settings = await init()
   if (disposed) return
-  await setTheme(settings?.general.theme || 'picportal')
+  applySettings(settings?.general)
   router.push('/projects')
 })
 </script>
-
-<style lang="postcss">
-html,
-body,
-#app {
-  @apply w-full h-full overflow-hidden;
-}
-
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  @apply bg-primary-bg text-white;
-}
-</style>

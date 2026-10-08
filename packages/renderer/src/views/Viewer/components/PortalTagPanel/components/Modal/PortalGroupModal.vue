@@ -1,90 +1,89 @@
 <template>
-  <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
-    <div class="p-5 text-center bg-primary-bg">
-      <p>{{ modalTitle }}</p>
-
-      <n-form :model="formData" :rules="formRules" ref="formRef">
-        <n-form-item path="name">
-          <n-input
-            :placeholder="
-              translate('portalPane.portalGroupModal.placeholder.name')
-            "
-            v-model:value="formData.name"
+  <Dialog :open="showModal" @update:open="updateModalShow">
+    <DialogContent class="sm:max-w-sm">
+      <DialogHeader>
+        <DialogTitle>{{ modalTitle }}</DialogTitle>
+      </DialogHeader>
+      <form class="grid gap-4" @submit.prevent="submit">
+        <Field :data-invalid="invalid || undefined">
+          <FieldLabel for="portal-group-name">
+            {{ t('portalPane.portalGroupModal.name') }}
+          </FieldLabel>
+          <Input
+            id="portal-group-name"
+            v-model="formData.name"
+            autocomplete="off"
+            :aria-invalid="invalid || undefined"
+            :placeholder="t('portalPane.portalGroupModal.placeholder.name')"
           />
-        </n-form-item>
-        <n-button
-          v-if="mode === 'edit'"
-          secondary
-          block
-          type="primary"
-          @click="updatePortalGroup"
-          >{{ translate('common.update') }}</n-button
-        >
-        <n-button
-          v-if="mode === 'create'"
-          secondary
-          block
-          type="primary"
-          @click="createPortalGroup"
-          >{{ translate('common.create') }}</n-button
-        >
-      </n-form>
-    </div>
-  </n-modal>
+        </Field>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            @click="updateModalShow(false)"
+          >
+            {{ t('common.cancel') }}
+          </Button>
+          <Button type="submit" class="modal-submit">
+            {{ mode === 'edit' ? t('common.update') : t('common.create') }}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script lang="ts" setup>
 import type { PropType } from 'vue'
-import { computed, reactive, ref } from 'vue'
-import { NModal, NButton, NForm, NFormItem, NInput } from 'naive-ui'
+import { computed, reactive, ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { nanoid } from 'nanoid/async'
-import { onMounted } from 'vue'
 import { findIndex } from 'lodash-es'
+import { Button } from '/@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '/@/components/ui/dialog'
+import { Field, FieldLabel } from '/@/components/ui/field'
+import { Input } from '/@/components/ui/input'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
-import useLocale from '/@/use/locale'
+import { useModal } from '/@/use/modal'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  group: { type: Object as PropType<PortalGroup>, default: () => ({ id: '', group: '', childs: [] }) },
+  group: {
+    type: Object as PropType<PortalGroup>,
+    default: () => ({ id: '', group: '', childs: [] }),
+  },
 })
 
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
-const { translate } = useLocale()
+const { t } = useI18n()
+const { showModal, updateModalShow } = useModal(emit)
 // --- Data ---
-const showModal = ref(false)
-
-const formRef = ref<any>(null)
+const invalid = ref(false)
 const formData = reactive({
   name: '',
 })
-const formRules = {
-  name: { required: true },
-}
 
 // --- Computed ---
 const portalsData = computed(() => portalPaneStore.portals)
 const modalTitle = computed(() => {
   const mode = props.mode
-  if (mode === 'edit')
-    return translate('portalPane.portalGroupModal.title.edit')
-  if (mode === 'create')
-    return translate('portalPane.portalGroupModal.title.create')
+  if (mode === 'edit') return t('portalPane.portalGroupModal.title.edit')
+  if (mode === 'create') return t('portalPane.portalGroupModal.title.create')
   return ''
 })
 
 // --- Methods ---
-const updateModalShow = (show: boolean) => {
-  if (!show) {
-    setTimeout(() => {
-      emit('close')
-    }, 1500)
-  }
-  showModal.value = show
-}
 const newGroup = async (exist?: PortalGroup) => {
   return {
     group: formData.name,
@@ -93,29 +92,23 @@ const newGroup = async (exist?: PortalGroup) => {
   }
 }
 const updatePortalGroup = async (): Promise<void> => {
-  formRef.value.validate(async (errors: any) => {
-    if (errors) return
+  const portalsRef = dataClone(portalsData.value)
+  const group = await newGroup(props.group)
 
-    const portalsRef = dataClone(portalsData.value)
-    const group = await newGroup(props.group)
+  const groupIndex = findIndex(portalsRef, { id: props.group.id })
+  portalsRef[groupIndex] = group
 
-    const groupIndex = findIndex(portalsRef, { id: props.group.id })
-    portalsRef[groupIndex] = group
-
-    const [, saveError] = await appStore.SaveToDB({
-      key: 'portals',
-      data: portalsRef,
-    })
-    if (saveError) alert(saveError)
-
-    await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
-    showModal.value = false
-    closeModal()
+  const [, saveError] = await appStore.SaveToDB({
+    key: 'portals',
+    data: portalsRef,
   })
+  if (saveError) alert(saveError)
+
+  await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
+  updateModalShow(false)
 }
 
 const createPortalGroup = async (): Promise<void> => {
-  if (!formData.name) return
   const portalsRef = dataClone(portalsData.value)
   const group = await newGroup()
   portalsRef.push(group)
@@ -127,14 +120,14 @@ const createPortalGroup = async (): Promise<void> => {
   if (saveError) alert(saveError)
 
   await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
-  showModal.value = false
-  closeModal()
+  updateModalShow(false)
 }
 
-const closeModal = (): void => {
-  setTimeout(() => {
-    emit('close')
-  }, 150)
+const submit = async () => {
+  invalid.value = !formData.name.trim()
+  if (invalid.value) return
+  if (props.mode === 'edit') await updatePortalGroup()
+  else if (props.mode === 'create') await createPortalGroup()
 }
 
 // --- Mounted ---
@@ -144,5 +137,3 @@ onMounted((): void => {
   formData.name = props.group.group
 })
 </script>
-
-<style lang="postcss" scoped></style>

@@ -1,51 +1,42 @@
 <template>
-  <section class="viewer">
-    <n-empty
-      v-if="!loading && !pngs.length"
-      description="No images found"
-      class="full flex-center-items"
-    />
-    <n-spin :show="loading">
-      <div v-if="loading" :style="`height: ${ch}px`" class="w-full"></div>
-      <div
-        v-if="pngs.length && !loading"
-        class="virtual-scroll-viewer"
-        id="virtual-scroll-viewer"
-      >
-        <div class="list-container" :style="`height: ${ch}px`">
-          <VirtualList
-            :data="pngs"
-            :itemSize="190"
-            :poolBuffer="5"
-            dataKey="path"
-          >
-            <template v-slot="{ item }">
-              <div
-                class="item-container"
-                :style="`grid-template-columns: repeat(${column}, 1fr);`"
-              >
-                <VirtualGridItem
-                  @click="selectItem($event, { item, childIndex })"
-                  v-for="(img, childIndex) in item.src"
-                  :key="childIndex"
-                  :img="img.path"
-                />
-              </div>
-            </template>
-          </VirtualList>
-        </div>
+  <section ref="viewerRef" class="viewer h-full">
+    <ViewerState v-if="loading || !pngs.length" :loading="loading" />
+    <div v-else id="virtual-scroll-viewer" class="virtual-scroll-viewer h-full">
+      <div class="list-container h-full pt-1">
+        <VirtualList
+          :key="column"
+          :data="pngs"
+          :itemSize="174"
+          :poolBuffer="5"
+          dataKey="path"
+        >
+          <template v-slot="{ item }">
+            <div
+              class="item-container grid items-start gap-3 px-4"
+              :style="`grid-template-columns: repeat(${column}, ${ITEM_SIZE}px);`"
+            >
+              <VirtualGridItem
+                @click="selectItem($event, { item, childIndex })"
+                v-for="(img, childIndex) in item.src"
+                :key="childIndex"
+                :img="img.path"
+              />
+            </div>
+          </template>
+        </VirtualList>
       </div>
-    </n-spin>
+    </div>
   </section>
 </template>
 
 <script lang="ts" setup>
 import VirtualGridItem from './components/VirtualGridItem.vue'
+import ViewerState from '../ViewerState.vue'
 import { VirtualList } from 'vue3-virtual-list'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useElementSize } from '@vueuse/core'
 import { chunk, map } from 'lodash-es'
 import { onMounted, watch } from 'vue'
-import { NSpin, NEmpty } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
@@ -53,19 +44,29 @@ import { useViewerStore } from '/@/store/viewerStore'
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
 // --- Data ---
-const ch = ref(0)
-const column = ref(5)
+const ITEM_SIZE = 150
+const GAP = 12
+const PADDING = 32
+const viewerRef = ref<HTMLElement>()
+const { width } = useElementSize(viewerRef)
+const column = computed(() =>
+  width.value
+    ? Math.max(1, Math.floor((width.value - PADDING + GAP) / (ITEM_SIZE + GAP)))
+    : 5
+)
 // --- Methods ---
+const chunkRows = () => {
+  const files = map(showFiles.value, (path) => ({ path: path }))
+  const filesChunkList = chunk(files, column.value)
+  pngs.value = filesChunkList.map((items) => ({
+    path: items[0].path,
+    src: items,
+  }))
+}
 const chunkFiles = async () => {
   loading.value = true
   await viewerStore.GetFolderAllFiles({})
-  const files = map(showFiles.value, (path) => ({ path: path }))
-  const filesChunkList = chunk(files, column.value)
-  const newData = filesChunkList.map((items) => ({
-    path: items[0].path,
-    src: items
-  }))
-  pngs.value = newData
+  chunkRows()
   loading.value = false
 }
 
@@ -76,6 +77,9 @@ const { loading, pngs, showFiles, mainFolder, selectItem } = useViewer(
 )
 
 // --- Watch ---
+watch(column, () => {
+  if (!loading.value) chunkRows()
+})
 watch(mainFolder, async () => {
   await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
@@ -84,28 +88,8 @@ watch(mainFolder, async () => {
 // --- Mounted ---
 onMounted(async () => {
   loading.value = true
-  ch.value = window.innerHeight
-  ch.value = window.innerHeight - 100
-  window.onresize = () => {
-    ch.value = window.innerHeight - 100
-  }
   await chunkFiles()
   await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   loading.value = false
 })
 </script>
-
-<style lang="postcss">
-.vue3-virtual-list-item-container {
-  @apply grid;
-}
-</style>
-
-<style lang="postcss" scoped>
-.list-container {
-  @apply w-full m-auto;
-}
-.item-container {
-  @apply grid gap-10 items-center px-[15px];
-}
-</style>

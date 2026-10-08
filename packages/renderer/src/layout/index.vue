@@ -1,51 +1,108 @@
 <template>
-  <div class="layout">
+  <div class="layout flex h-full w-full flex-col bg-background text-foreground">
     <TitleBar />
-    <n-alert
-      v-if="desktopError"
-      class="desktop-status"
-      type="warning"
-      closable
-      @close="desktopError = ''"
-    >
-      {{ desktopError }}
-    </n-alert>
 
-    <section class="main-wrapper">
+    <div
+      v-if="desktopError"
+      class="desktop-status flex shrink-0 items-center gap-2 border-b border-destructive/30 bg-destructive/10 px-3 py-1.5 text-sm text-destructive"
+      role="alert"
+    >
+      <TriangleAlert class="size-4 shrink-0" />
+      <p class="min-w-0 flex-1 break-all">{{ desktopError }}</p>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        :aria-label="t('common.dismiss')"
+        @click="desktopError = ''"
+      >
+        <X />
+      </Button>
+    </div>
+
+    <div
+      v-if="closeWaiting"
+      class="close-waiting flex shrink-0 items-center gap-2 border-b bg-muted/60 px-3 py-1.5 text-sm"
+      role="status"
+    >
+      <Spinner class="text-muted-foreground" />
+      <p class="flex-1">{{ t('app.close.waiting') }}</p>
+      <Button variant="outline" size="xs" @click="cancelClose">
+        {{ t('app.close.cancel') }}
+      </Button>
+    </div>
+
+    <section class="main-wrapper flex min-h-0 flex-1">
       <Navbar />
-      <router-view />
+      <main class="relative min-w-0 flex-1 overflow-hidden">
+        <router-view />
+      </main>
     </section>
 
     <StatusBar />
-    <n-alert v-if="closeWaiting" type="info"
-      >批次作業完成後將關閉。<n-button @click="cancelClose"
-        >取消關閉</n-button
-      ></n-alert
-    >
-    <n-modal :show="closePrompt" :mask-closable="false" :close-on-esc="false">
-      <div class="p-5 bg-primary-bg">
-        <p v-if="settingsDirty">設定尚未儲存。</p>
-        <p v-else>尚有批次作業與衝突需要處理。</p>
-        <div class="flex gap-3 mt-5 close-actions">
-          <n-button @click="cancelClose">繼續使用</n-button>
-          <n-button v-if="settingsDirty" @click="finishClose(true)"
-            >儲存後關閉</n-button
+
+    <AlertDialog :open="closePrompt">
+      <AlertDialogContent @escape-key-down.prevent>
+        <AlertDialogHeader>
+          <AlertDialogMedia class="bg-primary/10 text-primary">
+            <LogOut />
+          </AlertDialogMedia>
+          <AlertDialogTitle>{{ t('app.close.title') }}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {{
+              settingsDirty
+                ? t('app.close.settingsDirty')
+                : t('app.close.batchRunning')
+            }}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter class="close-actions">
+          <Button variant="outline" @click="cancelClose">
+            {{ t('app.close.keepUsing') }}
+          </Button>
+          <Button v-if="settingsDirty" @click="finishClose(true)">
+            {{ t('app.close.saveAndClose') }}
+          </Button>
+          <Button
+            :variant="settingsDirty ? 'destructive' : 'secondary'"
+            @click="finishClose(false)"
           >
-          <n-button @click="finishClose(false)">{{
-            settingsDirty ? '放棄修改並關閉' : '作業完成後關閉'
-          }}</n-button>
-        </div>
-      </div>
-    </n-modal>
-    <n-spin v-if="closing" class="absolute inset-0 bg-primary-bg opacity-80" />
+            {{
+              settingsDirty
+                ? t('app.close.discardAndClose')
+                : t('app.close.closeAfterBatch')
+            }}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <div
+      v-if="closing"
+      class="loading-overlay absolute inset-0 z-[100] flex flex-col items-center justify-center gap-3 bg-background/80 text-sm text-muted-foreground backdrop-blur-sm"
+    >
+      <Spinner class="size-6" />
+      {{ t('app.close.closing') }}
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { useI18n } from 'vue-i18n'
+import { LogOut, TriangleAlert, X } from '@lucide/vue'
 import TitleBar from './components/TitleBar.vue'
 import Navbar from './components/NavBar.vue'
 import StatusBar from './components/StatusBar.vue'
-import { NAlert, NButton, NModal, NSpin } from 'naive-ui'
+import { Button } from '/@/components/ui/button'
+import { Spinner } from '/@/components/ui/spinner'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from '/@/components/ui/alert-dialog'
 import {
   closePrompt,
   closeWaiting,
@@ -55,17 +112,6 @@ import {
   finishClose,
 } from '/@/desktop/lifecycle'
 import { desktopError } from '/@/desktop/status'
+
+const { t } = useI18n()
 </script>
-
-<style lang="postcss" scoped>
-.layout {
-  @apply w-full h-full flex flex-col;
-}
-.main-wrapper {
-  @apply flex flex-1 overflow-hidden;
-}
-
-.main-view {
-  @apply overflow-y-auto;
-}
-</style>

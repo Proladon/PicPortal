@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { useDesktop } from '/@/desktop'
 import { map } from 'lodash-es'
-import { GlobalThemeOverrides } from 'naive-ui'
 const { database } = useDesktop()
 import PQueue from 'p-queue'
 import { reportDesktopError } from '/@/desktop/status'
@@ -16,7 +15,6 @@ interface AppStoreState {
   commander: {
     portal: boolean
   }
-  theme: GlobalThemeOverrides
 }
 
 export const useAppStore = defineStore('app', {
@@ -26,8 +24,7 @@ export const useAppStore = defineStore('app', {
     sourceFolder: null,
     commander: {
       portal: false
-    },
-    theme: {}
+    }
   }),
   actions: {
     SetOpenProject(project: Project) {

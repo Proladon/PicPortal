@@ -1,32 +1,31 @@
 <template>
-  <div class="save-dialog">
-    <n-alert :show-icon="false" type="info">
-      <div class="flex items-center justify-center gap-[30px]">
-        <p>{{ translate('settings.saveWarning') }}</p>
-        <div class="flex gap-[10px]">
-          <n-button @click="$emit('cancel')">
-            {{ translate('common.reset') }}
-          </n-button>
-          <n-button type="primary" @click="$emit('save')">
-            {{ translate('common.save') }}
-          </n-button>
-        </div>
+  <div
+    class="save-dialog pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-6"
+  >
+    <div
+      class="pointer-events-auto flex items-center gap-6 rounded-xl border bg-popover py-2 pr-2 pl-4 text-sm text-popover-foreground shadow-lg ring-1 ring-foreground/5 animate-in fade-in-0 slide-in-from-bottom-4"
+    >
+      <p class="flex items-center gap-2">
+        <CircleAlert class="size-4 text-warning" />
+        {{ t('settings.saveWarning') }}
+      </p>
+      <div class="flex gap-2">
+        <Button size="sm" variant="ghost" @click="$emit('cancel')">
+          {{ t('common.reset') }}
+        </Button>
+        <Button size="sm" @click="$emit('save')">
+          {{ t('common.save') }}
+        </Button>
       </div>
-    </n-alert>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NAlert, NButton } from 'naive-ui'
-import useLocale from '/@/use/locale'
+import { useI18n } from 'vue-i18n'
+import { CircleAlert } from '@lucide/vue'
+import { Button } from '/@/components/ui/button'
 
 defineEmits(['cancel', 'save'])
-const { translate } = useLocale()
+const { t } = useI18n()
 </script>
-
-<style lang="postcss" scoped>
-.save-dialog {
-  @apply fixed bottom-[50px] left-0 right-0;
-  @apply flex justify-center items-center;
-}
-</style>

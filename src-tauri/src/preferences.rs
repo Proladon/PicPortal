@@ -77,9 +77,20 @@ pub fn validate(data: &Value) -> Result<()> {
         if settings["general"]
             .get("locale")
             .is_some_and(|v| ![json!("en"), json!("tw")].contains(v))
+            || settings["general"].get("theme").is_some_and(|v| {
+                ![
+                    json!("picportal"),
+                    json!("naive"),
+                    json!("zinc"),
+                    json!("violet"),
+                    json!("rose"),
+                    json!("amber"),
+                ]
+                .contains(v)
+            })
             || settings["general"]
-                .get("theme")
-                .is_some_and(|v| ![json!("picportal"), json!("naive")].contains(v))
+                .get("appearance")
+                .is_some_and(|v| ![json!("dark"), json!("light"), json!("system")].contains(v))
             || settings["viewer"]
                 .get("portalPanelPosition")
                 .is_some_and(|v| ![json!("left"), json!("right")].contains(v))
@@ -327,5 +338,11 @@ mod tests {
         assert!(validate(&json!({"settings":{"general":{"locale":false}}})).is_err());
         assert!(validate(&json!({"projects":[{"id":"a","path":"secret.json"}]})).is_err());
         assert!(validate(&json!({"settings":{"hotkeys":{}}})).is_ok());
+        assert!(validate(
+            &json!({"settings":{"general":{"theme":"violet","appearance":"system"}}})
+        )
+        .is_ok());
+        assert!(validate(&json!({"settings":{"general":{"theme":"unknown"}}})).is_err());
+        assert!(validate(&json!({"settings":{"general":{"appearance":"dim"}}})).is_err());
     }
 }

@@ -104,8 +104,8 @@ async function main() {
       await waitFor(() => evaluate(`!!document.querySelector('.${route}')`))
       if (route === 'about') await waitFor(() => evaluate(`document.querySelector('.about').textContent.includes(${JSON.stringify(version)}) && document.querySelector('.about').textContent.includes(${JSON.stringify(tauriVersion)})`))
     }
-    assert.equal(await evaluate(`!!document.querySelector('.n-spin-container--blur')`), false)
-    assert.equal(await evaluate(`getComputedStyle(document.documentElement).getPropertyValue('--base').trim()`), '#ccc0b8')
+    await waitFor(() => evaluate(`!document.querySelector('.loading-overlay')`))
+    assert.deepEqual(await evaluate(`(() => { const root = document.documentElement; return { accent: root.dataset.accent, dark: root.classList.contains('dark'), primary: getComputedStyle(root).getPropertyValue('--primary').trim() !== '' } })()`), { accent: 'picportal', dark: true, primary: true })
     console.log('PASS native routes, styles, metadata and default preferences')
     if (!built) {
       // Spy at the adapter boundary; native IPC globals are immutable in production.

@@ -1,138 +1,213 @@
 <template>
-  <n-modal v-model:show="showModal" :on-update:show="updateModalShow">
-    <div class="p-5 text-center bg-primary-bg w-[260px]">
-      <p>{{ modalTitle }}</p>
+  <Dialog :open="showModal" @update:open="updateModalShow">
+    <DialogContent class="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>{{ modalTitle }}</DialogTitle>
+      </DialogHeader>
 
-      <n-tabs
-        v-model:value="tab"
-        type="line"
-        justify-content="space-evenly"
-        class="mb-[10px] h-[220px]"
+      <form
+        class="grid gap-4"
+        @submit.prevent="mode === 'edit' ? updatePortal() : createPortal()"
       >
-        <!-- Manual Tab -->
-        <n-tab-pane
-          name="manual"
-          :tab="translate('portalPane.portalModal.mode.manual')"
-        >
-          <n-form :model="formData" :rules="formRules" ref="formRef">
-            <n-form-item path="name" :show-label="false">
-              <n-input
-                :placeholder="
-                  translate('portalPane.portalModal.placeholder.name')
-                "
-                v-model:value="formData.name"
-              />
-            </n-form-item>
-            <n-form-item path="link" :show-label="false">
-              <n-input
-                type="text"
-                v-model:value="formData.link"
-                :readonly="desktop.runtime === 'tauri'"
-                :placeholder="
-                  translate('portalPane.portalModal.placeholder.link')
-                "
-              />
-              <n-button @click="browseFolder">
-                <n-icon><FolderOpenOutline /></n-icon>
-              </n-button>
-            </n-form-item>
-            <n-color-picker
-              placeholder="背景顏色"
-              v-model:value="formData.bg"
-              :show-alpha="false"
-            />
-            <n-color-picker
-              placeholder="文字顏色"
-              v-model:value="formData.fg"
-              :show-alpha="false"
-            />
-          </n-form>
-        </n-tab-pane>
-        <!-- Drop Tab -->
-        <n-tab-pane
-          v-if="mode === 'create'"
-          name="drop"
-          :tab="translate('portalPane.portalModal.mode.drop')"
-          class="flex flex-col h-full"
-        >
-          <DropZone
-            :class="{ 'drop-zone-collapse': dropList.length }"
-            @drop="onDrop"
-            @paths="(paths: string[]) => dropList.push(...paths.filter(path => !dropList.includes(path)))"
-          />
-          <n-scrollbar class="mt-[10px]">
-            <div class="folder-list">
-              <n-tooltip
-                :delay="500"
-                trigger="hover"
-                v-for="folder in dropList"
-                :key="folder"
+        <Tabs v-model="tab" class="gap-4">
+          <TabsList v-if="mode === 'create'" class="w-full">
+            <TabsTrigger value="manual">
+              <PencilLine />
+              {{ t('portalPane.portalModal.mode.manual') }}
+            </TabsTrigger>
+            <TabsTrigger value="drop">
+              <FolderInput />
+              {{ t('portalPane.portalModal.mode.drop') }}
+            </TabsTrigger>
+          </TabsList>
+
+          <!-- Manual Tab -->
+          <TabsContent value="manual">
+            <FieldGroup class="gap-4">
+              <Field :data-invalid="!!errors.name || undefined">
+                <FieldLabel for="portal-name">{{
+                  t('portalPane.portalModal.fields.name')
+                }}</FieldLabel>
+                <Input
+                  id="portal-name"
+                  v-model="formData.name"
+                  autocomplete="off"
+                  :aria-invalid="!!errors.name || undefined"
+                  :placeholder="t('portalPane.portalModal.placeholder.name')"
+                />
+              </Field>
+              <Field :data-invalid="!!errors.link || undefined">
+                <FieldLabel for="portal-link">{{
+                  t('portalPane.portalModal.fields.link')
+                }}</FieldLabel>
+                <InputGroup>
+                  <InputGroupInput
+                    id="portal-link"
+                    v-model="formData.link"
+                    class="font-mono text-xs"
+                    :readonly="desktop.runtime === 'tauri'"
+                    :aria-invalid="!!errors.link || undefined"
+                    :placeholder="t('portalPane.portalModal.placeholder.link')"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton
+                      class="path-browse"
+                      size="icon-xs"
+                      :aria-label="t('common.browse')"
+                      :title="t('common.browse')"
+                      @click="browseFolder"
+                    >
+                      <FolderOpen />
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+              </Field>
+              <div class="grid grid-cols-2 gap-3">
+                <Field>
+                  <FieldLabel>{{
+                    t('portalPane.portalModal.fields.bg')
+                  }}</FieldLabel>
+                  <ColorPicker v-model="formData.bg" />
+                </Field>
+                <Field>
+                  <FieldLabel>{{
+                    t('portalPane.portalModal.fields.fg')
+                  }}</FieldLabel>
+                  <ColorPicker v-model="formData.fg" />
+                </Field>
+              </div>
+              <div
+                class="flex items-center gap-3 rounded-lg border border-dashed px-3 py-2.5"
               >
-                <template #trigger>
-                  <n-tag class="folder-item">
-                    {{ getFileName(folder) }}
-                  </n-tag>
-                </template>
-                {{ folder }}
-              </n-tooltip>
-            </div>
-          </n-scrollbar>
-        </n-tab-pane>
-      </n-tabs>
+                <span class="text-xs text-muted-foreground">
+                  {{ t('portalPane.portalModal.fields.preview') }}
+                </span>
+                <span
+                  class="inline-flex h-7 max-w-full items-center truncate rounded-md border px-2.5 text-sm font-medium"
+                  :class="
+                    formData.bg
+                      ? ''
+                      : 'border-transparent bg-primary text-primary-foreground'
+                  "
+                  :style="portalChipStyle(formData)"
+                >
+                  {{
+                    formData.name ||
+                    t('portalPane.portalModal.placeholder.name')
+                  }}
+                </span>
+              </div>
+            </FieldGroup>
+          </TabsContent>
 
-      <n-button
-        v-if="mode === 'create'"
-        :disabled="disabledCreate"
-        class="mt-[50px]"
-        secondary
-        block
-        type="primary"
-        @click="createPortal"
-        >{{ translate('common.create') }}</n-button
-      >
-      <n-button
-        v-if="mode === 'edit'"
-        class="mt-[50px]"
-        secondary
-        block
-        type="primary"
-        @click="updatePortal"
-        >{{ translate('common.update') }}</n-button
-      >
-    </div>
-  </n-modal>
+          <!-- Drop Tab -->
+          <TabsContent
+            v-if="mode === 'create'"
+            value="drop"
+            class="flex flex-col gap-3"
+          >
+            <DropZone
+              :class="dropList.length ? 'h-16' : 'h-36'"
+              :hint="t('portalPane.portalModal.dropHint')"
+              @drop="onDrop"
+              @paths="(paths: string[]) => dropList.push(...paths.filter(path => !dropList.includes(path)))"
+            />
+            <div v-if="dropList.length" class="flex flex-col gap-2">
+              <p class="text-xs text-muted-foreground">
+                {{
+                  t('portalPane.portalModal.dropCount', {
+                    count: dropList.length,
+                  })
+                }}
+              </p>
+              <div
+                class="folder-list flex max-h-40 flex-wrap gap-1.5 overflow-y-auto"
+              >
+                <Tooltip v-for="folder in dropList" :key="folder">
+                  <TooltipTrigger as-child>
+                    <span
+                      class="folder-item inline-flex h-7 max-w-full items-center gap-1.5 rounded-md border bg-secondary pr-1 pl-2 text-xs text-secondary-foreground"
+                    >
+                      <Folder class="size-3.5 shrink-0 text-muted-foreground" />
+                      <span class="truncate">{{ getFileName(folder) }}</span>
+                      <button
+                        type="button"
+                        class="inline-flex size-5 items-center justify-center rounded-sm opacity-60 hover:bg-foreground/10 hover:opacity-100"
+                        :aria-label="t('common.delete')"
+                        @click="removeDropped(folder)"
+                      >
+                        <X class="size-3" />
+                      </button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent class="max-w-sm break-all">{{
+                    folder
+                  }}</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            @click="updateModalShow(false)"
+          >
+            {{ t('common.cancel') }}
+          </Button>
+          <Button
+            type="submit"
+            class="modal-submit"
+            :disabled="mode === 'create' && disabledCreate"
+          >
+            {{ mode === 'edit' ? t('common.update') : t('common.create') }}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script lang="ts" setup>
-import { FolderOpenOutline, Archive } from '@vicons/ionicons5'
-import { computed, reactive, ref } from 'vue'
-import { onMounted } from 'vue'
-import {
-  NButton,
-  NForm,
-  NFormItem,
-  NInput,
-  NIcon,
-  NColorPicker,
-  NModal,
-  NTabs,
-  NTabPane,
-  NScrollbar,
-  NTooltip,
-  NTag,
-  useMessage,
-} from 'naive-ui'
+import { computed, reactive, ref, onMounted } from 'vue'
+import type { PropType } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Folder, FolderInput, FolderOpen, PencilLine, X } from '@lucide/vue'
 import { findIndex } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
-import type { PropType } from 'vue'
-import type { FormInst } from 'naive-ui'
+import ColorPicker from '/@/components/ColorPicker.vue'
+import DropZone from '/@/components/DropZone.vue'
+import { Button } from '/@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '/@/components/ui/dialog'
+import { Field, FieldGroup, FieldLabel } from '/@/components/ui/field'
+import { Input } from '/@/components/ui/input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '/@/components/ui/input-group'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '/@/components/ui/tabs'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '/@/components/ui/tooltip'
 import { useDesktop } from '/@/desktop'
 import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/file'
+import { portalChipStyle } from '/@/utils/color'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
-import useLocale from '/@/use/locale'
-import DropZone from '/@/components/DropZone.vue'
+import { useModal } from '/@/use/modal'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -144,37 +219,30 @@ const props = defineProps({
 })
 const desktop = useDesktop()
 const { browserDialog, getDroppedPaths } = desktop
-const message = useMessage()
 const appStore = useAppStore()
 const portalPanelStore = usePortalPaneStore()
-const { translate } = useLocale()
+const { t } = useI18n()
+const { showModal, updateModalShow } = useModal(emit)
 
-const tab = ref<'manual' | 'drop'>('manual')
+const tab = ref<string | number>('manual')
 const dropList = ref<string[]>([])
-const showModal = ref<boolean>(false)
-const formRef = ref<FormInst | null>(null)
 const formData = reactive({
   name: '',
   link: '',
   bg: '',
   fg: '',
 })
-const formRules = {
-  name: { required: true },
-  bg: { required: false },
-  fg: { required: false },
-  link: { required: true },
-}
+const errors = reactive<{ name?: boolean; link?: boolean }>({})
 
 // ANCHOR --- Computed ---
 const modalTitle = computed(() => {
   let title = ''
   switch (props.mode) {
     case 'create':
-      title = translate('portalPane.portalModal.title.create')
+      title = t('portalPane.portalModal.title.create')
       break
     case 'edit':
-      title = translate('portalPane.portalModal.title.edit')
+      title = t('portalPane.portalModal.title.edit')
       break
   }
   return title
@@ -190,13 +258,10 @@ const disabledCreate = computed(() => {
   return false
 })
 // ANCHOR --- Methods ---
-const updateModalShow = (show: boolean) => {
-  if (!show) {
-    setTimeout(() => {
-      emit('close')
-    }, 300)
-  }
-  showModal.value = show
+const validate = () => {
+  errors.name = !formData.name.trim()
+  errors.link = !formData.link
+  return !errors.name && !errors.link
 }
 
 const browseFolder = async (): Promise<void> => {
@@ -225,14 +290,13 @@ const updateDBData = async (data: unknown): Promise<void> => {
 
 // => 新增 PortalTag
 const createPortal = async (): Promise<void> => {
+  if (disabledCreate.value) return
   const portals = dataClone(portalsData.value)
   const groupIndex = findIndex(portals, { id: props.data?.groupId })
   if (tab.value == 'manual') {
-    await formRef.value?.validate(async (errors: any) => {
-      if (errors) return
-      const portal = await newPortal()
-      portals[groupIndex].childs.push(portal)
-    })
+    if (!validate()) return
+    const portal = await newPortal()
+    portals[groupIndex].childs.push(portal)
   } else if (tab.value === 'drop') {
     for (const folder of dropList.value) {
       const portal = {
@@ -246,28 +310,23 @@ const createPortal = async (): Promise<void> => {
     }
   }
   await updateDBData(portals)
-  showModal.value = false
   updateModalShow(false)
 }
 
 // => 更新 PortalTag
 const updatePortal = async () => {
   const currentPortal = props.data.portal
-  if (!currentPortal || !formRef.value) return
-  await formRef.value.validate(async (errors: any) => {
-    if (errors) return
+  if (!currentPortal || !validate()) return
 
-    const portals = dataClone(portalsData.value)
-    const portal = await newPortal(currentPortal.id)
-    const groupIndex = findIndex(portals, { id: props.data.groupId })
-    const portalIndex = findIndex(portals[groupIndex].childs, {
-      id: currentPortal.id,
-    })
-    portals[groupIndex].childs[portalIndex] = portal
-    await updateDBData(portals)
-    showModal.value = false
-    updateModalShow(false)
+  const portals = dataClone(portalsData.value)
+  const portal = await newPortal(currentPortal.id)
+  const groupIndex = findIndex(portals, { id: props.data.groupId })
+  const portalIndex = findIndex(portals[groupIndex].childs, {
+    id: currentPortal.id,
   })
+  portals[groupIndex].childs[portalIndex] = portal
+  await updateDBData(portals)
+  updateModalShow(false)
 }
 
 const onDrop = (files: File[] | null) => {
@@ -276,7 +335,12 @@ const onDrop = (files: File[] | null) => {
   const folders = files.filter(
     (file) => !ignore.includes(file.type.split('/')[0])
   )
-  dropList.value.push(...getDroppedPaths(folders))
+  const paths = getDroppedPaths(folders)
+  dropList.value.push(...paths.filter((path) => !dropList.value.includes(path)))
+}
+
+const removeDropped = (folder: string) => {
+  dropList.value = dropList.value.filter((item) => item !== folder)
 }
 
 onMounted(() => {
@@ -290,15 +354,3 @@ onMounted(() => {
   }
 })
 </script>
-
-<style lang="postcss" scoped>
-.drop-zone-collapse {
-  @apply !h-[80px];
-}
-.folder-list {
-  @apply flex flex-col gap-[5px];
-}
-.folder-item {
-  @apply text-left w-full hover:(bg-border text-primary-bg);
-}
-</style>

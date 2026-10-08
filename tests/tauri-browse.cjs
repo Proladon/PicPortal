@@ -114,7 +114,7 @@ async function main() {
       await evaluate(`[...document.querySelectorAll('.project-card')].find(card=>card.querySelector('.project-path')?.textContent.trim()===${JSON.stringify(path.join(dataset.root, name))}).click()`)
     } else {
       console.log(`ACTION select project: ${path.join(dataset.root, name)}`)
-      await evaluate(`document.querySelector('.projects .btn-container button:last-child').click()`)
+      await evaluate(`document.querySelector('.projects .import-project-btn').click()`)
     }
     await waitFor(() => evaluate(`location.hash.includes('/grid-view') && $app.openProject?.path === ${JSON.stringify(path.join(dataset.root, name))}`), ci ? 60000 : 600000)
     await evaluate(`globalThis.$viewer = $pinia._s.get('viewer')`)
@@ -232,7 +232,7 @@ async function main() {
       await evaluate(`$viewer.filter.onlyDockings=true`)
       await waitFor(() => evaluate(`document.querySelectorAll(${JSON.stringify(selector)}).length===1 && document.querySelector('.tag')?.textContent.includes('收藏')`))
       await loadedImages(selector)
-      assert.equal(await evaluate(`!!document.querySelector('.tag .n-tag__close')`), true)
+      assert.equal(await evaluate(`!!document.querySelector('.tag .tag-close')`), true)
       await evaluate(`$viewer.filter.onlyDockings=false`)
       await waitFor(() => evaluate(`$viewer.showFiles.length===5`))
     }
@@ -252,7 +252,7 @@ async function main() {
     await fs.rename(dataset.source, moved)
     try {
       await evaluate(`$viewer.signal.refresh=true`)
-      await waitFor(() => evaluate(`$viewer.folderFiles.length===0 && document.querySelector('.desktop-status')?.textContent.includes('NOT_FOUND') && !document.querySelector('.n-spin-container--blur')`))
+      await waitFor(() => evaluate(`$viewer.folderFiles.length===0 && document.querySelector('.desktop-status')?.textContent.includes('NOT_FOUND') && !document.querySelector('.loading-overlay, .view-loading')`))
     } finally { await fs.rename(moved, dataset.source) }
     await evaluate(`$viewer.signal.refresh=true`)
     await loadedImages('.image-item img')
