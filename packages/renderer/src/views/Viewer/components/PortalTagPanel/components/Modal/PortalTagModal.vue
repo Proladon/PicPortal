@@ -27,6 +27,7 @@
               <n-input
                 type="text"
                 v-model:value="formData.link"
+                :readonly="desktop.runtime === 'tauri'"
                 :placeholder="
                   translate('portalPane.portalModal.placeholder.link')
                 "
@@ -57,6 +58,7 @@
           <DropZone
             :class="{ 'drop-zone-collapse': dropList.length }"
             @drop="onDrop"
+            @paths="(paths: string[]) => dropList.push(...paths.filter(path => !dropList.includes(path)))"
           />
           <n-scrollbar class="mt-[10px]">
             <div class="folder-list">
@@ -103,8 +105,8 @@
 
 <script lang="ts" setup>
 import { FolderOpenOutline, Archive } from '@vicons/ionicons5'
-import { computed, reactive, ref } from '@vue/reactivity'
-import { onMounted } from '@vue/runtime-core'
+import { computed, reactive, ref } from 'vue'
+import { onMounted } from 'vue'
 import {
   NButton,
   NForm,
@@ -122,7 +124,9 @@ import {
 } from 'naive-ui'
 import { findIndex } from 'lodash-es'
 import { nanoid } from 'nanoid/async'
-import { useElectron } from '/@/use/electron'
+import type { PropType } from 'vue'
+import type { FormInst } from 'naive-ui'
+import { useDesktop } from '/@/desktop'
 import { dataClone } from '/@/utils/data'
 import { getFileName } from '/@/utils/file'
 import { useAppStore } from '/@/store/appStore'
@@ -133,9 +137,13 @@ import DropZone from '/@/components/DropZone.vue'
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  data: Object,
+  data: {
+    type: Object as PropType<{ groupId: string; portal?: Portal }>,
+    default: () => ({ groupId: '' }),
+  },
 })
-const { browserDialog } = useElectron()
+const desktop = useDesktop()
+const { browserDialog, getDroppedPaths } = desktop
 const message = useMessage()
 const appStore = useAppStore()
 const portalPanelStore = usePortalPaneStore()
@@ -144,7 +152,7 @@ const { translate } = useLocale()
 const tab = ref<'manual' | 'drop'>('manual')
 const dropList = ref<string[]>([])
 const showModal = ref<boolean>(false)
-const formRef = ref(null)
+const formRef = ref<FormInst | null>(null)
 const formData = reactive({
   name: '',
   link: '',
@@ -193,12 +201,12 @@ const updateModalShow = (show: boolean) => {
 
 const browseFolder = async (): Promise<void> => {
   const res = await browserDialog.open({
-    properties: ['openDirectory'],
+    directory: true,
   })
-  formData.link = res.filePaths[0]
+  if (res) formData.link = res[0]
 }
 
-const newPortal = async (exist = null) => {
+const newPortal = async (exist?: string) => {
   return {
     name: formData.name,
     id: exist || (await nanoid(10)),
@@ -220,7 +228,7 @@ const createPortal = async (): Promise<void> => {
   const portals = dataClone(portalsData.value)
   const groupIndex = findIndex(portals, { id: props.data?.groupId })
   if (tab.value == 'manual') {
-    await formRef.value.validate(async (errors: any) => {
+    await formRef.value?.validate(async (errors: any) => {
       if (errors) return
       const portal = await newPortal()
       portals[groupIndex].childs.push(portal)
@@ -244,14 +252,16 @@ const createPortal = async (): Promise<void> => {
 
 // => 更新 PortalTag
 const updatePortal = async () => {
+  const currentPortal = props.data.portal
+  if (!currentPortal || !formRef.value) return
   await formRef.value.validate(async (errors: any) => {
     if (errors) return
 
     const portals = dataClone(portalsData.value)
-    const portal = await newPortal(props.data.portal.id)
+    const portal = await newPortal(currentPortal.id)
     const groupIndex = findIndex(portals, { id: props.data.groupId })
     const portalIndex = findIndex(portals[groupIndex].childs, {
-      id: props.data.portal.id,
+      id: currentPortal.id,
     })
     portals[groupIndex].childs[portalIndex] = portal
     await updateDBData(portals)
@@ -263,11 +273,10 @@ const updatePortal = async () => {
 const onDrop = (files: File[] | null) => {
   const ignore = ['image', 'video', 'audio']
   if (!files) return
-  for (const f of files) {
-    if (!ignore.includes(f.type.split('/')[0])) {
-      dropList.value.push(f.path)
-    }
-  }
+  const folders = files.filter(
+    (file) => !ignore.includes(file.type.split('/')[0])
+  )
+  dropList.value.push(...getDroppedPaths(folders))
 }
 
 onMounted(() => {

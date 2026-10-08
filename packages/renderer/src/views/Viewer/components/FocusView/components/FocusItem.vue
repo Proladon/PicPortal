@@ -3,11 +3,11 @@
     <section class="viewer-container">
       <viewer
         :options="viewerOptions"
-        :images="[img]"
+        :images="[toImageUrl(img)]"
         class="viewer"
         ref="viewer"
       >
-        <img class="w-full" :src="`local-resource://${img}`" alt="" />
+        <img class="w-full" :src="toImageUrl(img)" alt="" />
       </viewer>
     </section>
     <hr />
@@ -17,7 +17,7 @@
         <div class="portal-tag-list">
           <n-tag
             class="tag"
-            closable
+            :closable="!appStore.readOnly"
             @close="removePortal(portal)"
             :color="{
               color: portal.bg,
@@ -36,8 +36,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from '@vue/reactivity'
-import { onMounted, watch } from '@vue/runtime-core'
+import { sameFilePath } from '/@/utils/file'
+import { toImageUrl } from '/@/desktop'
+import { computed, ref } from 'vue'
+import { onMounted, watch } from 'vue'
 import { NTag } from 'naive-ui'
 import { find, map, findIndex, pull } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
@@ -62,11 +64,11 @@ const flattenPortals = computed(() => portalPaneStore.flattenPortals)
 
 // => 移除圖片上的 portal
 const removePortal = async (portal: any) => {
-  const targetIndex = findIndex(
-    dockings.value,
-    (item: any) => item.target === props.img
+  if (appStore.readOnly) return
+  const targetIndex = findIndex(dockings.value, (item: any) =>
+    sameFilePath(item.target, props.img)
   )
-  const portalsRef: any = dataClone(target.value.portals)
+  const portalsRef: any = dataClone(target.value?.portals || [])
   pull(portalsRef, portal.id)
 
   if (!portalsRef.length) {
@@ -86,7 +88,9 @@ const removePortal = async (portal: any) => {
 
 // => 同步 docking
 const syncDockingsData = () => {
-  const exist = find(dockings.value, { target: props.img })
+  const exist = find(dockings.value, (item) =>
+    sameFilePath(item.target, props.img)
+  )
 
   if (!exist) {
     targetPortals.value = []
@@ -94,9 +98,10 @@ const syncDockingsData = () => {
   }
   target.value = exist
 
-  targetPortals.value = map(exist.portals, (portal) =>
-    find(flattenPortals.value, { id: portal })
-  )
+  targetPortals.value = exist.portals.flatMap((id) => {
+    const portal = flattenPortals.value.find((item) => item.id === id)
+    return portal ? [portal] : []
+  })
 }
 
 watch(dockings, () => {

@@ -7,7 +7,7 @@ const userStore = {
   },
 
   set(key: string, data: any) {
-    ipcRenderer.invoke("Store-Set", key, data)
+    return ipcRenderer.invoke("Store-Set", key, data)
   },
 
   remove(key: string) {
@@ -16,7 +16,7 @@ const userStore = {
   },
 
   clear() {
-    ipcRenderer.invoke("Store-Clear")
+    return ipcRenderer.invoke("Store-Clear")
   }
 }
 

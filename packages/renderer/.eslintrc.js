@@ -14,6 +14,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020,
   },
+  overrides: [{ files: ['*.ts', '*.vue'], rules: { 'no-undef': 'off' } }],
   rules: {
     semi: ['error', 'never'],
     'vue/multi-word-component-names': 'off',

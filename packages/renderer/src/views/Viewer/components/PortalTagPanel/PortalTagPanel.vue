@@ -12,7 +12,7 @@
 import HeaderControlBlock from './components/HeaderControlBlock.vue'
 import PortalGroupList from './components/PortalGroupList.vue'
 import ControlsBlock from './components/ControlsBlock.vue'
-import { onMounted } from '@vue/runtime-core'
+import { onMounted } from 'vue'
 import { useAppStore } from '/@/store/appStore'
 
 // ANCHOR Use

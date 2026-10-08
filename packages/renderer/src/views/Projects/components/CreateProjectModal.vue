@@ -20,6 +20,7 @@
           <!-- TODO default save dialog file name -->
           <n-input
             v-model:value="formData.path"
+            :readonly="desktop.runtime === 'tauri'"
             :placeholder="
               translate('projects.createProject.placeholder.projectPath')
             "
@@ -51,26 +52,27 @@ import {
   useNotification,
 } from 'naive-ui'
 import { FolderOpenOutline } from '@vicons/ionicons5'
-import { reactive, ref } from '@vue/reactivity'
+import { reactive, ref } from 'vue'
 import { nanoid } from 'nanoid/async'
-import { onMounted } from '@vue/runtime-core'
-import { useElectron } from '/@/use/electron'
+import { onMounted } from 'vue'
+import { useDesktop } from '/@/desktop'
 import { saveProjectDialog } from '/@/utils/browserDialog'
 import useLocale from '/@/use/locale'
 
 const emit = defineEmits(['refresh', 'close', 'created'])
 
 // ANCHOR Use
-const { fileSystem, userStore } = useElectron()
+const desktop = useDesktop()
+const { fileSystem, userStore } = desktop
 const notify = useNotification()
 const { translate } = useLocale()
 // ANCHOR Data
 const formRef = ref<any>(null)
 const showModal = ref<boolean>(false)
 const formData = reactive({
-  name: null,
-  path: null,
-  color: null,
+  name: '',
+  path: '',
+  color: '',
 })
 const formRules = {
   name: {
@@ -134,22 +136,23 @@ const createNewProject = async () => {
     }
 
     const projects = await userStore.get('projects')
-    if (!projects) return await userStore.set('projects', [newProject])
-    projects.push(newProject)
-    await userStore.set('projects', projects)
+    const nextProjects = projects || []
+    nextProjects.push(newProject)
+    await userStore.set('projects', nextProjects)
     notify.success({
       content: translate('projects.notify.createSuccess'),
       duration: 1500,
     })
-    emit('refresh')
+    if (desktop.runtime === 'tauri') emit('created', newProject)
+    else emit('refresh')
     updateModalShow(false)
   })
 }
 
 const browseFolder = async (): Promise<void> => {
   const save = await saveProjectDialog()
-  if (save.canceled) return
-  formData.path = save.filePath
+  if (save === null) return
+  formData.path = save
 }
 
 // ANCHOR Mounted

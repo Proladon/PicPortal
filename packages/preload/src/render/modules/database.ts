@@ -26,7 +26,7 @@ const database = {
     const res = ipcRenderer.invoke('Database-Find', callback)
     return res
   },
-  pullDockings(pullList: string[]) {
+  pullDockings(pullList: string) {
     const res = ipcRenderer.invoke('Database-Pull-Dockings', pullList)
     return res
   },

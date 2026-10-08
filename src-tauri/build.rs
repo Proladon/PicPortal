@@ -1,0 +1,31 @@
+fn main() {
+    tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
+        tauri_build::AppManifest::new().commands(&[
+            "runtime_platform",
+            "desktop_open_dialog",
+            "project_connect",
+            "project_get",
+            "project_source",
+            "project_set_source",
+            "scan_images",
+            "file_exists",
+            "desktop_save_dialog",
+            "project_save",
+            "project_slice",
+            "project_pull_dockings",
+            "file_create",
+            "project_create",
+            "file_transfer",
+            "file_delete",
+            "preferences_init",
+            "preferences_get",
+            "preferences_set",
+            "preferences_remove",
+            "preferences_import",
+            "desktop_open_folder",
+            "desktop_close_ready",
+            "desktop_finish_close",
+        ]),
+    ))
+    .expect("無法建立桌面命令權限");
+}

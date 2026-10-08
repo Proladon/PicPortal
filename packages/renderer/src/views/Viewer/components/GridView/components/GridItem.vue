@@ -7,12 +7,12 @@
             <n-tag
               class="tag"
               :title="portal.name"
-              closable
+              :closable="!appStore.readOnly"
               @close="removePortal(portal)"
               :color="{
                 color: portal.bg,
                 textColor: portal.fg,
-                borderColor: portal.bg,
+                borderColor: portal.bg
               }"
             >
               {{ portal.name }}
@@ -29,15 +29,17 @@
     <img
       class="!w-full"
       :style="`width: ${imgSize}px; height: ${imgSize}px`"
-      :src="`local-resource://${img}`"
+      :src="toImageUrl(img)"
       loading="lazy"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from '@vue/reactivity'
-import { onMounted, watch } from '@vue/runtime-core'
+import { sameFilePath } from '/@/utils/file'
+import { toImageUrl } from '/@/desktop'
+import { computed, ref } from 'vue'
+import { onMounted, watch } from 'vue'
 import { NButton, NTag, NPopover, NIcon } from 'naive-ui'
 import { ExpandOutline } from '@vicons/ionicons5'
 import { find, map, findIndex, pull, compact } from 'lodash-es'
@@ -49,15 +51,15 @@ import { useViewerStore } from '/@/store/viewerStore'
 
 const props = defineProps({
   img: {
-    type: String,
-  },
+    type: String
+  }
 })
 
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
 const portalPanelStore = usePortalPaneStore()
 
-const targetPortals = ref([])
+const targetPortals = ref<Portal[]>([])
 const target = ref<any>(null)
 
 const dockings = computed(() => viewerStore.dockings)
@@ -66,11 +68,11 @@ const imgSize = computed(() => viewerStore.gridView.imgSize)
 
 // => 移除圖片上的 portal
 const removePortal = async (portal: any) => {
-  const targetIndex = findIndex(
-    dockings.value,
-    (item: any) => item.target === props.img
+  if (appStore.readOnly) return
+  const targetIndex = findIndex(dockings.value, (item: any) =>
+    sameFilePath(item.target, props.img)
   )
-  const portalsRef: any = dataClone(target.value.portals)
+  const portalsRef: any = dataClone(target.value?.portals || [])
   pull(portalsRef, portal.id)
 
   if (!portalsRef.length) {
@@ -82,7 +84,7 @@ const removePortal = async (portal: any) => {
   if (portalsRef.length) {
     await appStore.DeepSaveToDB({
       key: `[dockings][${targetIndex}][portals]`,
-      data: portalsRef,
+      data: portalsRef
     })
     await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   }
@@ -90,7 +92,9 @@ const removePortal = async (portal: any) => {
 
 // => 同步 docking
 const syncDockingsData = () => {
-  const exist = find(dockings.value, { target: props.img })
+  const exist = find(dockings.value, (item) =>
+    sameFilePath(item.target, props.img)
+  )
 
   if (!exist) {
     targetPortals.value = []
@@ -99,7 +103,10 @@ const syncDockingsData = () => {
   target.value = exist
 
   targetPortals.value = compact(
-    map(exist.portals, (portal) => find(flattenPortals.value, { id: portal }))
+    exist.portals.flatMap((id) => {
+      const portal = flattenPortals.value.find((item) => item.id === id)
+      return portal ? [portal] : []
+    })
   )
 }
 

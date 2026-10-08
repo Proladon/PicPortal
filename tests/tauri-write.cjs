@@ -1,0 +1,139 @@
+// Used by tauri-browse.cjs --write with real native picker authorization.
+const assert = require('assert/strict')
+const fs = require('fs/promises')
+const path = require('path')
+
+async function exerciseWrites(h) {
+  const { dataset, evaluate, invoke, code, waitFor, chooseProject, close, start, loadedImages, imageLoaded } = h
+  const normal = path.join(dataset.root, 'normal.db')
+  const read = async () => JSON.parse(await fs.readFile(normal, 'utf8'))
+  const session = async () => (await invoke('project_connect', { path: normal })).session
+  await waitFor(() => evaluate('$viewer.folderFiles.length === 5'))
+  await evaluate(`$app.DeepSaveToDB({ key: '[portals][0][childs][0][name]', data: '儲存測試' }).then(() => $app.SyncDBDataToState({ syncKeys: ['portals'] }))`)
+  assert.equal((await read()).portals[0].childs[0].name, '儲存測試')
+  assert.equal((await read()).portals[0].childs[0].extraPortal, true)
+  const token = await session()
+  await Promise.all(Array.from({ length: 10 }, (_, index) => invoke('project_save', { session: token, keys: ['nativeConcurrent', String(index)], data: 'true' })))
+  assert.equal(Object.keys((await read()).nativeConcurrent).length, 10)
+  const before = await fs.readFile(normal)
+  assert.equal(await code('project_save', { session: token, keys: ['dockings'], data: '{invalid' }), 'INVALID_JSON')
+  assert.deepEqual(await fs.readFile(normal), before)
+  assert.equal(await code('file_delete', { session: token, path: path.join(dataset.root, 'config.json') }), 'OUTSIDE_SCOPE')
+  const restarted = await invoke('project_connect', { path: normal })
+  assert.notEqual(restarted.session, token)
+  assert.equal(await code('project_save', { session: token, keys: ['dockings'], data: '[]' }), 'STALE_PROJECT')
+  await evaluate('$app.ConnectProjectDB()')
+  // Genuine program restart, retaining the same anonymous JSON fixture.
+  await close()
+  await start()
+  await chooseProject('normal.db')
+  await loadedImages('.image-item img')
+  assert.equal(await evaluate('$app.dbData.portals[0].childs[0].name'), '儲存測試')
+  assert.equal(await evaluate('$app.dbData.extraProject.keep'), true)
+  assert.equal(await evaluate('$app.dbData.id'), 'project-001')
+  console.log('PASS native JSON writes, concurrent IPC, stale session, unknown fields and process restart')
+
+  const imageBytes = await fs.readFile(dataset.image)
+  const prepare = async name => {
+    const source = path.join(dataset.source, name)
+    await fs.writeFile(source, imageBytes)
+    await evaluate(`$app.SaveToDB({ key:'dockings',data:[{target:${JSON.stringify(source)},portals:['portal-001']}] }).then(()=>$app.SyncDBDataToState({syncKeys:['dockings']}))`)
+    return source
+  }
+  async function begin(source, destinations) {
+    await evaluate(`globalThis.$batch = $viewer.StartBatch([{target:${JSON.stringify(source)}, destinations:${JSON.stringify(destinations)}}]); void 0`)
+  }
+  async function done(success, failed = 0, skipped = 0) {
+    await waitFor(() => evaluate('!$viewer.wrap.wraping'))
+    assert.deepEqual(await evaluate('[$viewer.wrap.curWrap,$viewer.wrap.errWrap,$viewer.wrap.skipWrap,$viewer.wrap.totalWrap]'), [success, failed, skipped, 1])
+  }
+  async function select(label) {
+    await waitFor(() => evaluate(`!![...document.querySelectorAll('.option-btn')].find(b=>b.textContent.trim()===${JSON.stringify(label)})`))
+    await evaluate(`[...document.querySelectorAll('.option-btn')].find(b=>b.textContent.trim()===${JSON.stringify(label)}).click()`)
+  }
+  let source = await prepare('批次-成功.png')
+  let dest = path.join(dataset.destination, path.basename(source))
+  // Trigger the real confirmation modal and WrapingButton, not just the store.
+  await evaluate(`document.querySelector('.handlebar .n-button--success-type').click()`)
+  await waitFor(() => evaluate(`!![...document.querySelectorAll('.n-modal button')].find(b=>/確認|確定|Confirm/.test(b.textContent))`))
+  await evaluate(`[...document.querySelectorAll('.n-modal button')].find(b=>/確認|確定|Confirm/.test(b.textContent)).click()`)
+  await waitFor(() => evaluate('$viewer.wrap.totalWrap === 1'))
+  await done(1)
+  assert.equal(await fs.stat(source).then(() => true, () => false), false)
+  assert.deepEqual(await fs.readFile(dest), imageBytes)
+  assert.equal((await read()).dockings.length, 0)
+  console.log('PASS WrapingButton + confirmation modal, native move, accurate progress and successful docking cleanup')
+
+  source = await prepare('批次-衝突.png')
+  dest = path.join(dataset.destination, '衝突.png')
+  await fs.writeFile(dest, imageBytes)
+  await begin(source, [dest])
+  await select('忽略')
+  await done(0, 0, 1)
+  assert.equal((await read()).dockings.length, 1)
+  assert.deepEqual(await fs.readFile(source), imageBytes)
+  await begin(source, [dest])
+  await select('檔名 +(1)')
+  await done(1)
+  assert.deepEqual(await fs.readFile(path.join(dataset.destination, '衝突(1).png')), imageBytes)
+  assert.deepEqual(await fs.readFile(dest), imageBytes)
+  assert.equal((await read()).dockings.length, 0)
+
+  source = await prepare('批次-覆寫.png')
+  const copyDest = path.join(dataset.destination, '複製/副本.png')
+  const moveDest = path.join(dataset.destination, '搬移/完成.png')
+  await fs.mkdir(path.dirname(copyDest), { recursive: true })
+  await fs.writeFile(copyDest, imageBytes)
+  await begin(source, [copyDest, moveDest])
+  await waitFor(() => evaluate('$viewer.wrap.filesExist.length===1'))
+  assert.equal(await fs.stat(moveDest).then(() => true, () => false), false, 'No final move before unresolved copy')
+  const destUrl = await evaluate(`window.__TAURI_INTERNALS__.convertFileSrc(${JSON.stringify(copyDest)},'asset')`)
+  assert.equal(await imageLoaded(destUrl), true, 'Authorized destination preview must load')
+  await select('覆蓋')
+  await done(1)
+  assert.deepEqual(await fs.readFile(copyDest), imageBytes)
+  assert.deepEqual(await fs.readFile(moveDest), imageBytes)
+  assert.equal(await fs.stat(source).then(() => true, () => false), false)
+
+  source = await prepare('批次-重新命名.png')
+  await begin(source, [dest])
+  await select('重新命名')
+  await waitFor(() => evaluate(`!!document.querySelector('.modal-body input')`))
+  await evaluate(`{const input=document.querySelector('.modal-body input'); input.value='新檔名';input.dispatchEvent(new Event('input',{bubbles:true}));}`)
+  await evaluate(`[...document.querySelectorAll('.modal-footer button')].find(b=>/確認|確定|Confirm/.test(b.textContent)).click()`)
+  await done(1)
+  assert.deepEqual(await fs.readFile(path.join(dataset.destination, '新檔名.png')), imageBytes)
+
+  source = await prepare('批次-消失.png')
+  await fs.unlink(source)
+  await begin(source, [path.join(dataset.destination, '消失.png')])
+  await done(0, 1)
+  assert.equal((await read()).dockings[0].target, source)
+  // Delete is a direct native command on a fixture, separate from UI automation.
+  source = await prepare('直接刪除.png')
+  await invoke('file_delete', { session: await session(), path: source })
+  assert.equal(await fs.stat(source).then(() => true, () => false), false)
+  console.log('PASS conflict UI: skip, numbering, copy overwrite, rename; failed files retain dockings; native delete')
+
+  if (h.skipPicker) return
+
+  // New project creation through the actual Vue form + Rust save dialog.
+  await evaluate(`location.hash='#/projects'`)
+  await waitFor(() => evaluate(`!!document.querySelector('.projects .btn-container button')`))
+  await evaluate(`document.querySelector('.projects .btn-container button').click()`)
+  await waitFor(() => evaluate(`!!document.querySelector('.n-modal input')`))
+  await evaluate(`{const input=document.querySelector('.n-modal input');input.value='新專案測試';input.dispatchEvent(new Event('input',{bubbles:true}));}`)
+  const created = path.join(dataset.root, '新增專案.db')
+  console.log(`ACTION save new project: ${created}`)
+  await evaluate(`document.querySelector('.n-modal .n-form-item:nth-child(2) button').click()`)
+  await waitFor(() => evaluate(`document.querySelectorAll('.n-modal input')[1]?.value===${JSON.stringify(created)}`), 600000)
+  await evaluate(`document.querySelector('.n-modal .n-button--block').click()`)
+  await waitFor(() => evaluate(`location.hash.includes('/grid-view') && $app.openProject?.name==='新專案測試'`))
+  const newData = JSON.parse(await fs.readFile(created, 'utf8'))
+  assert(newData.id)
+  assert.deepEqual(newData.portals, [])
+  assert.deepEqual(newData.dockings, [])
+  assert.equal(newData.mainFolder, '')
+  console.log('PASS native save picker + CreateProjectModal; complete JSON created and opened')
+}
+module.exports = { exerciseWrites }

@@ -22,9 +22,11 @@
 </template>
 
 <script setup lang="ts">
+import type { PropType } from 'vue'
+import type { ButtonProps } from 'naive-ui'
 import { NModal, NButton, NIcon } from 'naive-ui'
 import { Warning } from '@vicons/ionicons5'
-import { onMounted } from '@vue/runtime-core'
+import { onMounted } from 'vue'
 import { useModal } from '/@/use/modal'
 import { useTheme } from '/@/use/theme'
 import useLocale from '/@/use/locale'
@@ -33,7 +35,7 @@ const emit = defineEmits(['close', 'confirm'])
 
 const props = defineProps({
   type: {
-    type: String,
+    type: String as PropType<NonNullable<ButtonProps['type']>>,
     default: 'error',
   },
   content: {

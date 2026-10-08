@@ -2,18 +2,18 @@ import { ipcRenderer } from 'electron'
 
 const appWindow = {
   openExternal(path: string) {
-    ipcRenderer.invoke('Open-External', path)
+    return ipcRenderer.invoke('Open-External', path)
   },
   close() {
-    ipcRenderer.invoke('Window-Close')
+    return ipcRenderer.invoke('Window-Close')
   },
 
   minimum() {
-    ipcRenderer.invoke('Window-Minimum')
+    return ipcRenderer.invoke('Window-Minimum')
   },
 
   maximum() {
-    ipcRenderer.invoke('Window-Maximum')
+    return ipcRenderer.invoke('Window-Maximum')
   },
 
   getAppVersion() {

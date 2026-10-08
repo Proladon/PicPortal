@@ -1,16 +1,22 @@
 import { defineStore } from 'pinia'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { useAppStore } from '/@/store/appStore'
-import { difference, map, filter, intersection } from 'lodash'
-const { fastGlob, fileSystem } = useElectron()
-import { wrapingQueue, filesExistQueue } from '/@/queue'
-import PQueue from 'p-queue'
+import { map, filter, intersection } from 'lodash'
+const { scanner } = useDesktop()
+import { wrapingQueue } from '/@/queue'
+import { processBatchItem, BatchItem, ConflictAction, ConflictDecision } from '/@/desktop/batch'
+import { filePathKey } from '/@/utils/file'
+import { reportDesktopError } from '/@/desktop/status'
+let scanRequest = 0
+let conflictId = 0
+let resolveConflict: ((decision: ConflictDecision) => void) | undefined
 
 export type ViewerTypes =
   | 'GridView'
   | 'ListView'
   | 'VirtualList'
   | 'VirtualGrid'
+  | 'FocusView'
 export type PortalPanelPosition = 'left' | 'right'
 
 interface ViewerStoreState {
@@ -27,13 +33,13 @@ interface ViewerStoreState {
     totalWrap: number
     curWrap: number
     errWrap: number
+    skipWrap: number
     filesExist: any[]
     sameOperation: {
       enable: boolean
       action: null | 'skip' | 'plusNum' | 'delete' | 'override'
     }
   }
-  pullList: any[]
   filter: {
     onlyDockings: boolean
     portals: string[]
@@ -49,7 +55,7 @@ export const useViewerStore = defineStore('viewer', {
   state: (): ViewerStoreState => ({
     loading: false, // viewer loading
     signal: {
-      refresh: false,
+      refresh: false
     },
     lastViewerType: 'GridView',
     portalPanelPosition: 'right',
@@ -60,22 +66,22 @@ export const useViewerStore = defineStore('viewer', {
       totalWrap: 0,
       curWrap: 0,
       errWrap: 0,
+      skipWrap: 0,
       filesExist: [],
       sameOperation: {
         enable: false,
-        action: null,
-      },
+        action: null
+      }
     },
-    pullList: [], // files need to pull after portal
     filter: {
       onlyDockings: false,
       portals: [],
-      fileTypes: [],
+      fileTypes: []
     },
     gridView: {
       perPage: 20,
-      imgSize: 150,
-    },
+      imgSize: 150
+    }
   }),
   actions: {
     SET_PORTAL_PANEL_POSITION(position: 'left' | 'right') {
@@ -84,81 +90,88 @@ export const useViewerStore = defineStore('viewer', {
     SET_LAST_VIEWER_TYPE(type: ViewerTypes) {
       this.lastViewerType = type
     },
-    UpdatePullList(pullList: any[]) {
-      this.pullList = pullList
-    },
     async GetFolderAllFiles({ fileTypes }: { fileTypes?: string[] }) {
+      const request = ++scanRequest
       const appStore = useAppStore()
-      let mainFolderPath = appStore.projectMainFolder.path
+      const project = appStore.openProject?.path
+      const mainFolderPath = appStore.projectMainFolder.path
       if (!mainFolderPath) {
         this.folderFiles = []
         return
       }
       if (!fileTypes) fileTypes = ['png', 'jpg', 'jpeg', 'gif', 'webp']
 
-      mainFolderPath = mainFolderPath.replaceAll('(', '\\(')
-      mainFolderPath = mainFolderPath.replaceAll(')', '\\)')
-
-      let pathPattern
-      if (fileTypes.length === 1)
-        pathPattern = `${mainFolderPath}/**/*.${fileTypes[0]}`
-      else if (fileTypes.length > 2)
-        pathPattern = `${mainFolderPath}/**/*.{${fileTypes.join(',')}}`
-
-      const files = await fastGlob.glob(pathPattern)
-
-      this.folderFiles = files
+      try {
+        const files = await scanner.scanImages(mainFolderPath, fileTypes)
+        if (
+          request === scanRequest &&
+          project === appStore.openProject?.path &&
+          mainFolderPath === appStore.projectMainFolder.path
+        )
+          this.folderFiles = files
+      } catch (error) {
+        if (request === scanRequest) {
+          this.folderFiles = []
+          reportDesktopError(error)
+        }
+      }
     },
     async ClearDockings() {
       const appStore = useAppStore()
       await appStore.SaveToDB({ key: 'dockings', data: [] })
       await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
     },
-    async PurgeFiles(purgeList: any[]) {
-      const newFileList = difference(this.folderFiles, purgeList)
-      this.folderFiles = newFileList
-    },
-    async Wraping({
-      mode,
-      filePath,
-      destPath,
-    }: {
-      mode: 'copy' | 'move'
-      filePath: string
-      destPath: string
-    }) {
-      const task = async (mode: 'move' | 'copy') => {
-        const func = mode === 'copy' ? 'copyFile' : 'moveFile'
-        const [, err] = await fileSystem[func](filePath, destPath)
-        if (err) {
-          if (err === 'FILE_EXIST')
-            this.wrap.filesExist.push({
-              mode: mode,
-              filePath,
-              destPath,
-            })
-          return Promise.reject(new Error(err))
+    async StartBatch(items: BatchItem[]) {
+      if (this.wrap.wraping || !items.length) return
+      const bound = useDesktop().captureProject()
+      const appStore = useAppStore()
+      const project = appStore.openProject?.path
+      const isCurrent = () => project === appStore.openProject?.path
+      Object.assign(this.wrap, {
+        wraping: true, totalWrap: items.length, curWrap: 0,
+        errWrap: 0, skipWrap: 0, filesExist: [],
+        sameOperation: { enable: false, action: null }
+      })
+      const job = wrapingQueue.add(async () => {
+        for (const item of items) {
+          try {
+            const result = await processBatchItem(item, bound, (data) => {
+              if (this.wrap.sameOperation.enable && this.wrap.sameOperation.action)
+                return Promise.resolve({ action: this.wrap.sameOperation.action })
+              this.wrap.filesExist = [{ ...data, id: ++conflictId }]
+              return new Promise<ConflictDecision>((resolve) => { resolveConflict = resolve })
+            }, isCurrent)
+            if (result === 'skip') this.wrap.skipWrap++
+            else this.wrap.curWrap++
+          } catch (error) {
+            this.wrap.errWrap++
+            reportDesktopError(error)
+          }
         }
+      })
+      wrapingQueue.start()
+      try { await job } finally {
+        wrapingQueue.pause()
+        resolveConflict = undefined
+        this.wrap.filesExist = []
+        if (isCurrent()) {
+          const [dockings, error] = await bound.database.get('dockings')
+          if (error) reportDesktopError(error)
+          else if (appStore.dbData) appStore.dbData.dockings = dockings as Docking[]
+          await this.GetFolderAllFiles({})
+        }
+        this.wrap.wraping = false
+        this.signal.refresh = true
       }
-
-      if (mode === 'copy') wrapingQueue.add(() => task('copy'))
-      if (mode === 'move') wrapingQueue.add(() => task('move'))
     },
-    PushToFileExistQueue(task: any) {
-      filesExistQueue.add(task)
-    },
-    StartWraping(type: 'normal' | 'fileExist') {
-      let usingQueue = wrapingQueue
-      if (type === 'fileExist') usingQueue = filesExistQueue
-      this.wrap.totalWrap = 0
-      this.wrap.curWrap = 0
-      this.wrap.errWrap = 0
-      this.wrap.totalWrap = usingQueue.size
-      this.wrap.wraping = true
-      this.wrap.sameOperation.enable = false
-      this.wrap.sameOperation.action = null
-      usingQueue.start()
-    },
+    ResolveConflict(id: number, action: ConflictAction, name?: string) {
+      if (this.wrap.filesExist[0]?.id !== id || !resolveConflict) return
+      if (this.wrap.sameOperation.enable && action !== 'rename') this.wrap.sameOperation.action = action
+      const resolve = resolveConflict
+      resolveConflict = undefined
+      this.wrap.filesExist = []
+      resolve({ action, name })
+    }
   },
   getters: {
     folderFilesCount(): number {
@@ -174,21 +187,20 @@ export const useViewerStore = defineStore('viewer', {
       if (this.filter.fileTypes.length) {
         if (this.filter.onlyDockings) {
           dockings = filter(dockings, (docking) => {
-            const extensions = docking.target.split('.').pop()
-            return this.filter.fileTypes.includes(extensions) || false
+            const extensions = docking.target.split('.').pop()?.toLowerCase()
+            return this.filter.fileTypes.includes(extensions || '')
           })
         } else {
           files = filter(files, (file) => {
-            const extensions = file.split('.').pop()
+            const extensions = file.split('.').pop()?.toLowerCase()
             return this.filter.fileTypes.includes(extensions) || false
           })
         }
       }
       if (this.filter.portals.length) {
-        dockings = filter(dockings, (docking) => {
+        dockings = dockings.filter((docking) => {
           const res = intersection(docking.portals, this.filter.portals)
-          if (res.length) return docking
-          return false
+          return res.length > 0
         })
       }
       if (this.filter.onlyDockings) {
@@ -196,6 +208,16 @@ export const useViewerStore = defineStore('viewer', {
           filter(dockings, (i: any) => i.portals.length),
           'target'
         )
+        if (useDesktop().runtime === 'tauri') {
+          const scanned = new Map<string, string>(
+            files.map((file: string) => [filePathKey(file), file])
+          )
+          return res.flatMap((target: string) =>
+            scanned.get(filePathKey(target))
+              ? [scanned.get(filePathKey(target))!]
+              : []
+          )
+        }
         return res
       }
       return files
@@ -204,48 +226,6 @@ export const useViewerStore = defineStore('viewer', {
       const appStore = useAppStore()
       if (!appStore.dbData) return []
       return appStore.dbData.dockings
-    },
-  },
-})
-
-let count = 0
-wrapingQueue.on('completed', () => {
-  count += 1
-  const viewerStore = useViewerStore()
-  viewerStore.wrap.curWrap = count
-})
-
-wrapingQueue.on('idle', async () => {
-  count = 0
-  const viewerStore = useViewerStore()
-  const appStore = useAppStore()
-  await appStore.DBPullDockings(viewerStore.pullList)
-  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
-  wrapingQueue.pause()
-  viewerStore.wrap.wraping = false
-  viewerStore.signal.refresh = true
-})
-
-wrapingQueue.on('error', (error) => {
-  console.error('queue error', error)
-  const viewerStore = useViewerStore()
-  viewerStore.wrap.errWrap += 1
-})
-
-let fileExistCount = 0
-filesExistQueue.on('completed', () => {
-  fileExistCount += 1
-  const viewerStore = useViewerStore()
-  viewerStore.wrap.curWrap = fileExistCount
-})
-
-filesExistQueue.on('idle', async () => {
-  fileExistCount = 0
-  const viewerStore = useViewerStore()
-  const appStore = useAppStore()
-  await appStore.DBPullDockings(viewerStore.pullList)
-  await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
-  filesExistQueue.pause()
-  viewerStore.wrap.wraping = false
-  viewerStore.signal.refresh = true
+    }
+  }
 })

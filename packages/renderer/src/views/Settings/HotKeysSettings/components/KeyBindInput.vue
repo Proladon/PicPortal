@@ -14,7 +14,7 @@
 import { NInput } from 'naive-ui'
 import { ref } from 'vue'
 import { get } from 'lodash-es'
-import { computed } from '@vue/reactivity'
+import { computed } from 'vue'
 
 const emit = defineEmits(['update:model'])
 const props = defineProps({
@@ -24,7 +24,7 @@ const props = defineProps({
 })
 
 const keys = ref('')
-const holdingKeys = ref([])
+const holdingKeys = ref<string[]>([])
 const holdingCount = ref(0)
 
 const syncModel = computed({
@@ -45,7 +45,7 @@ const keyMap = {
   ArrowDown: 'down',
 }
 
-const keydownHandler = (e) => {
+const keydownHandler = (e: KeyboardEvent) => {
   if (!e.repeat) {
     let key = get(keyMap, e.key, e.key)
     if (key === 'Tab') return
@@ -56,7 +56,7 @@ const keydownHandler = (e) => {
   }
 }
 
-const keyupHandler = (e) => {
+const keyupHandler = (e: KeyboardEvent) => {
   syncModel.value = holdingKeys.value.join('+')
   holdingCount.value--
   if (!holdingCount.value) {
@@ -65,14 +65,14 @@ const keyupHandler = (e) => {
   }
 }
 
-const initEvents = (e) => {
-  const target = e.target
+const initEvents = (e: FocusEvent) => {
+  const target = e.target as HTMLInputElement
   target.addEventListener('keydown', keydownHandler)
   target.addEventListener('keyup', keyupHandler)
 }
 
-const destroyEvents = (e) => {
-  const target = e.target
+const destroyEvents = (e: FocusEvent) => {
+  const target = e.target as HTMLInputElement
   target.removeEventListener('keydown', keydownHandler)
   target.removeEventListener('keyup', keyupHandler)
 }

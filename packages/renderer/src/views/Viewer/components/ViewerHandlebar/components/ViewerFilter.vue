@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from '@vue/reactivity'
+import { computed } from 'vue'
 import { NCollapseTransition, NCheckbox, NSelect } from 'naive-ui'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { useViewerStore } from '/@/store/viewerStore'

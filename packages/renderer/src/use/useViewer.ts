@@ -1,6 +1,6 @@
 import { useMessage, useNotification } from 'naive-ui'
-import { watch } from '@vue/runtime-core'
-import { computed, ref } from '@vue/reactivity'
+import { watch } from 'vue'
+import { computed, ref } from 'vue'
 import { dataClone } from '/@/utils/data'
 import { map, findIndex, uniq } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
@@ -71,6 +71,7 @@ const useViewer = (
 
   // docking protals
   const selectItem = async (e: any, row: any): Promise<void> => {
+    if (appStore.readOnly || viewerStore.wrap.wraping) return
     const ignore = ['I', 'path', 'svg']
     const htmlTarget = e.target.tagName
     if (ignore.includes(htmlTarget)) return
@@ -99,7 +100,7 @@ const useViewer = (
       } else if (dockingMode.value.toLowerCase() === 'override') {
         const dockingsData = {
           target,
-          portals: map(activedPortalsRef, 'id'),
+          portals: map(activedPortalsRef, 'id')
         }
         dockingsRef[isExist] = dockingsData
       }
@@ -107,7 +108,7 @@ const useViewer = (
     if (isExist < 0) {
       const dockingsData = {
         target,
-        portals: map(activedPortalsRef, 'id'),
+        portals: map(activedPortalsRef, 'id')
       }
       dockingsRef.push(dockingsData)
     }
@@ -129,7 +130,7 @@ const useViewer = (
     mainFolder,
     selectItem,
     chunkFiles,
-    showFiles,
+    showFiles
   }
 }
 

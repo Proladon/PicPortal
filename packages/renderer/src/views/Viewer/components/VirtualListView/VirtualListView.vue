@@ -1,5 +1,11 @@
 <template>
   <section class="virtual-view">
+    <n-spin v-if="loading" class="full grid-center-items" />
+    <n-empty
+      v-else-if="!pngs.length"
+      description="No images found"
+      class="full flex-center-items"
+    />
     <!-- <div v-if="loading" :style="`height: ${ch}px`" class="w-full"></div> -->
     <div
       v-if="pngs.length && !loading"
@@ -13,7 +19,7 @@
           :poolBuffer="5"
           dataKey="path"
         >
-          <template v-slot="{ item, index }">
+          <template v-slot="{ item }">
             <div class="item-container">
               <VirtualListItem
                 :img="item.path"
@@ -30,12 +36,13 @@
 <script lang="ts" setup>
 import VirtualListItem from './components/VirtualListItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
-import { ref } from '@vue/reactivity'
+import { ref } from 'vue'
 import { map } from 'lodash-es'
-import { onMounted, watch } from '@vue/runtime-core'
+import { onMounted, watch } from 'vue'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
+import { NEmpty, NSpin } from 'naive-ui'
 
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
@@ -47,12 +54,12 @@ const column = ref(1)
 const chunkFiles = async () => {
   loading.value = true
   await viewerStore.GetFolderAllFiles({})
-  const files = map(folderFiles.value, (path) => ({ path: path }))
+  const files = map(showFiles.value, (path) => ({ path: path }))
   pngs.value = files
   loading.value = false
 }
 
-const { loading, pngs, folderFiles, mainFolder, selectItem } = useViewer(
+const { loading, pngs, showFiles, mainFolder, selectItem } = useViewer(
   0,
   chunkFiles
 )

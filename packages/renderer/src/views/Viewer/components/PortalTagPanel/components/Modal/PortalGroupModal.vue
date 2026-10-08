@@ -34,10 +34,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref } from '@vue/reactivity'
+import type { PropType } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { NModal, NButton, NForm, NFormItem, NInput } from 'naive-ui'
 import { nanoid } from 'nanoid/async'
-import { onMounted } from '@vue/runtime-core'
+import { onMounted } from 'vue'
 import { findIndex } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
@@ -47,7 +48,7 @@ import useLocale from '/@/use/locale'
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  group: Object,
+  group: { type: Object as PropType<PortalGroup>, default: () => ({ id: '', group: '', childs: [] }) },
 })
 
 const appStore = useAppStore()
@@ -72,6 +73,7 @@ const modalTitle = computed(() => {
     return translate('portalPane.portalGroupModal.title.edit')
   if (mode === 'create')
     return translate('portalPane.portalGroupModal.title.create')
+  return ''
 })
 
 // --- Methods ---
@@ -83,7 +85,7 @@ const updateModalShow = (show: boolean) => {
   }
   showModal.value = show
 }
-const newGroup = async (exist = null) => {
+const newGroup = async (exist?: PortalGroup) => {
   return {
     group: formData.name,
     id: exist ? exist.id : await nanoid(10),

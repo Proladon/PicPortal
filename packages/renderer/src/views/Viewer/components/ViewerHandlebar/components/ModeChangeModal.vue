@@ -3,6 +3,10 @@
     <div class="modal-content">
       <p>Mode Change</p>
       <div class="mode-btn-container">
+        <div class="mode-btn" @click="changeView('ListView')">
+          <n-icon><ListSharp /></n-icon>
+          <p>List View</p>
+        </div>
         <div class="mode-btn" @click="changeView('VirtualList')">
           <n-icon>
             <ListSharp />
@@ -34,17 +38,18 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref } from '@vue/reactivity'
+import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { NModal, NIcon, NButton } from 'naive-ui'
 import { AppsSharp, ListSharp, ImageOutline } from '@vicons/ionicons5'
+import type { ViewerTypes } from '/@/store/viewerStore'
 import { useViewerStore } from '/@/store/viewerStore'
-import { onMounted } from '@vue/runtime-core'
+import { onMounted } from 'vue'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
   mode: String,
-  group: Object,
+  group: Object
 })
 
 const showModal = ref(false)
@@ -67,7 +72,7 @@ const closeModal = (): void => {
   }, 150)
 }
 
-const changeView = (type: string): void => {
+const changeView = (type: ViewerTypes): void => {
   viewerStore.SET_LAST_VIEWER_TYPE(type)
   closeModal()
   router.push({ name: type })

@@ -1,0 +1,49 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "Only the main window may access application metadata and window controls.",
+  "windows": ["main"],
+  "permissions": [
+    "allow-runtime-platform",
+    "allow-desktop-open-dialog",
+    "allow-project-connect",
+    "allow-project-get",
+    "allow-project-source",
+    "allow-project-set-source",
+    "allow-scan-images",
+    "allow-file-exists",
+    "allow-desktop-save-dialog",
+    "allow-project-save",
+    "allow-project-slice",
+    "allow-project-pull-dockings",
+    "allow-file-create",
+    "allow-project-create",
+    "allow-file-transfer",
+    "allow-file-delete",
+    "allow-preferences-init",
+    "allow-preferences-get",
+    "allow-preferences-set",
+    "allow-preferences-remove",
+    "allow-preferences-import",
+    "allow-desktop-open-folder",
+    "allow-desktop-close-ready",
+    "allow-desktop-finish-close",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:app:allow-version",
+    "core:app:allow-tauri-version",
+    "core:window:allow-close",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-is-maximized",
+    "core:window:allow-is-minimized",
+    "core:window:allow-start-dragging",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        { "url": "https://github.com/Proladon" },
+        { "url": "https://github.com/Proladon/*" }
+      ]
+    }
+  ]
+}

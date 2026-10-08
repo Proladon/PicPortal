@@ -21,8 +21,8 @@ const fileSystem = {
     const res = ipcRenderer.invoke('Delete-File', filePath)
     return res
   },
-  overrideFile(filePath: string, destPath: string) {
-    const res = ipcRenderer.invoke('Override-File', filePath, destPath)
+  overrideFile(filePath: string, destPath: string, mode: 'copy' | 'move' = 'move') {
+    const res = ipcRenderer.invoke('Override-File', filePath, destPath, mode)
     return res
   },
   checkExist(filePath: string) {

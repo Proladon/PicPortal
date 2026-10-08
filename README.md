@@ -19,6 +19,12 @@ This is [Picnel.io-2](https://github.com/Proladon/Picnel.io-2) next version.
 
 > ... wait for update
 
+## Tauri 2 migration
+
+Tauri supports legacy projects, image browsing, classification, batch file operations and Electron settings import. Windows CI and NSIS packaging are being integrated; automatic updates are not configured and native OS drop acceptance is deferred. Electron remains available for rollback.
+
+Use Node 22+, npm 10+, Rust 1.90+, MSVC C++ build tools and WebView2 on Windows. Run `npm ci`, `npm run dev:tauri`, `npm test`, or `npm run build:installer`. The installer is named **PicPortal Tauri** and is currently unsigned. See the [Windows release guide](docs/tauri-windows-release.md) and [migration progress](docs/tauri-2-migration-progress.md).
+
 [vite]: https://github.com/vitejs/vite/
 [electron]: https://github.com/electron/electron
 [electron-builder]: https://github.com/electron-userland/electron-builder

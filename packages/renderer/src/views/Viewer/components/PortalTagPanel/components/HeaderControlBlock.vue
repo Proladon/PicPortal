@@ -5,13 +5,13 @@
         size="20"
         :class="[
           { transform: portalPanelPosition === 'right' },
-          { 'rotate-180': portalPanelPosition === 'right' },
+          { 'rotate-180': portalPanelPosition === 'right' }
         ]"
         class="cursor-pointer"
         ><EnterSharp
       /></n-icon>
     </n-button>
-    <n-button text @click="showPortalGroupModal = true">
+    <n-button text :disabled="readOnly" @click="showPortalGroupModal = true">
       <n-icon size="20" class="cursor-pointer"><Folder /></n-icon>
     </n-button>
     <n-button text @click="showPortalSearch = true">
@@ -40,10 +40,12 @@
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
 import { NIcon, NButton, NInput } from 'naive-ui'
 import { EnterSharp, Folder, Search, ChevronBack } from '@vicons/ionicons5'
-import { computed, ref } from '@vue/reactivity'
+import { computed, ref } from 'vue'
 import { useViewerStore } from '/@/store/viewerStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
+import { useAppStore } from '/@/store/appStore'
+const readOnly = computed(() => useAppStore().readOnly)
 
 // ANCHOR Use
 const viewerStore = useViewerStore()
@@ -59,7 +61,7 @@ const searchPortalName = computed({
   set: (value: string) => {
     if (!value) portalPaneStore.searchPortalName = ''
     portalPaneStore.searchPortalName = value.trim()
-  },
+  }
 })
 // ANCHOR Methods
 const changePortalPanelPosition = () => {

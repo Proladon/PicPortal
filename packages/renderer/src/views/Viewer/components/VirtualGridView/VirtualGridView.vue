@@ -1,5 +1,10 @@
 <template>
   <section class="viewer">
+    <n-empty
+      v-if="!loading && !pngs.length"
+      description="No images found"
+      class="full flex-center-items"
+    />
     <n-spin :show="loading">
       <div v-if="loading" :style="`height: ${ch}px`" class="w-full"></div>
       <div
@@ -14,7 +19,7 @@
             :poolBuffer="5"
             dataKey="path"
           >
-            <template v-slot="{ item, index }">
+            <template v-slot="{ item }">
               <div
                 class="item-container"
                 :style="`grid-template-columns: repeat(${column}, 1fr);`"
@@ -37,10 +42,10 @@
 <script lang="ts" setup>
 import VirtualGridItem from './components/VirtualGridItem.vue'
 import { VirtualList } from 'vue3-virtual-list'
-import { ref } from '@vue/reactivity'
+import { ref } from 'vue'
 import { chunk, map } from 'lodash-es'
-import { onMounted, watch } from '@vue/runtime-core'
-import { NSpin } from 'naive-ui'
+import { onMounted, watch } from 'vue'
+import { NSpin, NEmpty } from 'naive-ui'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
@@ -54,14 +59,17 @@ const column = ref(5)
 const chunkFiles = async () => {
   loading.value = true
   await viewerStore.GetFolderAllFiles({})
-  const files = map(folderFiles.value, (path) => ({ path: path }))
+  const files = map(showFiles.value, (path) => ({ path: path }))
   const filesChunkList = chunk(files, column.value)
-  const newData = filesChunkList.map((chunk: unknown) => ({ src: chunk }))
+  const newData = filesChunkList.map((items) => ({
+    path: items[0].path,
+    src: items
+  }))
   pngs.value = newData
   loading.value = false
 }
 
-const { loading, pngs, folderFiles, mainFolder, selectItem } = useViewer(
+const { loading, pngs, showFiles, mainFolder, selectItem } = useViewer(
   0,
   chunkFiles,
   true

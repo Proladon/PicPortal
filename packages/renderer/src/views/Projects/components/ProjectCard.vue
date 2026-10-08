@@ -73,12 +73,12 @@ import { NButton, NEllipsis, NIcon, NScrollbar } from 'naive-ui'
 import EditProjectModal from './EditProjectModal.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import { Add, Pencil } from '@vicons/ionicons5'
-import { useElectron } from '/@/use/electron'
-import { ref } from '@vue/reactivity'
+import { useDesktop } from '/@/desktop'
+import { ref } from 'vue'
 import { useNotification } from 'naive-ui'
 import useLocale from '/@/use/locale'
 
-const { userStore } = useElectron()
+const { userStore } = useDesktop()
 const notify = useNotification()
 const { translate } = useLocale()
 
@@ -100,7 +100,7 @@ const showBtn = ref<boolean>(false)
 const selected = ref<boolean>(false)
 
 const deleteProject = async () => {
-  const projects = await userStore.get('projects')
+  const projects = (await userStore.get('projects')) || []
   const filterProjects = projects.filter((i: any) => {
     if (i.id !== props.project.id) return i
     return false

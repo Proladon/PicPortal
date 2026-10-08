@@ -29,9 +29,13 @@ export const useTheme = () => {
     },
   })
 
-  const setTheme = (theme: string) => {
+  const setTheme = async (theme: string) => {
     if (!theme) theme = 'picportal'
     document.documentElement.dataset.theme = theme
+    // Initial settings can arrive before stylesheets (including @imports) load.
+    if (document.readyState !== 'complete') {
+      await new Promise<void>((resolve) => window.addEventListener('load', () => resolve(), { once: true }))
+    }
     appStore.theme = generateNaiveTheme()
   }
   const defaultTheme = () => {

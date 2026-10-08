@@ -1,7 +1,4 @@
-const now = new Date()
-const buildVersion = `${now.getFullYear() - 2000}.${
-  now.getMonth() + 1
-}.${now.getDate()}`
+const { version } = require('./package.json')
 
 /**
  * @type {import('electron-builder').Configuration}
@@ -14,7 +11,7 @@ const config = {
   },
   files: ['packages/**/dist/**'],
   extraMetadata: {
-    version: buildVersion
+    version
   }
 }
 

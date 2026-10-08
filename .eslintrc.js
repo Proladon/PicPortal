@@ -13,6 +13,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020
   },
+  overrides: [{ files: ['*.ts'], rules: { 'no-undef': 'off' } }],
   rules: {
     semi: ['error', 'never'],
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',

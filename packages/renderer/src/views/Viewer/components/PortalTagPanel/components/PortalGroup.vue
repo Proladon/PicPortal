@@ -9,11 +9,12 @@
       </div>
 
       <div class="controls-icon">
-        <n-button text>
+        <n-button text v-if="!appStore.readOnly">
           <n-icon size="20" @click="showPortalTagModal = true"><Add /></n-icon>
         </n-button>
 
         <n-popover
+          v-if="!appStore.readOnly"
           raw
           trigger="click"
           placement="bottom-end"
@@ -87,7 +88,7 @@
           </section>
         </n-popover>
 
-        <n-button text :type="expand ? 'primary' : ''">
+        <n-button text :type="expand ? 'primary' : 'default'">
           <n-icon
             size="20"
             v-if="groupData.childs.length"
@@ -105,6 +106,11 @@
       group="portal"
       item-key="id"
       :animation="300"
+      :force-fallback="true"
+      :fallback-on-body="true"
+      :support-pointer="false"
+      handle=".portal-name"
+      :disabled="appStore.readOnly"
       :class="{
         'list-view': listView === 'list',
         'grid-view': listView === 'grid',
@@ -139,6 +145,7 @@
 </template>
 
 <script setup lang="ts">
+import type { PropType } from 'vue'
 import draggable from 'vuedraggable'
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
 import { NButton, NIcon, NEllipsis, NPopover, NBadge, NDivider } from 'naive-ui'
@@ -152,7 +159,7 @@ import {
   ListSharp,
   Grid,
 } from '@vicons/ionicons5'
-import { computed, ref } from '@vue/reactivity'
+import { computed, ref } from 'vue'
 import PortalTag from './PortalTag.vue'
 import PortalTagModal from './Modal/PortalTagModal.vue'
 import { filter, findIndex, find, random } from 'lodash-es'
@@ -162,7 +169,7 @@ import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import useLocale from '/@/use/locale'
 // --- Data ---
 const props = defineProps({
-  groupData: Object,
+  groupData: { type: Object as PropType<PortalGroup>, required: true },
 })
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()

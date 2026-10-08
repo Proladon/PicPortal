@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "lib": ["ESNext", "dom"],
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {

@@ -22,6 +22,7 @@
         <n-form-item path="path">
           <n-input
             :disabled="importMode"
+            :readonly="desktop.runtime === 'tauri'"
             v-model:value="formData.path"
             :placeholder="
               translate('projects.createProject.placeholder.projectPath')
@@ -57,11 +58,12 @@ import {
   NColorPicker,
 } from 'naive-ui'
 import { FolderOpenOutline, Pencil } from '@vicons/ionicons5'
-import { reactive, ref } from '@vue/reactivity'
-import { onMounted } from '@vue/runtime-core'
+import { reactive, ref } from 'vue'
+import { onMounted } from 'vue'
 import { find } from 'lodash-es'
-import { useElectron } from '/@/use/electron'
-import { saveProjectDialog } from '/@/utils/browserDialog'
+import { useDesktop } from '/@/desktop'
+import { useAppStore } from '/@/store/appStore'
+import { saveProjectDialog, importProjectDialog } from '/@/utils/browserDialog'
 import { useNotification } from 'naive-ui'
 import useLocale from '/@/use/locale'
 
@@ -82,7 +84,8 @@ const props = defineProps({
 })
 
 // ANCHOR Use
-const { userStore } = useElectron()
+const desktop = useDesktop()
+const { userStore } = desktop
 const notify = useNotification()
 const { translate } = useLocale()
 // ANCHOR Data
@@ -117,7 +120,7 @@ const updateModalShow = (show: boolean) => {
 
 // => 更新專案資訊
 const updateProject = async () => {
-  const projects = await userStore.get('projects')
+  const projects = (await userStore.get('projects')) || []
   const project = find(projects, { id: props.project.id })
   if (!project)
     return notify.error({
@@ -127,6 +130,8 @@ const updateProject = async () => {
   project.color = formData.color
   project.path = formData.path
   await userStore.set('projects', projects)
+  if (useAppStore().openProject?.id === project.id)
+    useAppStore().SetOpenProject(project)
   notify.success({
     content: translate('projects.notify.updateSuccess'),
     duration: 1500,
@@ -136,7 +141,7 @@ const updateProject = async () => {
 }
 
 const importProject = async () => {
-  const projects = await userStore.get('projects')
+  const projects = (await userStore.get('projects')) || []
   projects.push({
     id: props.project.id,
     name: formData.name,
@@ -162,9 +167,12 @@ const handleConfirm = async () => {
 }
 
 const browseFolder = async (): Promise<void> => {
-  const save = await saveProjectDialog()
-  if (save.canceled) return
-  formData.path = save.filePath
+  const save =
+    desktop.runtime === 'tauri'
+      ? (await importProjectDialog())?.[0] || null
+      : await saveProjectDialog()
+  if (save === null) return
+  formData.path = save
 }
 
 const syncData = (keys: string[]) => {

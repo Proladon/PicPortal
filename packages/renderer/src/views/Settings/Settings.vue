@@ -4,7 +4,7 @@
       <div class="pane left">
         <n-menu v-model:value="activeTab" :options="menuOptions" />
       </div>
-      <div class="pane right" v-if="formData.general">
+      <div class="pane right" v-if="loaded">
         <GeneralSettings
           v-if="activeTab === 'general'"
           v-model:model="formData.general"
@@ -34,31 +34,38 @@ import SaveDialog from './components/SaveDialog.vue'
 import GeneralSettings from './GeneralSettings/GeneralSettings.vue'
 import HotKeysSettings from './HotKeysSettings/HotKeysSettings.vue'
 import ViewerSettings from './ViewerSettings/ViewerSettings.vue'
-import { reactive, ref, computed } from '@vue/reactivity'
-import { useElectron } from '/@/use/electron'
+import { reactive, ref, computed } from 'vue'
+import { useDesktop } from '/@/desktop'
+import { reportDesktopError } from '/@/desktop/status'
+import { createDefaultSettings, getSettings } from '/@/use/settings'
 import useLocale from '/@/use/locale'
-import { onMounted } from '@vue/runtime-core'
+import { onMounted, onUnmounted } from 'vue'
+import { settingsDirty, registerSettingsSave } from '/@/desktop/lifecycle'
+import { useViewerStore } from '/@/store/viewerStore'
 import { isEqual } from 'lodash-es'
-import { watch } from '@vue/runtime-core'
+import { watch } from 'vue'
 import { dataClone } from '/@/utils/data'
 import { useTheme } from '/@/use/theme'
 
 const { setTheme } = useTheme()
 const { translate, changeLocale } = useLocale()
-const { userStore } = useElectron()
+const { userStore } = useDesktop()
 
 const activeTab = ref('general')
 const showSave = ref(false)
 const loading = ref(false)
+const loaded = ref(false)
 const menuOptions = ref()
-const formData = reactive({})
+const formData = reactive(createDefaultSettings())
 const config = ref<any>(null)
 
 watch(
   formData,
   () => {
+    if (!loaded.value) return
     if (isEqual(config.value, formData)) showSave.value = false
     else showSave.value = true
+    settingsDirty.value = showSave.value
   },
   { deep: true }
 )
@@ -69,10 +76,7 @@ const generateMenu = () => {
       label: translate('settings.general.title'),
       key: 'general',
     },
-    // {
-    //   label: 'Viewer',
-    //   key: 'viewer',
-    // },
+    { label: 'Viewer', key: 'viewer' },
     // {
     //   label: 'HotKeys',
     //   key: 'hotkeys',
@@ -82,9 +86,16 @@ const generateMenu = () => {
 }
 
 const save = async () => {
-  await userStore.set('settings', dataClone(formData))
-  await syncUserConfig()
-  showSave.value = false
+  if (!loaded.value) return
+  try {
+    await userStore.set('settings', dataClone(formData))
+    await syncUserConfig()
+    settingsDirty.value = false
+    showSave.value = false
+  } catch (error) {
+    reportDesktopError(error)
+    throw error
+  }
 }
 
 const reset = () => {
@@ -94,32 +105,33 @@ const reset = () => {
 }
 
 const syncUserConfig = async () => {
-  const settings = await userStore.get('settings')
-
-  if (!settings)
-    await userStore.set('settings', {
-      general: {
-        locale: 'en',
-        theme: 'picportal',
-      },
-      viewer: {
-        portalPanelPosition: 'right',
-      },
-      hotkeys: {},
-    })
+  const settings = await getSettings()
   changeLocale(settings.general.locale)
   setTheme(settings.general.theme)
 
   // const cloneSettings =
   Object.assign(formData, dataClone(settings))
   config.value = dataClone(settings)
+  useViewerStore().SET_PORTAL_PANEL_POSITION(
+    settings.viewer.portalPanelPosition
+  )
+  generateMenu()
 }
+
+const unregisterSave = registerSettingsSave(save)
+onUnmounted(unregisterSave)
 
 onMounted(async () => {
   loading.value = true
-  await syncUserConfig()
   generateMenu()
-  loading.value = false
+  try {
+    await syncUserConfig()
+    loaded.value = true
+  } catch (error) {
+    reportDesktopError(error)
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 

@@ -6,7 +6,7 @@
           <router-link
             :to="{ name: lastViewerType }"
             class="nav-btn"
-            :class="{ 'nav--actived': viewerTypes.includes($route.name) }"
+            :class="{ 'nav--actived': viewerTypes.includes(String($route.name || '')) }"
           >
             <img :src="hh" alt="info" />
           </router-link>
@@ -63,7 +63,7 @@ import InfoIcon from '/@/assets/icon/info.svg'
 import RecordIcon from '/@/assets/icon/book.svg'
 import { NPopover } from 'naive-ui'
 import { useViewerStore } from '/@/store/viewerStore'
-import { computed } from '@vue/reactivity'
+import { computed } from 'vue'
 
 const viewerStore = useViewerStore()
 const lastViewerType = computed(() => viewerStore.lastViewerType)

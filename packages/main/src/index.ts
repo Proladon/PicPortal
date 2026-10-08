@@ -1,7 +1,8 @@
-import { app, BrowserWindow, protocol } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { URL } from 'url'
 import ipcHandler from '../../preload/src/main'
+import { registerLocalResourceProtocol } from './localResourceProtocol'
 
 ipcHandler()
 const isSingleInstance = app.requestSingleInstanceLock()
@@ -45,7 +46,6 @@ const createWindow = async () => {
     webPreferences: {
       preload: join(__dirname, '../../preload/dist/index.cjs'),
       contextIsolation: env.MODE !== 'test', // Spectron tests can't work with contextIsolation: true
-      enableRemoteModule: env.MODE === 'test', // Spectron tests can't work with enableRemoteModule: false
     },
   })
 
@@ -106,20 +106,4 @@ if (env.PROD) {
     .then(() => import('electron-updater'))
     .then(({ autoUpdater }) => autoUpdater.checkForUpdatesAndNotify())
     .catch((e) => console.error('Failed check updates:', e))
-}
-
-function registerLocalResourceProtocol() {
-  protocol.registerFileProtocol('local-resource', (request, callback) => {
-    const url = request.url.replace(/^local-resource:\/\//, '')
-    // Decode URL to prevent errors when loading filenames with UTF-8 chars or chars like "#"
-    const decodedUrl = decodeURI(url) // Needed in case URL contains spaces
-    try {
-      return callback(decodedUrl)
-    } catch (error) {
-      console.error(
-        'ERROR: registerLocalResourceProtocol: Could not get file path:',
-        error
-      )
-    }
-  })
 }

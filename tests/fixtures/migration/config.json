@@ -1,0 +1,5 @@
+{
+  "projects": [{ "id": "project-001", "name": "匿名測試專案", "path": "__PROJECT__", "color": "#123456" }],
+  "settings": { "general": { "locale": "tw", "theme": "picportal" }, "viewer": { "portalPanelPosition": "right" }, "hotkeys": {} },
+  "extraSetting": { "keep": true }
+}

@@ -1,41 +1,76 @@
-name: Tests
+name: Tauri Windows checks
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'packages/**'
-      - 'tests/**'
-      - 'package-lock.json'
-      - '.github/workflows/tests.yml'
+    branches: [main, master, refactor]
+    paths: ['packages/**', 'src-tauri/**', 'tests/**', 'scripts/**', 'package*.json', '*config*', '.github/workflows/tests.yml']
   pull_request:
-    paths:
-      - 'packages/**'
-      - 'tests/**'
-      - 'package-lock.json'
-      - '.github/workflows/tests.yml'
+    paths: ['packages/**', 'src-tauri/**', 'tests/**', 'scripts/**', 'package*.json', '*config*', '.github/workflows/tests.yml']
+  workflow_dispatch:
 
+permissions:
+  contents: read
+concurrency:
+  group: tauri-checks-${{ github.ref }}
+  cancel-in-progress: true
 defaults:
   run:
-    shell: 'bash'
+    shell: pwsh
 
 jobs:
-  e2e:
-    strategy:
-      matrix:
-        os: [ windows-latest ]
-
-    runs-on: ${{ matrix.os }}
-
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16 # Need for npm >=7.7
-          cache: 'npm'
-
-      # TODO: Install not all dependencies, but only those required for this workflow
-      - name: Install dependencies
-        run: npm ci
-
-      - run: npm test
+          node-version: '24.12.0'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.97.1'
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - run: npm ci --no-audit --no-fund
+      - run: npm run version:check
+      - run: npm run typecheck
+      - run: npm run lint -- --quiet
+      - run: npm run test:desktop
+      - run: npm run test:tauri-adapter
+      - run: npm run test:batch
+      - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - run: cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets -- -D warnings
+      - name: Rust data and file integration tests (including another volume)
+        run: |
+          $otherVolume = Join-Path $env:GITHUB_WORKSPACE 'src-tauri/target'
+          if ([IO.Path]::GetPathRoot($otherVolume) -eq [IO.Path]::GetPathRoot($env:TEMP)) {
+            throw 'Cross-volume tests require workspace and TEMP on different drives'
+          }
+          $env:PICPORTAL_TEST_OTHER_VOLUME = $otherVolume
+          cargo test --manifest-path src-tauri/Cargo.toml --locked
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Release NSIS install, native UI/IPC, restart and uninstall
+        env:
+          PICPORTAL_TEST_REPORT_DIR: ${{ runner.temp }}/tauri-smoke
+        run: npm run test:tauri-installer
+      - name: Build distributable with normal application identity
+        run: npm run build:installer
+      - name: Preserve Electron fallback
+        run: |
+          npm run build:electron
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          npm run test:baseline
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: picportal-windows-x64
+          path: src-tauri/target/release/bundle/nsis/PicPortal Tauri_*-setup.exe
+          if-no-files-found: error
+      - name: Upload isolated diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-smoke-diagnostics
+          path: ${{ runner.temp }}/tauri-smoke

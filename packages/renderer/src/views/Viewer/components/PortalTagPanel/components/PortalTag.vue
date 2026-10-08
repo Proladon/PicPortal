@@ -9,6 +9,7 @@
       <span class="portal-name">{{ data.name }}</span>
     </n-ellipsis>
     <n-popover
+      v-if="!appStore.readOnly"
       raw
       :show="showPopOver"
       trigger="click"
@@ -49,22 +50,23 @@
 import PortalTagModal from './Modal/PortalTagModal.vue'
 import { NIcon, NPopover, NButton, NEllipsis } from 'naive-ui'
 import { PencilSharp, TrashBinOutline, BuildOutline } from '@vicons/ionicons5'
-import { computed, reactive, ref } from '@vue/reactivity'
-import { onMounted, watch } from '@vue/runtime-core'
+import { computed, reactive, ref } from 'vue'
+import { onMounted, watch } from 'vue'
 import { findIndex, find } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
 import { dataClone } from '/@/utils/data'
 import useLocale from '/@/use/locale'
-import { useElectron } from '/@/use/electron'
+import type { PropType } from 'vue'
+import { useDesktop } from '/@/desktop'
 
 // --- Props ---
 const props = defineProps({
-  groupId: String,
-  data: Object,
+  groupId: { type: String, required: true },
+  data: { type: Object as PropType<Portal>, required: true },
 })
 
-const { fileSystem } = useElectron()
+const { fileSystem } = useDesktop()
 
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
@@ -128,7 +130,7 @@ const deletePortal = async (groupId: string, portal: Portal) => {
 }
 
 // => 編輯更新protal
-const editPortal = async (groupId, portal) => {
+const editPortal = async (groupId: string, portal: Portal) => {
   selectPortal.value = { groupId, portal }
   showPortalTagModal.value = true
   showPopOver.value = false
@@ -186,6 +188,7 @@ onMounted(() => {
 
 <style lang="postcss" scoped>
 .portal-tag {
+  user-select: none;
   @apply px-2 py-1 rounded-md cursor-pointer;
   @apply border-solid border-[1px] font-medium;
   @apply flex justify-between items-center;

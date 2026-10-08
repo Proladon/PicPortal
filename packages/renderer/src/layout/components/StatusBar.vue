@@ -5,6 +5,7 @@
         <template #trigger>
           <button
             class="btn open-project-btn"
+            :disabled="wrapingStatus"
             @click="$router.push('/projects')"
           >
             <n-icon>
@@ -16,11 +17,18 @@
         Project
       </n-popover>
 
+      <span
+        v-if="appStore.readOnly && projectName"
+        class="read-only-status px-3"
+        >唯讀</span
+      >
+
       <n-popover trigger="hover">
         <template #trigger>
           <button
             v-show="projectName"
             class="btn main-folder-btn"
+            :disabled="wrapingStatus"
             @click="changeMainFolder"
           >
             <n-icon>
@@ -51,12 +59,13 @@
           :processing="wrapingStatus"
           type="line"
           status="success"
-          :percentage="(curWrap / totalWrap) * 100"
+          :percentage="totalWrap ? ((curWrap + errWrap + viewerStore.wrap.skipWrap) / totalWrap) * 100 : 0"
         >
           <span>{{ curWrap }} / {{ totalWrap }}</span>
         </n-progress>
 
         <span class="text-rose-300">{{ errWrap }}</span>
+        <span v-if="viewerStore.wrap.skipWrap">略過 {{ viewerStore.wrap.skipWrap }}</span>
       </div>
       <div class="btn open-project-btn">
         <n-icon size="20"><Book /></n-icon>
@@ -78,14 +87,15 @@ import WarningModal from '/@/components/Modal/WarningModal.vue'
 import { NIcon, NPopover, NProgress } from 'naive-ui'
 import { Folder, Cube, DocumentOutline, Book } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
-import { useElectron } from '/@/use/electron'
+import { useDesktop } from '/@/desktop'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
 import { getFileName } from '/@/utils/file'
 import useLocale from '/@/use/locale'
+import { reportDesktopError } from '/@/desktop/status'
 
 // ANCHOR Use
-const { browserDialog } = useElectron()
+const { browserDialog, database } = useDesktop()
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
 const { translate } = useLocale()
@@ -106,26 +116,35 @@ const choseMainFolder = async () => {
   showWarningModal.value = false
   try {
     const res = await browserDialog.open({
-      properties: ['openDirectory'],
+      directory: true
     })
 
-    if (res.filePaths.length) {
+    if (res) {
+      if (useDesktop().runtime === 'tauri' || database.readOnly) {
+        const [folder, error] = await database.setSourceFolder(res[0])
+        if (error) throw new Error(error)
+        appStore.sourceFolder = folder
+        await appStore.SyncDBDataToState({ syncKeys: ['mainFolder', 'dockings'] })
+        return
+      }
       const folder = {
-        name: getFileName(res.filePaths[0]),
-        path: res.filePaths[0].replaceAll('\\', '/'),
+        name: getFileName(res[0]),
+        path: res[0].replaceAll('\\', '/')
       }
       await appStore.SaveToDB({ key: 'mainFolder', data: folder })
       await appStore.SaveToDB({ key: 'dockings', data: [] })
       await appStore.SyncDBDataToState({
-        syncKeys: ['mainFolder', 'dockings'],
+        syncKeys: ['mainFolder', 'dockings']
       })
     }
   } catch (error) {
-    console.log(error)
+    reportDesktopError(error)
   }
 }
 
 const changeMainFolder = () => {
+  if (viewerStore.wrap.wraping) return
+  if (database.readOnly) return choseMainFolder()
   if (mainFolder.value.name) {
     showWarningModal.value = true
     return

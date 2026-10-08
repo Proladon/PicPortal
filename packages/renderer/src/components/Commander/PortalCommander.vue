@@ -80,9 +80,9 @@ const onKeyDown = () => {
 }
 const onSelect = () => {
   const portal: Portal = matchPrtals.value[selectIndex.value]
-  const portalGroup: PortalGroup | undefined = find(
-    portalPaneStore.portals,
-    (group) => find(group.childs, { id: portal.id })
+  if (!portal) return
+  const portalGroup = portalPaneStore.portals.find(
+    (group) => group.childs.some((child) => child.id === portal.id)
   )
   if (portalGroup) {
     portalPaneStore.AddActivedPortal({

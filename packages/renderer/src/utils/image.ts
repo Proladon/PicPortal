@@ -1,8 +1,9 @@
+import { toImageUrl } from '/@/desktop'
 import { api as viewerApi } from 'v-viewer'
 
-export const openViewer = (imgPath: string) => {
+export const openViewer = (imgPath?: string) => {
   viewerApi({
     options: { navbar: false },
-    images: [`local-resource://${imgPath}`],
+    images: [toImageUrl(imgPath)],
   })
 }

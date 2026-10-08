@@ -3,12 +3,12 @@ import { Low, JSONFile, Memory } from 'lowdb'
 import { set, setWith, pullAllBy, differenceBy } from 'lodash-es'
 
 const ipc = ipcMain
-let db: Low = new Low(new Memory())
+let db = new Low<Record<string, any>>(new Memory())
 
 const database = () => {
   ipc.handle('Database-Connect', async (e, dbPath: string) => {
     try {
-      db = new Low(new JSONFile(dbPath))
+      db = new Low<Record<string, any>>(new JSONFile(dbPath))
       await db.read()
       db.data ||= {}
       return [db.data, null]
@@ -20,6 +20,7 @@ const database = () => {
   ipc.handle('Database-Save', async (e, key, data) => {
     try {
       await db.read()
+      if (!db.data) throw new Error('DATABASE_EMPTY')
 
       const start = performance.now()
       const parseData = JSON.parse(data)
@@ -37,6 +38,7 @@ const database = () => {
     try {
       const start = performance.now()
       await db.read()
+      if (!db.data) throw new Error('DATABASE_EMPTY')
       const parseData = JSON.parse(data)
       setWith(db.data, keys, parseData, Object)
       await db.write()
@@ -52,6 +54,7 @@ const database = () => {
     try {
       const start = performance.now()
       await db.read()
+      if (!db.data) throw new Error('DATABASE_EMPTY')
       console.log(`splice data length ${db.data[key].length}`)
       db.data[key].splice(index, 1)
       await db.write()
@@ -68,6 +71,7 @@ const database = () => {
   ipc.handle('Database-Pull-Dockings', async (e, pullList) => {
     try {
       await db.read()
+      if (!db.data) throw new Error('DATABASE_EMPTY')
       const parseData = JSON.parse(pullList)
       const res = differenceBy(db.data['dockings'], parseData, 'target')
       db.data['dockings'] = res
@@ -82,6 +86,7 @@ const database = () => {
   ipc.handle('Database-Get', async (e, key: string) => {
     try {
       await db.read()
+      if (!db.data) throw new Error('DATABASE_EMPTY')
       const res = db.data[key]
       return [res, null]
     } catch (error) {

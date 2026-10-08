@@ -6,6 +6,12 @@ const viewerRoutes = [
     meta: { keepAlive: true },
     children: [
       {
+        path: '/editor/viewer/list-view',
+        name: 'ListView',
+        component: () =>
+          import('/@/views/Viewer/components/ListView/ListView.vue')
+      },
+      {
         path: '/editor/viewer/virtual-list',
         name: 'VirtualList',
         component: () =>

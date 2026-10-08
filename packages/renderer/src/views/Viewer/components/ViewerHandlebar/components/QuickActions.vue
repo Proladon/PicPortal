@@ -18,7 +18,7 @@
 import { NButton, NIcon, NDropdown, useNotification } from 'naive-ui'
 import { Flash } from '@vicons/ionicons5'
 import { useViewerStore } from '/@/store/viewerStore'
-import { computed, ref } from '@vue/reactivity'
+import { computed, ref } from 'vue'
 import WarningModal from './modal/WarningModal.vue'
 import useLocale from '/@/use/locale'
 import { h } from 'vue'
