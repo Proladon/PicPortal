@@ -1,6 +1,6 @@
 # Tauri 2 遷移實作紀錄
 
-更新日期：2026-10-07（台灣時間）。階段 5 已依使用者決定收尾，可進入階段 6；外部資料夾與 `.db` 拖入實機驗收延期，不宣告通過、不阻擋後續遷移。Electron 開發、建置與發布入口保留。
+更新日期：2026-10-08（台灣時間）。階段 6 的 CI／安裝包實作與本機 release 安裝測試已完成；GitHub CI 真正執行、乾淨環境／WebView2 分支與 updater 驗收仍待完成。使用者決定先完成 CI 與安裝包，尚未設定更新簽章／端點。階段 5 外部資料夾與 `.db` 拖入仍延期、不宣告通過。Electron 開發與建置入口保留，release workflow 改為 Tauri 手動草稿；不進入階段 7。
 
 提交方式：`refactor` 分支，按階段提交，驗收補充與收尾可另行提交；提交不代表尚未執行的手動驗收已完成。階段 0 已提交為 `cef0b6f`，階段 1 專門記錄桌面 API 抽象。
 
@@ -343,3 +343,62 @@ npm run build:tauri -- --debug --no-bundle
 macOS／Linux、release profile、乾淨環境安裝包與更新未驗證，留待各平台及階段 6。交付前以預設 Tauri config 重建，避免 smoke identifier／WebView profile 留在一般 exe。
 
 回退使用 `npm run dev:electron` 或階段 4 commit `fbce844`。Electron `config.json` 未被覆蓋；Tauri `settings.json` 使用獨立識別碼目錄。`.db` 與圖片的備份／還原方式沿用階段 4。
+
+## 階段 6：Windows CI 與安裝包（本輪範圍）
+
+2026-10-08 使用者確認尚未設定更新簽章／端點，先完成 CI 與安裝包。updater plugin、簽章與兩版本更新驗收留待後續，階段 6 整體里程碑 D 尚未完成。
+
+### 實作
+
+- `npm test` 改為 Desktop／Tauri adapter、batch 與無人值守 release smoke，移除已失效的 Spectron 測試檔。Spectron 套件隨 Electron 於階段 7 清理；Electron 建置／基線測試仍保留。
+- `test:tauri-ci` 在 release profile 嵌入真正前端，以匿名 Electron config 自動匯入已保存的 `.db`，透過實際專案卡片進入五種瀏覽模式、分類／批次、重啟與設定持久化。沒有測試專用授權 IPC；不跳過 command 或 asset scope。測試修正路由切換時讀到舊 DOM 的競態，等待對應圖片數量後才驗證。
+- `test:tauri-installer` 使用唯一 smoke productName／identifier 建 NSIS，安裝到 TEMP 下的獨立目錄，啟動安裝後 exe 執行同一組 release 測試，再解除安裝，檢查 app exe 被移除、Tauri 設定／匿名 Electron config／專案仍保留。原生 picker、新建專案的 save picker 與外部拖入仍由既有手動測試負責，CI 不合成 OS 選取事件。
+- 正常安裝名稱改為 `PicPortal Tauri`，保留 `io.github.proladon.picportal` identifier 與 PicPortal 視窗標題；避免與 Electron 的預設安裝名稱、捷徑相同。NSIS 明確使用 `currentUser`，WebView2 缺少時採 `downloadBootstrapper`。release 未啟用 Tauri devtools feature，window config 明確關閉 devtools。
+- `package.json` 作為版本來源；`version:sync` 同步 Cargo 與前端 lockfile，`version:check` 拒絕不一致與錯誤的 `v<version>` tag。Tauri 直接引用 package.json；Electron builder 改用相同版本，不再依本機日期決定發布版本。真實版本 smoke 亦不再硬編碼 `0.1.0`。
+- Windows workflow 固定 Node 24.12.0、Rust 1.97.1、windows-2022，納入型別／lint、契約、Rust fmt／clippy／24 tests、跨磁碟、release 安裝流程與 Electron 回退。觸發路徑涵蓋 `src-tauri/**`、lockfiles、package、scripts 與設定。失敗上傳匿名 log、畫面與 `.db`。
+- release workflow 改為手動觸發，重跑檢查、保存正常 identity 安裝包後才建立／更新 `v<version>` prerelease 草稿；拒絕修改已正式發布版本。不自動發布、不刪其他草稿、不建立未簽章的 updater manifest。未在本輪啟動遠端 workflow 或建立 release。
+- 新增 [Windows 交付說明](./tauri-windows-release.md)，更新 README 與計畫中的範圍／未完成項目。
+
+### 本機驗證
+
+Windows 11 10.0.26300、Node 24.12.0、npm 11.6.2、Rust／Cargo 1.97.1、Tauri 2.12.1。重新 `npm ci --no-audit --no-fund` 安裝 663 packages；未升級前端依賴。
+
+```powershell
+npm ci --no-audit --no-fund
+npm run version:check
+npm run typecheck
+npm run lint -- --quiet
+npm run test:desktop
+npm run test:tauri-adapter
+npm run test:batch
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets -- -D warnings
+$env:PICPORTAL_TEST_OTHER_VOLUME = 'K:\Coding\Repos\Proladon\PicPortal\src-tauri\target'
+cargo test --manifest-path src-tauri/Cargo.toml --locked
+npm run test:tauri-installer
+npm run build:electron
+npm run test:baseline
+npm run build:installer
+```
+
+| 驗證 | 結果與界線 |
+| --- | --- |
+| 型別／lint／Rust fmt／clippy | 通過；lint 0 errors，仍有既有 warnings |
+| Desktop／Tauri adapter／batch | 通過；Tauri adapter mock 仍會印 callback 已移除訊息，測試結果通過 |
+| 新預設 `npm test` | 通過；契約後接 release 程序，確認 Spectron 替代入口可完整執行 |
+| 24 個 Rust tests | 通過，包含實際 C → K 跨磁碟搬移、來源刪除失敗、鎖檔、junction、併發及設定合併 |
+| release NSIS 安裝／解除安裝 | 本機隔離目錄通過；從安裝後 exe 執行，不使用 debug exe、Vite、Git 或 Node sidecar |
+| 原生 release 前端與 IPC | Projects／Settings／About、五種瀏覽／篩選／標籤、大圖、特殊路徑、asset 403 與 command 範圍通過；損毀 JSON／來源消失可恢復 |
+| 寫入、批次與重啟 | ID／未知欄位、10 個並行 IPC 寫入、stale token、成功清理 docking、略過／序號／copy overwrite／重新命名／失敗保留／刪來源通過；真正結束再啟動後資料保留 |
+| 設定遷移與解除安裝資料 | 原始 Electron config bytes 不變、重試不新增重複專案、語意設定重啟保存；解除安裝保存 Tauri 設定與專案 |
+| 版本與 workflow 語法 | 正確 tag 通過、不同版本 tag 明確拒絕；YAML／內嵌 PowerShell／actionlint 1.7.12 檢查五個修改的 workflow 通過 |
+| 正常交付安裝包 | 已依正常 productName／identifier 重建 `PicPortal Tauri_0.1.0_x64-setup.exe`，約 4.34 MiB；未簽章 |
+| Electron 回退 | 建置與匿名資料 baseline 通過；既有 updater 的 `Store-Get` 重複註冊訊息仍存在，未宣告更新通過 |
+
+成功安裝 smoke 的匿名資料為 `%TEMP%/picportal-migration-z3sbGQ`，profile 為 `%TEMP%/picportal-tauri-browse-8stqbn`，設定使用唯一 `io.github.proladon.picportal.smoke.8stqbn`。測試安裝器已解除安裝；匿名資料／profile／設定保留供診斷，未修改正式使用者專案與設定。一般交付 exe 已重建，不含 smoke identifier／CDP 環境設定。
+
+### 後續與限制
+
+GitHub CI／草稿 workflow 尚未真正執行，不能以本機結果宣告遠端 CI 可重現。乾淨 Windows、缺少 WebView2 的下載分支、離線首次部署、一般桌面安裝位置／Electron 並存的實機驗收仍待完成。自動更新、更新簽章／Windows 程式碼簽章、兩版本更新與失敗情境、階段 0 效能比較仍未完成。外部資料夾／`.db` 拖入沿用階段 5 延期例外。
+
+本輪依使用者指示交付 CI 與安裝包，保留 Electron；不進入階段 7。回退可使用 `npm run dev:electron` 或階段 5 commit `39c8b78`。正式套用前備份 `.db` 與所有圖片，已搬移／刪除的檔案須由備份復原。

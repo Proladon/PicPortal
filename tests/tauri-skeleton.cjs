@@ -11,6 +11,8 @@ async function main() {
   const titlePath = path.resolve('packages/renderer/src/layout/components/TitleBar.vue')
   const originalTitle = await fs.readFile(titlePath)
   const built = process.argv.includes('--built')
+  const { version } = require('../package.json')
+  const tauriVersion = require('../package.json').dependencies['@tauri-apps/api']
   let server, processHandle, socket, exit, originalRestored = true
   let log = ''
   const pending = new Map()
@@ -96,11 +98,11 @@ async function main() {
     await waitFor(() => evaluate(`location.hash === '#/projects' && !!document.querySelector('.projects')`))
     assert.equal(await evaluate(`!!document.querySelector('.desktop-status')`), false)
     const metadata = await evaluate(`(async () => { const invoke=window.__TAURI_INTERNALS__.invoke; return {runtime:globalThis.isTauri ? 'tauri' : 'unknown',os:await invoke('runtime_platform'),version:await invoke('plugin:app|version'),tauri:await invoke('plugin:app|tauri_version')} })()`)
-    assert.deepEqual(metadata, { runtime: 'tauri', os: 'win32', version: '0.1.0', tauri: '2.12.1' })
+    assert.deepEqual(metadata, { runtime: 'tauri', os: 'win32', version, tauri: tauriVersion })
     for (const route of ['about', 'settings', 'projects']) {
       await evaluate(`location.hash = '#/${route}'`)
       await waitFor(() => evaluate(`!!document.querySelector('.${route}')`))
-      if (route === 'about') await waitFor(() => evaluate(`document.querySelector('.about').textContent.includes('0.1.0') && document.querySelector('.about').textContent.includes('2.12.1')`))
+      if (route === 'about') await waitFor(() => evaluate(`document.querySelector('.about').textContent.includes(${JSON.stringify(version)}) && document.querySelector('.about').textContent.includes(${JSON.stringify(tauriVersion)})`))
     }
     assert.equal(await evaluate(`!!document.querySelector('.n-spin-container--blur')`), false)
     assert.equal(await evaluate(`getComputedStyle(document.documentElement).getPropertyValue('--base').trim()`), '#ccc0b8')

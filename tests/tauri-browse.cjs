@@ -12,6 +12,12 @@ async function main() {
   if (process.platform !== 'win32' || typeof WebSocket === 'undefined') throw new Error('Requires Windows and Node 22+')
   const dataset = await createDataset()
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'picportal-tauri-browse-'))
+  const ci = process.argv.includes('--ci')
+  const installer = process.argv.includes('--installer')
+  if (installer && !ci) throw new Error('--installer requires --ci')
+  let executable = path.resolve(`src-tauri/target/${ci ? 'release' : 'debug'}/picportal.exe`)
+  const installDir = path.join(root, 'installed')
+  let installAttempted = false
   const original = await fs.readFile(path.join(dataset.root, 'normal.db'))
   const emptyBytes = await fs.readFile(path.join(dataset.root, 'empty.db'))
   const requests = new Map()
@@ -53,8 +59,22 @@ async function main() {
   }
   const invoke = (command, args = {}) => evaluate(`window.__TAURI_INTERNALS__.invoke(${JSON.stringify(command)},${JSON.stringify(args)})`)
   const code = (command, args) => evaluate(`window.__TAURI_INTERNALS__.invoke(${JSON.stringify(command)},${JSON.stringify(args)}).then(()=>null,e=>e.code)`)
+  async function run(file, args, timeout = 180000) {
+    const child = spawn(file, args, { env, windowsHide: true, windowsVerbatimArguments: file.endsWith('.exe') && file !== process.execPath, stdio: ['ignore', 'pipe', 'pipe'] })
+    child.stdout.on('data', data => { log += data })
+    child.stderr.on('data', data => { log += data })
+    let timer
+    try {
+      const result = await Promise.race([
+        new Promise((resolve, reject) => { child.once('exit', resolve); child.once('error', reject) }),
+        new Promise((_, reject) => { timer = setTimeout(() => { child.kill(); reject(Error(`Process timed out: ${file}`)) }, timeout) })
+      ])
+      if (result !== 0) throw new Error(`Process failed (${result}): ${file}\n${log.slice(-5000)}`)
+    } finally { clearTimeout(timer) }
+  }
   async function start() {
-    processHandle = spawn(path.resolve('src-tauri/target/debug/picportal.exe'), [], { env, cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+    processHandle = spawn(executable, [], { env, cwd: root, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+    processHandle.once('error', error => { log += error.stack })
     processHandle.stdout.on('data', data => { log += data })
     processHandle.stderr.on('data', data => { log += data })
     exit = new Promise(resolve => processHandle.once('exit', resolve))
@@ -89,9 +109,14 @@ async function main() {
   async function chooseProject(name) {
     await evaluate(`location.hash = '#/projects'`)
     await waitFor(() => evaluate(`!!document.querySelector('.projects .btn-container button')`))
-    console.log(`ACTION select project: ${path.join(dataset.root, name)}`)
-    await evaluate(`document.querySelector('.projects .btn-container button:last-child').click()`)
-    await waitFor(() => evaluate(`location.hash.includes('/grid-view') && $app.openProject?.name === ${JSON.stringify(path.parse(name).name)}`), 600000)
+    if (ci) {
+      await waitFor(() => evaluate(`[...document.querySelectorAll('.project-card')].some(card=>card.querySelector('.project-path')?.textContent.trim()===${JSON.stringify(path.join(dataset.root, name))})`))
+      await evaluate(`[...document.querySelectorAll('.project-card')].find(card=>card.querySelector('.project-path')?.textContent.trim()===${JSON.stringify(path.join(dataset.root, name))}).click()`)
+    } else {
+      console.log(`ACTION select project: ${path.join(dataset.root, name)}`)
+      await evaluate(`document.querySelector('.projects .btn-container button:last-child').click()`)
+    }
+    await waitFor(() => evaluate(`location.hash.includes('/grid-view') && $app.openProject?.path === ${JSON.stringify(path.join(dataset.root, name))}`), ci ? 60000 : 600000)
     await evaluate(`globalThis.$viewer = $pinia._s.get('viewer')`)
   }
   async function imageLoaded(url) {
@@ -102,11 +127,13 @@ async function main() {
   }
   try {
     const config = JSON.parse(await fs.readFile('src-tauri/tauri.conf.json', 'utf8'))
-    const override = { identifier: `io.github.proladon.picportal.smoke.${path.basename(root).split('-').at(-1).toLowerCase()}`, app: { windows: [{ ...config.app.windows[0], dataDirectory: path.join(root, 'webview') }] } }
+    const suffix = path.basename(root).split('-').at(-1).toLowerCase()
+    const override = { identifier: `io.github.proladon.picportal.smoke.${suffix}`, app: { windows: [{ ...config.app.windows[0], ...(ci ? { visible: false, focus: false, devtools: false } : {}), dataDirectory: path.join(root, 'webview') }] } }
+    if (installer) override.productName = `PicPortal Smoke ${suffix}`
     const configPath = path.join(root, 'browse.json')
     await fs.writeFile(configPath, JSON.stringify(override))
     console.log(`Dataset: ${dataset.root}\nBuilding the embedded frontend for native browsing`)
-    if (process.argv.includes('--interactions') || process.argv.includes('--drops')) {
+    if (ci || process.argv.includes('--interactions') || process.argv.includes('--drops')) {
       await fs.mkdir(path.join(env.APPDATA, 'PicPortal'), { recursive:true })
       await fs.copyFile(path.join(dataset.root,'config.json'),path.join(env.APPDATA,'PicPortal','config.json'))
     }
@@ -119,15 +146,40 @@ async function main() {
       migrationLock = spawn('powershell', ['-NoProfile', '-Command', script], { windowsHide:true, stdio:['pipe','pipe','pipe'] })
       await new Promise((resolve,reject) => { migrationLock.stdout.once('data',data=>String(data).includes('LOCKED') ? resolve() : reject(Error(String(data)))); migrationLock.once('exit',code=>{if(code)reject(Error('Migration lock failed'))}); migrationLock.once('error',reject) })
     }
+    if (ci && process.argv.includes('--skip-build')) throw new Error('CI smoke must build its own isolated configuration')
     if (!process.argv.includes('--skip-build')) {
-      const builder = spawn(process.execPath, [require.resolve('@tauri-apps/cli/tauri.js'), 'build', '--debug', '--no-bundle', '--config', configPath], { env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
-      builder.stdout.on('data', data => { log += data })
-      builder.stderr.on('data', data => { log += data })
-      const result = await new Promise((resolve, reject) => { builder.once('exit', resolve); builder.once('error', reject) })
-      if (result !== 0) throw new Error(log.slice(-5000))
+      await run(process.execPath, [require.resolve('@tauri-apps/cli/tauri.js'), 'build', ...(ci ? ['--ci'] : ['--debug']), ...(installer ? ['--bundles', 'nsis'] : ['--no-bundle']), '--config', configPath, '--', '--locked'], 1200000)
+    }
+    if (installer) {
+      const bundles = path.resolve('src-tauri/target/release/bundle/nsis')
+      const files = (await fs.readdir(bundles)).filter(name => name.startsWith(override.productName) && name.endsWith('-setup.exe'))
+      assert.equal(files.length, 1, 'Expected one isolated NSIS installer')
+      installAttempted = true
+      // NSIS requires /D as the last argument, without surrounding quotes.
+      await run(path.join(bundles, files[0]), ['/S', `/D=${installDir}`])
+      executable = path.join(installDir, 'picportal.exe')
+      assert.equal(await fs.stat(executable).then(stat => stat.isFile()), true)
+      console.log('PASS NSIS silent installation in isolated temporary directory')
     }
     await start()
     const normal = path.join(dataset.root, 'normal.db')
+    if (ci) {
+      await require('./tauri-ci.cjs').exerciseCi({ dataset, root, env, evaluate, invoke, code, waitFor, chooseProject, close, start, loadedImages, imageLoaded, send, assetResponses })
+      await close()
+      if (installer) {
+        const settings = path.join(process.env.APPDATA, override.identifier, 'settings.json')
+        const before = await fs.readFile(settings)
+        const legacy = await fs.readFile(path.join(env.APPDATA, 'PicPortal', 'config.json'))
+        await run(path.join(installDir, 'uninstall.exe'), ['/S', `_?=${installDir}`])
+        installAttempted = false
+        await waitFor(() => fs.stat(executable).then(() => false, () => true))
+        assert.deepEqual(await fs.readFile(settings), before, 'Uninstall must preserve Tauri settings')
+        assert.deepEqual(await fs.readFile(path.join(env.APPDATA, 'PicPortal', 'config.json')), legacy)
+        assert.equal((JSON.parse(await fs.readFile(normal, 'utf8'))).id, 'project-001', 'Uninstall must preserve project data')
+        console.log('PASS NSIS uninstall removes app and preserves settings, legacy config and project')
+      }
+      return
+    }
     if (process.argv.includes('--drops')) {
       await require('./tauri-drops.cjs').exerciseDrops({ dataset, root, env, evaluate, invoke, code, waitFor, close, start, loadedImages, imageLoaded, send })
       return
@@ -225,12 +277,28 @@ async function main() {
     assert.deepEqual(await fs.readFile(normal), original)
     assert.equal(await evaluate('$app.dbData.id'), 'project-001')
     console.log('PASS process restart + project reselection restore browsing and scopes; all project bytes unchanged')
+  } catch (error) {
+    await fs.writeFile(path.join(root, 'tauri.log'), log)
+    if (socket?.readyState === WebSocket.OPEN) {
+      await send('Page.captureScreenshot').then(result => fs.writeFile(path.join(root, 'failure.png'), Buffer.from(result.data, 'base64'))).catch(() => {})
+    }
+    throw error
   } finally {
     await releaseMigrationLock()
+    if (process.env.PICPORTAL_TEST_REPORT_DIR) {
+      const report = path.resolve(process.env.PICPORTAL_TEST_REPORT_DIR)
+      await fs.mkdir(report, { recursive: true })
+      await fs.writeFile(path.join(report, 'tauri.log'), log)
+      await fs.copyFile(path.join(root, 'failure.png'), path.join(report, 'failure.png')).catch(() => {})
+      await fs.copyFile(path.join(dataset.root, 'normal.db'), path.join(report, 'normal.db'))
+      await fs.writeFile(path.join(report, 'paths.json'), JSON.stringify({ dataset: dataset.root, profile: root, executable }, null, 2))
+    }
     await fs.writeFile(path.join(dataset.root, 'normal.db'), original)
     await close().catch(async () => {
       if (processHandle?.exitCode === null) await new Promise(resolve => { const killer = spawn('taskkill', ['/pid', String(processHandle.pid), '/t', '/f'], { windowsHide: true, stdio: 'ignore' }); killer.once('exit', resolve) })
     })
+    if (installAttempted) await run(path.join(installDir, 'uninstall.exe'), ['/S', `_?=${installDir}`]).catch(error => console.error('Isolated uninstall cleanup:', error.message))
+    await fs.writeFile(path.join(root, 'tauri.log'), log)
     for (const request of requests.values()) clearTimeout(request.timer)
     console.log(`Retained anonymous dataset: ${dataset.root}\nRetained smoke profile: ${root}`)
   }

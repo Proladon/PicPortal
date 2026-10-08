@@ -178,7 +178,7 @@ async function exerciseInteractions(h) {
   assert.equal((await prefs()).settings.general.locale,'en')
   await start()
   await evaluate(`location.hash='#/about'`)
-  await waitFor(()=>evaluate(`document.querySelector('.about')?.textContent.includes('PicPortal 0.1.0')`))
+  await waitFor(()=>evaluate(`document.querySelector('.about')?.textContent.includes(${JSON.stringify(`PicPortal ${require('../package.json').version}`)})`))
   // Remove only a list entry through durable IPC; the .db stays untouched.
   const emptyBytes = await fs.readFile(path.join(dataset.root,'empty.db'))
   await invoke('preferences_set',{key:'projects',value:(await prefs()).projects.filter(p=>p.id!=='empty-002')})

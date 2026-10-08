@@ -115,6 +115,8 @@ async function exerciseWrites(h) {
   assert.equal(await fs.stat(source).then(() => true, () => false), false)
   console.log('PASS conflict UI: skip, numbering, copy overwrite, rename; failed files retain dockings; native delete')
 
+  if (h.skipPicker) return
+
   // New project creation through the actual Vue form + Rust save dialog.
   await evaluate(`location.hash='#/projects'`)
   await waitFor(() => evaluate(`!!document.querySelector('.projects .btn-container button')`))

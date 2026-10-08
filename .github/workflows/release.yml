@@ -1,142 +1,90 @@
-name: Release
+name: Tauri release draft
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-      - '**.spec.js'
-      - '.idea'
-      - '.gitignore'
-      - '.github/**'
-      - '!.github/workflows/release.yml'
+  workflow_dispatch:
 
+permissions:
+  contents: write
 concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: true
-
-
+  group: tauri-release-draft
+  cancel-in-progress: false
 defaults:
   run:
-    shell: 'bash'
-
+    shell: pwsh
 
 jobs:
-
-  draft:
-    runs-on: ubuntu-latest
-    outputs:
-      release-note: ${{ steps.release-note.outputs.release-note }}
-
+  windows-draft:
+    runs-on: windows-2022
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v2
+          node-version: '24.12.0'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@master
         with:
-          node-version: 14
-
-      - name: Get last git tag
-        id: tag
-        run: echo "::set-output name=last-tag::$(git describe --tags --abbrev=0 || git rev-list --max-parents=0 ${{github.ref}})"
-
-      - name: Generate release notes
-        uses: ./.github/actions/release-notes
-        id: release-note
+          toolchain: '1.97.1'
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
         with:
-          from: ${{ steps.tag.outputs.last-tag }}
-          to: ${{ github.ref }}
-          include-commit-body: true
-          include-abbreviated-commit: true
-
-      - name: Get version from current date
-        id: version
-        run: echo "::set-output name=current-version::$(node -e "try{console.log(require('./electron-builder.config.js').extraMetadata.version)}catch(e){console.error(e);process.exit(1)}")"
-
-
-      - name: Waiting on All checks
-        uses: lewagon/wait-on-check-action@v0.2
-        with:
-          ref: ${{ github.ref }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          running-workflow-name: 'draft'
-
-      - name: Delete outdated drafts
-        uses: hugo19941994/delete-draft-releases@v0.1.0
+          workspaces: src-tauri -> target
+      - run: npm ci --no-audit --no-fund
+      - run: npm run version:check
+      - name: Derive release tag and refuse published versions
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Release Draft
-        uses: softprops/action-gh-release@v1
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          "PICPORTAL_TAG=v$version" >> $env:GITHUB_ENV
+          $existing = gh release view "v$version" --json isDraft 2>$null
+          if ($LASTEXITCODE -eq 0 -and -not ($existing | ConvertFrom-Json).isDraft) {
+            throw "v$version is already published; bump package.json and run version:sync"
+          }
+          exit 0
+      - run: npm run typecheck
+      - run: npm run lint -- --quiet
+      - run: npm run test:desktop
+      - run: npm run test:tauri-adapter
+      - run: npm run test:batch
+      - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - run: cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets -- -D warnings
+      - run: cargo test --manifest-path src-tauri/Cargo.toml --locked
+      - run: npm run test:tauri-installer
         env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
+          PICPORTAL_TEST_REPORT_DIR: ${{ runner.temp }}/tauri-smoke
+      - run: npm run build:installer
+      - name: Save build artifacts before creating draft
+        uses: actions/upload-artifact@v4
         with:
-          prerelease: true
-          draft: true
-          tag_name: v${{ steps.version.outputs.current-version }}
-          name: v${{ steps.version.outputs.current-version }}
-          body: ${{ steps.release-note.outputs.release-note }}
-
-  upload_artifacts:
-    needs: [ draft ]
-
-    strategy:
-      matrix:
-        os: [ windows-latest ]
-    #    To compile the application for different platforms, use:
-    #    os: [ macos-latest, ubuntu-latest, windows-latest ]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16 # Need for npm >=7.7
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      # The easiest way to transfer release notes to a compiled application is create `release-notes.md` in the build resources.
-      # See https://github.com/electron-userland/electron-builder/issues/1511#issuecomment-310160119
-      - name: Prepare release notes
+          name: picportal-windows-x64
+          path: src-tauri/target/release/bundle/nsis/PicPortal Tauri_*-setup.exe
+          if-no-files-found: error
+      - name: Create or update draft only
         env:
-          RELEASE_NOTE: ${{ needs.draft.outputs.release-note }}
-        run: echo "$RELEASE_NOTE" >> ./buildResources/release-notes.md
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $notes = @'
+          Tauri 2 Windows x64 preview. Install separately as PicPortal Tauri and import Electron settings.
 
-      # Compile app and upload artifacts
-      - name: Compile & release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
+          This installer is unsigned. Automatic updates are not configured. Native OS drop acceptance remains deferred. Back up project .db files and image folders before use.
+          '@
+          $notesPath = Join-Path $env:RUNNER_TEMP 'picportal-release-notes.md'
+          Set-Content -LiteralPath $notesPath -Value $notes -Encoding utf8
+          $existing = gh release view $env:PICPORTAL_TAG --json isDraft 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            if (-not ($existing | ConvertFrom-Json).isDraft) { throw 'Refusing to modify a published release' }
+            gh release edit $env:PICPORTAL_TAG --draft --prerelease --target '${{ github.sha }}' --notes-file $notesPath
+          } else {
+            gh release create $env:PICPORTAL_TAG --draft --prerelease --target '${{ github.sha }}' --title "PicPortal Tauri $env:PICPORTAL_TAG" --notes-file $notesPath
+          }
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $installer = @(Get-ChildItem -LiteralPath 'src-tauri/target/release/bundle/nsis' -Filter 'PicPortal Tauri_*-setup.exe')
+          if ($installer.Count -ne 1) { throw 'Expected exactly one distributable installer' }
+          gh release upload $env:PICPORTAL_TAG $installer[0].FullName --clobber
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Upload isolated diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          build_script_name: build
-          args: --config electron-builder.config.js
-
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
-
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: true
-
-          # Sometimes the build may fail due to a connection problem with Apple, GitHub, etc. servers.
-          # This option will restart the build as many attempts as possible
-          max_attempts: 3
-
-
-          # Code Signing params
-
-          # Base64-encoded code signing certificate for Windows
-          # windows_certs: ''
-
-          # Password for decrypting `windows_certs`
-          # windows_certs_password: ''
-
-          # Base64-encoded code signing certificate for macOS
-          # mac_certs: ''
-
-          # Password for decrypting `mac_certs`
-          # mac_certs_password: ''
+          name: tauri-release-diagnostics
+          path: ${{ runner.temp }}/tauri-smoke

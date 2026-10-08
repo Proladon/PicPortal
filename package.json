@@ -11,8 +11,8 @@
   },
   "private": true,
   "engines": {
-    "node": ">=v14.16",
-    "npm": ">=7.7"
+    "node": ">=22",
+    "npm": ">=10"
   },
   "main": "packages/main/dist/index.cjs",
   "scripts": {
@@ -20,8 +20,12 @@
     "build": "node scripts/build.js",
     "precompile": "cross-env MODE=production npm run build",
     "compile": "electron-builder build --config electron-builder.config.js --dir --config.asar=false",
-    "pretest": "cross-env MODE=test npm run build",
-    "test": "node tests/app.spec.js",
+    "pretest": "npm run version:check",
+    "test": "npm run test:desktop && npm run test:tauri-adapter && npm run test:batch && npm run test:tauri-ci",
+    "test:tauri-ci": "node tests/tauri-browse.cjs --ci",
+    "test:tauri-installer": "node tests/tauri-browse.cjs --ci --installer",
+    "version:check": "node scripts/tauri-version.cjs",
+    "version:sync": "node scripts/tauri-version.cjs --write",
     "test:desktop": "node tests/desktop.spec.cjs",
     "test:tauri-adapter": "node tests/tauri-adapter.spec.cjs",
     "test:tauri-browse": "node tests/tauri-browse.cjs",
@@ -39,7 +43,9 @@
     "build:renderer": "cross-env PICPORTAL_RUNTIME=tauri MODE=production vite build --config packages/renderer/vite.config.js",
     "tauri": "tauri",
     "dev:tauri": "tauri dev",
+    "prebuild:tauri": "npm run version:check",
     "build:tauri": "tauri build",
+    "build:installer": "npm run build:tauri -- --bundles nsis --ci -- --locked",
     "lint": "eslint . --ext js,ts,vue",
     "pretypecheck": "npm run buildEnvTypes",
     "typecheck-main": "tsc --noEmit -p packages/main/tsconfig.json",

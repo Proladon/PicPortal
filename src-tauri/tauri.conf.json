@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "PicPortal",
+  "productName": "PicPortal Tauri",
   "version": "../package.json",
   "identifier": "io.github.proladon.picportal",
   "build": {
@@ -19,6 +19,7 @@
         "minWidth": 720,
         "minHeight": 400,
         "decorations": false,
+        "devtools": false,
         "backgroundColor": "#272b36"
       }
     ],
@@ -30,6 +31,10 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "icon": ["icons/icon.png", "icons/icon.ico"]
+    "icon": ["icons/icon.png", "icons/icon.ico"],
+    "windows": {
+      "nsis": { "installMode": "currentUser" },
+      "webviewInstallMode": { "type": "downloadBootstrapper" }
+    }
   }
 }
