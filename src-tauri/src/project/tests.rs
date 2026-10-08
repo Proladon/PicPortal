@@ -10,7 +10,9 @@ struct Fixture {
 }
 impl Fixture {
     fn new() -> Self {
-        let temp = tempfile::tempdir().unwrap();
+        // Native dialogs return canonical paths. CI's TEMP can use an 8.3
+        // alias, so fixtures must use the same path representation as IPC.
+        let temp = tempfile::tempdir_in(canonical(&std::env::temp_dir()).unwrap()).unwrap();
         let root = temp.path().join("圖片 (測試) #100% [來源]");
         fs::create_dir_all(root.join("多層/第二層")).unwrap();
         for name in [
@@ -791,7 +793,7 @@ fn cross_volume_move_copies_before_removing_source() {
     let Some(directory) = std::env::var_os("PICPORTAL_TEST_OTHER_VOLUME") else {
         return;
     };
-    let other = tempfile::tempdir_in(directory).unwrap();
+    let other = tempfile::tempdir_in(canonical(Path::new(&directory)).unwrap()).unwrap();
     let mut f = Fixture::new();
     assert_ne!(
         f.root.components().next(),

@@ -11,7 +11,7 @@ const { createDataset } = require('./migration-fixtures.cjs')
 async function main() {
   if (process.platform !== 'win32' || typeof WebSocket === 'undefined') throw new Error('Requires Windows and Node 22+')
   const dataset = await createDataset()
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'picportal-tauri-browse-'))
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'picportal-tauri-browse-')))
   const ci = process.argv.includes('--ci')
   const installer = process.argv.includes('--installer')
   if (installer && !ci) throw new Error('--installer requires --ci')

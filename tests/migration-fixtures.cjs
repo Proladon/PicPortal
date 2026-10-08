@@ -3,7 +3,8 @@ const path = require('path')
 const os = require('os')
 
 async function createDataset() {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'picportal-migration-'))
+  // Match native picker/scan paths when Windows TEMP contains an 8.3 alias.
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'picportal-migration-')))
   const source = path.join(root, '圖片 (測試) #100% [來源]')
   const destination = path.join(root, '目的資料夾')
   const image = path.join(source, '圖片 #100%.png')
@@ -31,7 +32,7 @@ async function createDataset() {
 
 async function removeDataset(root) {
   const resolved = path.resolve(root)
-  if (path.dirname(resolved) !== path.resolve(os.tmpdir()) || !path.basename(resolved).startsWith('picportal-migration-')) {
+  if (path.dirname(resolved) !== path.resolve(await fs.realpath(os.tmpdir())) || !path.basename(resolved).startsWith('picportal-migration-')) {
     throw new Error('Refusing to remove a non-fixture directory')
   }
   await fs.rm(resolved, { recursive: true, force: true })

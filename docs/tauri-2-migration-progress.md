@@ -1,6 +1,6 @@
 # Tauri 2 遷移實作紀錄
 
-更新日期：2026-10-08（台灣時間）。階段 6 的 CI／安裝包實作與本機 release 安裝測試已完成；GitHub CI 真正執行、乾淨環境／WebView2 分支與 updater 驗收仍待完成。使用者決定先完成 CI 與安裝包，尚未設定更新簽章／端點。階段 5 外部資料夾與 `.db` 拖入仍延期、不宣告通過。Electron 開發與建置入口保留，release workflow 改為 Tauri 手動草稿；不進入階段 7。
+更新日期：2026-10-08（台灣時間）。階段 6 的 CI／安裝包實作與本機 release 安裝測試已完成；GitHub CI 已於 PR #19 啟動驗證，最新結果見 PR checks。乾淨環境／WebView2 分支與 updater 驗收仍待完成。使用者決定先完成 CI 與安裝包，尚未設定更新簽章／端點。階段 5 外部資料夾與 `.db` 拖入仍延期、不宣告通過。Electron 開發與建置入口保留，release workflow 改為 Tauri 手動草稿；不進入階段 7。
 
 提交方式：`refactor` 分支，按階段提交，驗收補充與收尾可另行提交；提交不代表尚未執行的手動驗收已完成。階段 0 已提交為 `cef0b6f`，階段 1 專門記錄桌面 API 抽象。
 
@@ -410,3 +410,11 @@ GitHub CI／草稿 workflow 尚未真正執行，不能以本機結果宣告遠�
 - npm 切換 pnpm 後殘留的根目錄 `@vue/reactivity`／`@vue/runtime-core` 與 pnpm 的 `vue` 是兩份模組；實測 `vue.ref`、`vue.onMounted` 與獨立模組的函式 identity 不同，造成後端清單已有資料而 Vue 畫面沒有更新。37 個前端檔案統一由宣告的 `vue` 依賴匯入公開 API，實機專案卡片恢復顯示；另補 computed title 的空字串 fallback，通過 Vue lint。
 - 驗證：`pnpm tauri dev` 真正啟動 Vite／Rust／WebView2，專案頁與原有清單顯示正常，沒有 `INVALID_SETTINGS`；三個 TypeScript targets、lint、Rust fmt／clippy 與三個 preferences tests 通過。使用 computer-use 確認開發視窗，測試結束後正常關閉，釋放 5173 port。
 - npm lockfile 與 CI 基線保持原設定；使用者新增的 `pnpm-lock.yaml` 保留。本次修復只更新開發原始碼，先前 stage 6 安裝包未重建；新安裝包需另執行建置。
+
+### 2026-10-08：PR #19 Windows CI 短檔名路徑修復
+
+GitHub Windows runner 的 TEMP 使用 `C:\Users\RUNNER~1\...`，但 Tauri 後端與原生 picker 使用 canonical 完整路徑。Rust fixtures 直接沿用短檔名路徑，導致來源掃描、Portal 目的地、儲存位置及路徑字串比對失敗；首次遠端結果為 14 個測試通過、11 個失敗。
+
+Rust fixture 現在先解析 TEMP 與跨磁碟目的根目錄，再建立暫存目錄。Node 匿名資料、smoke profile 也使用 `fs.realpath`，清理資料時比較解析後的 TEMP 父目錄，保留目錄名稱前綴檢查。修正限於測試資料／harness，沒有放寬應用程式的路徑權限或跳過失敗測試。
+
+本機建立具有 Windows 8.3 alias 的獨立暫存目錄，設定子程序 TEMP／TMP 後成功重現原先 `OUTSIDE_SCOPE` 失敗。修正後 25 個 Rust tests（含實際 C → K 跨磁碟）、fmt／clippy、Node fixture canonical path 與安全清理檢查通過；同一短 TEMP 下的完整 release NSIS 安裝／前端 IPC／批次／重啟／解除安裝也通過。遠端完整 Windows 驗證結果以 [PR #19 checks](https://github.com/Proladon/PicPortal/pull/19/checks) 為準。

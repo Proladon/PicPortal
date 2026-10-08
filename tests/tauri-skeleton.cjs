@@ -7,7 +7,7 @@ const { spawn } = require('child_process')
 
 async function main() {
   if (process.platform !== 'win32' || typeof WebSocket === 'undefined') throw new Error('Tauri skeleton smoke requires Windows and Node 22+')
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'picportal-tauri-smoke-'))
+  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), 'picportal-tauri-smoke-')))
   const titlePath = path.resolve('packages/renderer/src/layout/components/TitleBar.vue')
   const originalTitle = await fs.readFile(titlePath)
   const built = process.argv.includes('--built')
