@@ -1,42 +1,54 @@
 <template>
-  <section class="focus-view">
-    <n-spin v-if="loading" class="full grid-center-items" />
-    <n-empty
-      v-else-if="!pngs.length"
-      description="No images found"
-      class="full flex-center-items"
-    />
+  <section class="focus-view flex h-full flex-col px-4 pb-4">
+    <ViewerState v-if="loading || !pngs.length" :loading="loading" />
     <template v-else>
-      <div class="flex gap-3 justify-center">
-        <n-button
+      <div class="flex shrink-0 items-center justify-center gap-3 pb-3">
+        <Button
           class="focus-prev"
+          variant="outline"
+          size="sm"
           :disabled="curFile === 0"
           @click="curFile--"
-          >上一張</n-button
         >
-        <span>{{ curFile + 1 }} / {{ pngs.length }}</span>
-        <n-button
+          <ChevronLeft />
+          {{ t('viewer.focus.previous') }}
+        </Button>
+        <span
+          class="min-w-20 text-center text-sm tabular-nums text-muted-foreground"
+        >
+          {{ curFile + 1 }} / {{ pngs.length }}
+        </span>
+        <Button
           class="focus-next"
+          variant="outline"
+          size="sm"
           :disabled="curFile >= pngs.length - 1"
           @click="curFile++"
-          >下一張</n-button
         >
+          {{ t('viewer.focus.next') }}
+          <ChevronRight />
+        </Button>
       </div>
-      <FocusItem :img="pngs[curFile].path" />
+      <FocusItem class="min-h-0 flex-1" :img="pngs[curFile].path" />
     </template>
   </section>
 </template>
 
 <script lang="ts" setup>
 import FocusItem from './components/FocusItem.vue'
+import ViewerState from '../ViewerState.vue'
 import { ref } from 'vue'
 import { map } from 'lodash-es'
-import { onMounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { ChevronLeft, ChevronRight } from '@lucide/vue'
+import hotkeys from 'hotkeys-js'
+import { Button } from '/@/components/ui/button'
 import useViewer from '/@/use/useViewer'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
-import { NButton, NEmpty, NSpin } from 'naive-ui'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
 // --- Data ---
@@ -54,6 +66,15 @@ const chunkFiles = async () => {
 
 const { loading, pngs, showFiles, mainFolder } = useViewer(0, chunkFiles)
 
+const nextFile = (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (curFile.value < pngs.value.length - 1) curFile.value++
+}
+const previousFile = (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (curFile.value > 0) curFile.value--
+}
+
 // --- Watch ---
 watch(mainFolder, async () => {
   await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
@@ -61,28 +82,19 @@ watch(mainFolder, async () => {
 })
 
 // --- Mounted ---
+let disposed = false
 onMounted(async () => {
   loading.value = true
   await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
   await chunkFiles()
   loading.value = false
+  if (disposed) return
+  hotkeys('right', 'viewer', nextFile)
+  hotkeys('left', 'viewer', previousFile)
+})
+onUnmounted(() => {
+  disposed = true
+  hotkeys.unbind('right', 'viewer', nextFile)
+  hotkeys.unbind('left', 'viewer', previousFile)
 })
 </script>
-
-<style lang="postcss">
-.vue3-virtual-list-item-container {
-  @apply grid;
-}
-</style>
-
-<style lang="postcss" scoped>
-.focus-view {
-  @apply h-full pb-[30px];
-}
-.list-container {
-  @apply w-full m-auto;
-}
-.item-container {
-  @apply grid gap-10 items-center px-[15px];
-}
-</style>

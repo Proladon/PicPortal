@@ -1,11 +1,11 @@
 <template>
-  <div class="tree-view">
-    <section class="flex flex-col min-w-[180px] full">
-      <HeaderControlBlock />
-      <ControlsBlock />
-      <PortalGroupList />
-    </section>
-  </div>
+  <aside
+    class="tree-view portal-panel flex h-full min-w-0 flex-col bg-sidebar/60"
+  >
+    <HeaderControlBlock />
+    <ControlsBlock />
+    <PortalGroupList />
+  </aside>
 </template>
 
 <script setup lang="ts">
@@ -23,9 +23,3 @@ onMounted(async () => {
   await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
 })
 </script>
-
-<style lang="postcss" scoped>
-.tree-view {
-  @apply flex pt-[10px] min-w-[250px] px-[20px] h-full;
-}
-</style>

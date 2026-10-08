@@ -1,13 +1,35 @@
 <template>
-  <n-dropdown trigger="click" :options="options()" @select="handleSelect">
-    <n-button class="h-[32px]" ghost>
-      <n-icon size="20"><Flash /></n-icon>
-    </n-button>
-  </n-dropdown>
+  <DropdownMenu>
+    <DropdownMenuTrigger as-child>
+      <Button
+        class="quick-actions"
+        variant="ghost"
+        size="icon-sm"
+        :aria-label="t('viewer.toolbar.quickActions')"
+        :title="t('viewer.toolbar.quickActions')"
+      >
+        <Zap />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="start" class="w-52">
+      <DropdownMenuLabel>{{
+        t('viewer.toolbar.quickActions')
+      }}</DropdownMenuLabel>
+      <DropdownMenuItem
+        variant="destructive"
+        :disabled="!viewerStore.dockings.length"
+        @select="handleSelect('clear dockings')"
+      >
+        <Eraser />
+        {{ t('viewer.quickActions.clearDockings.label') }}
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
 
-  <WarningModal
+  <ConfirmDialog
     v-if="showWarning"
     :keyRef="selectedKey"
+    :title="t('viewer.quickActions.clearDockings.label')"
     :content="modalContent"
     @close="showWarning = false"
     @confirm="handleWarningConfirm"
@@ -15,49 +37,40 @@
 </template>
 
 <script setup lang="ts">
-import { NButton, NIcon, NDropdown, useNotification } from 'naive-ui'
-import { Flash } from '@vicons/ionicons5'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
+import { Eraser, Zap } from '@lucide/vue'
+import ConfirmDialog from '/@/components/ConfirmDialog.vue'
+import { Button } from '/@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '/@/components/ui/dropdown-menu'
 import { useViewerStore } from '/@/store/viewerStore'
-import { computed, ref } from 'vue'
-import WarningModal from './modal/WarningModal.vue'
-import useLocale from '/@/use/locale'
-import { h } from 'vue'
 
 const viewerStore = useViewerStore()
-const notify = useNotification()
-const { translate } = useLocale()
+const { t } = useI18n()
 
 const selectedKey = ref('')
 const modalContent = ref('')
 const showWarning = ref(false)
 
-const options = () => [
-  {
-    label: translate('viewer.quickActions.clearDockings.label'),
-    key: 'clear dockings',
-    icon: () => h(NIcon, { size: '14' }, { default: () => h(Flash) }),
-    disabled: viewerStore.dockings.length ? false : true,
-  },
-  // {
-  //   label: 'Replace Portals',
-  //   key: 'Replace specify portals',
-  //   icon: () => h(NIcon, { size: '14' }, { default: () => h(Flash) }),
-  //   disabled: viewerStore.dockings.length ? false : true
-  // }
-]
-
 const handleSelect = (key: string) => {
   if (key === 'clear dockings') {
     selectedKey.value = key
-    modalContent.value = translate('viewer.quickActions.clearDockings.warning')
+    modalContent.value = t('viewer.quickActions.clearDockings.warning')
     showWarning.value = true
   }
 }
 
-const handleWarningConfirm = (key: string) => {
+const handleWarningConfirm = async (key: string) => {
   if (key === 'clear dockings') {
-    clearDockings()
-    notify.success({ content: 'All dockings cleared', duration: 2000 })
+    await clearDockings()
+    toast.success(t('viewer.notify.dockingsCleared'), { duration: 2000 })
   }
 }
 
@@ -65,5 +78,3 @@ const clearDockings = async () => {
   await viewerStore.ClearDockings()
 }
 </script>
-
-<style lang="postcss" scoped></style>

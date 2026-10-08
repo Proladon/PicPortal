@@ -1,55 +1,111 @@
 <template>
-  <main class="projects">
-    <n-scrollbar>
-      <n-spin :show="loading">
-        <div class="project-list">
+  <main class="projects flex h-full flex-col">
+    <header
+      class="flex flex-wrap items-end justify-between gap-4 border-b px-8 pt-7 pb-5"
+    >
+      <div class="min-w-0">
+        <h1 class="text-xl font-semibold tracking-tight">
+          {{ t('projects.pageTitle') }}
+        </h1>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ t('projects.description') }}
+          <span v-if="projectsList.length" class="tabular-nums">
+            · {{ t('projects.count', { count: projectsList.length }) }}
+          </span>
+        </p>
+      </div>
+      <section class="btn-container flex flex-wrap items-center gap-2">
+        <Button
+          v-if="desktop.runtime === 'tauri'"
+          class="import-settings-btn"
+          variant="ghost"
+          :disabled="loading"
+          @click="importSettings"
+        >
+          <Download />
+          {{ t('projects.importElectron') }}
+        </Button>
+        <Button
+          class="import-project-btn"
+          variant="outline"
+          :disabled="loading"
+          @click="importProject"
+        >
+          <FolderOpen />
+          {{
+            desktop.runtime === 'tauri'
+              ? t('projects.openExisting')
+              : t('projects.import')
+          }}
+        </Button>
+        <Button
+          class="new-project-btn"
+          :disabled="loading"
+          @click="showCreateProjectModal = true"
+        >
+          <Plus />
+          {{ t('projects.newProject') }}
+        </Button>
+      </section>
+    </header>
+
+    <div class="relative min-h-0 flex-1">
+      <div class="h-full overflow-y-auto">
+        <div
+          v-if="projectsList.length"
+          class="project-list grid gap-4 p-8"
+          style="grid-template-columns: repeat(auto-fill, minmax(230px, 1fr))"
+        >
           <ProjectCard
-            v-for="(project, index) in projectsList"
-            :key="index"
+            v-for="project in projectsList"
+            :key="project.id"
             :project="project"
             @open="openProject"
             @refresh="refreshProjects"
           />
-          <ProjectCard
-            v-if="desktop.runtime === 'electron'"
-            newBtnCard
-            @newProject="showCreateProjectModal = true"
-          />
         </div>
-      </n-spin>
-    </n-scrollbar>
-    <DropZone
-      v-if="desktop.runtime === 'tauri'"
-      projects
-      class="mx-10 h-12"
-      @paths="openDroppedProjects"
-    />
-    <section class="btn-container">
-      <n-button
-        v-if="desktop.runtime === 'tauri'"
-        :disabled="loading"
-        @click="showCreateProjectModal = true"
-        >新增專案</n-button
+        <Empty v-else-if="loaded" class="project-list h-full">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FolderKanban />
+            </EmptyMedia>
+            <EmptyTitle>{{ t('projects.empty.title') }}</EmptyTitle>
+            <EmptyDescription>{{
+              t('projects.empty.description')
+            }}</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent class="flex-row justify-center">
+            <Button size="sm" @click="showCreateProjectModal = true">
+              <Plus />
+              {{ t('projects.newProject') }}
+            </Button>
+            <Button size="sm" variant="outline" @click="importProject">
+              <FolderOpen />
+              {{
+                desktop.runtime === 'tauri'
+                  ? t('projects.openExisting')
+                  : t('projects.import')
+              }}
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </div>
+      <div
+        v-if="loading"
+        class="loading-overlay absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px]"
       >
-      <n-button
-        v-if="desktop.runtime === 'tauri'"
-        :disabled="loading"
-        @click="importSettings"
-        >匯入 Electron 設定</n-button
-      >
-      <n-button
-        secondary
-        type="primary"
-        :disabled="loading"
-        @click="importProject"
-      >
-        {{
-          desktop.runtime === 'tauri'
-            ? '開啟既有專案 (.db)'
-            : translate('projects.import')
-        }}
-      </n-button>
-    </section>
+        <Spinner class="size-6 text-muted-foreground" />
+      </div>
+    </div>
+
+    <footer v-if="desktop.runtime === 'tauri'" class="px-8 pb-6">
+      <DropZone
+        projects
+        class="h-14"
+        :hint="t('projects.dropHint')"
+        @paths="openDroppedProjects"
+      />
+    </footer>
   </main>
 
   <CreateProjectModal
@@ -72,8 +128,20 @@ import ProjectCard from './components/ProjectCard.vue'
 import DropZone from '/@/components/DropZone.vue'
 import CreateProjectModal from './components/CreateProjectModal.vue'
 import EditProjectModal from './components/EditProjectModal.vue'
-import { NScrollbar, NButton, useNotification, NSpin } from 'naive-ui'
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
+import { Download, FolderKanban, FolderOpen, Plus } from '@lucide/vue'
+import { Button } from '/@/components/ui/button'
+import { Spinner } from '/@/components/ui/spinner'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '/@/components/ui/empty'
 import { importProjectDialog } from '/@/utils/browserDialog'
 import { useDesktop } from '/@/desktop'
 import { reportDesktopError } from '/@/desktop/status'
@@ -91,11 +159,12 @@ import { useTheme } from '/@/use/theme'
 const desktop = useDesktop()
 const { fileSystem, userStore } = desktop
 const router = useRouter()
-const notify = useNotification()
 const appStore = useAppStore()
-const { translate, changeLocale } = useLocale()
+const { t } = useI18n()
+const { changeLocale } = useLocale()
 // ANCHOR Data
 const loading = ref<boolean>(false)
+const loaded = ref<boolean>(false)
 const projectsList = ref<Project[]>([])
 const showCreateProjectModal = ref(false)
 const showImportProjectEditModal = ref(false)
@@ -117,28 +186,23 @@ const openProject = async (project: any) => {
     return
   }
   const [file, fileError] = await fileSystem.checkExist(project.path)
-  if (fileError) return notify.error({ content: fileError })
+  if (fileError) return toast.error(fileError)
   if (!file) {
-    return notify.error({
-      content: translate('projects.notify.notFoundProject'),
+    return toast.error(t('projects.notify.notFoundProject'), {
       duration: 3000,
     })
-    // const projects = await userStore.get('projects')
-    // const filterProjects = projects.filter((p: any) => p.id !== project.id)
-    // await userStore.set('projects', filterProjects)
-    // await refreshProjects()
   }
   appStore.SetOpenProject(project)
   // TODO Loading
   const [dbData, dbError] = await appStore.ConnectProjectDB()
-  if (dbError) return notify.error({ content: dbError })
+  if (dbError) return toast.error(String(dbError))
   await appStore.SyncDBData({ dbData })
   router.push({ name: 'GridView' })
 }
 
 const importProject = async () => {
   if (useViewerStore().wrap.wraping)
-    return notify.warning({ content: '請先完成批次作業與衝突處理' })
+    return toast.warning(t('projects.notify.busy'))
   if (loading.value) return
   loading.value = true
   try {
@@ -222,13 +286,13 @@ const importSettings = async () => {
     if (!result) return
     const settings = await getSettings()
     changeLocale(settings.general.locale)
-    await useTheme().setTheme(settings.general.theme)
+    useTheme().applySettings(settings.general)
     useViewerStore().SET_PORTAL_PANEL_POSITION(
       settings.viewer.portalPanelPosition
     )
-    notify.success({
-      content: `設定匯入完成，新增 ${result.addedProjects} 個專案；已存在的設定已保留`,
-    })
+    toast.success(
+      t('projects.notify.settingsImported', { count: result.addedProjects })
+    )
     await refreshProjects()
   } catch (error) {
     reportDesktopError(error)
@@ -252,6 +316,7 @@ const refreshProjects = async () => {
     reportDesktopError(error)
   } finally {
     loading.value = false
+    loaded.value = true
   }
 }
 
@@ -260,20 +325,3 @@ onMounted(async () => {
   await refreshProjects()
 })
 </script>
-
-<style lang="postcss" scoped>
-.projects {
-  @apply w-full h-full flex flex-col justify-between pb-10;
-}
-.project-list {
-  @apply flex flex-wrap flex-1 p-10 gap-5 justify-center;
-}
-
-.btn-container {
-  @apply flex justify-center gap-5 px-10 pt-[20px];
-}
-
-.new-project-btn {
-  @apply bg-teal-400 text-gray-800 px-5 py-2 rounded-sm;
-}
-</style>

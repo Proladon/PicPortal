@@ -1,61 +1,117 @@
 <template>
-  <n-scrollbar>
-    <div class="about">
-      <div class="left-pane">
-        <!-- developer-info -->
-        <section class="developer-info">
-          <main class="card">
-            <img class="avatar object-cover" :src="avatar" />
+  <div class="about h-full overflow-y-auto">
+    <div class="mx-auto flex max-w-3xl flex-col gap-6 px-8 py-8">
+      <section class="flex items-center gap-4">
+        <div
+          class="flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md"
+        >
+          <Aperture class="size-8" />
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-2xl font-semibold tracking-tight">
+            PicPortal {{ version }}
+          </h1>
+          <p class="text-sm text-muted-foreground">{{ t('about.tagline') }}</p>
+        </div>
+        <Badge variant="outline" class="ml-auto capitalize">{{
+          runtime
+        }}</Badge>
+      </section>
 
-            <article class="flex flex-col">
-              <h3 class="text-xl">Proladon</h3>
-              <div class="mt-[10px]">
-                <div
-                  class="flex items-center cursor-pointer hover:text-primary"
-                  @click="appWindow.openExternal('https://github.com/Proladon')"
-                >
-                  <n-icon size="20" class="mr-2"> <logo-github /></n-icon>
-                  <span>Github</span>
-                </div>
-              </div>
-            </article>
-          </main>
-        </section>
+      <div class="grid gap-4 md:grid-cols-2">
+        <Card class="developer-info">
+          <CardHeader>
+            <CardTitle>{{ t('about.developer') }}</CardTitle>
+          </CardHeader>
+          <CardContent class="flex items-center gap-4">
+            <img
+              class="avatar size-16 rounded-xl object-cover ring-1 ring-foreground/10"
+              :src="avatar"
+              alt=""
+            />
+            <div class="flex flex-col items-start gap-2">
+              <p class="text-base font-semibold">Proladon</p>
+              <Button
+                size="sm"
+                variant="outline"
+                @click="appWindow.openExternal('https://github.com/Proladon')"
+              >
+                <GithubIcon />
+                GitHub
+                <ExternalLink class="opacity-60" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-        <!-- version-info -->
-        <n-alert :show-icon="false">
-          <div class="mb-[10px]">
-            <p class="text-primary">PicPortal {{ version }}</p>
-          </div>
-
-          <div class="text-base">
-            <p>平台：{{ desktopPlatform.os }}</p>
-            <p v-for="(value, name) in platform" :key="name">{{ name }}: {{ value }}</p>
-          </div>
-        </n-alert>
-
-        <!-- tech-info -->
-        <section class="logo-list flex-1">
-          <img src="../../../assets/about/tools/vite.svg" alt="vite" />
-          <img src="../../../assets/about/tools/vue.svg" alt="vue" />
-          <img src="../../../assets/about/tools/typescript.svg" alt="ts" />
-          <img v-if="runtime === 'electron'" src="../../../assets/about/tools/electron.png" alt="electron" />
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>{{ t('about.system') }}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+              <dt class="text-muted-foreground">{{ t('about.platform') }}</dt>
+              <dd class="font-mono text-xs leading-5">
+                {{ desktopPlatform.os }}
+              </dd>
+              <dt class="text-muted-foreground">{{ t('about.runtime') }}</dt>
+              <dd class="font-mono text-xs leading-5">{{ runtime }}</dd>
+              <template v-for="(value, name) in platform" :key="name">
+                <dt class="text-muted-foreground">{{ name }}</dt>
+                <dd class="font-mono text-xs leading-5 break-all">
+                  {{ value }}
+                </dd>
+              </template>
+            </dl>
+          </CardContent>
+        </Card>
       </div>
-      <div class="right-pane"></div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{{ t('about.builtWith') }}</CardTitle>
+        </CardHeader>
+        <CardContent class="logo-list flex flex-wrap items-center gap-6">
+          <img
+            class="h-8"
+            src="../../../assets/about/tools/vite.svg"
+            alt="vite"
+          />
+          <img
+            class="h-8"
+            src="../../../assets/about/tools/vue.svg"
+            alt="vue"
+          />
+          <img
+            class="h-8"
+            src="../../../assets/about/tools/typescript.svg"
+            alt="ts"
+          />
+          <img
+            v-if="runtime === 'electron'"
+            class="h-8"
+            src="../../../assets/about/tools/electron.png"
+            alt="electron"
+          />
+        </CardContent>
+      </Card>
     </div>
-  </n-scrollbar>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import avatar from '/@/assets/Oreki.png'
-import { LogoGithub } from '@vicons/ionicons5'
-import { NIcon, NAlert, NScrollbar } from 'naive-ui'
-import { ref } from 'vue'
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Aperture, ExternalLink } from '@lucide/vue'
+import GithubIcon from '/@/components/icons/GithubIcon.vue'
+import { Badge } from '/@/components/ui/badge'
+import { Button } from '/@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '/@/components/ui/card'
 import { useDesktop } from '/@/desktop'
 const { appWindow, platform: desktopPlatform, runtime } = useDesktop()
 
+const { t } = useI18n()
 const version = ref('')
 const platform = desktopPlatform.versions
 
@@ -63,33 +119,3 @@ onMounted(async () => {
   version.value = await appWindow.getAppVersion()
 })
 </script>
-
-<style scoped lang="postcss">
-.about {
-  @apply w-full h-full p-[30px] py-[10px];
-  @apply flex gap-[30px];
-}
-
-.developer-info {
-  @apply flex flex-col gap-2 text-left;
-
-  .card {
-    @apply flex gap-5;
-    .avatar {
-      @apply w-[100px] h-[100px] rounded-xl !bg-cover !bg-center;
-    }
-  }
-}
-.logo-list {
-  @apply flex gap-5;
-  > img {
-    @apply w-[40px];
-  }
-}
-
-.left-pane,
-.right-pane {
-  @apply w-full h-full;
-  @apply flex flex-col gap-[20px];
-}
-</style>

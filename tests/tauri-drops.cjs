@@ -25,15 +25,15 @@ async function exerciseDrops(h) {
   await evaluate(`globalThis.$viewer=$pinia._s.get('viewer');globalThis.$portal=$pinia._s.get('portalPane')`)
 
   const openDropModal = async () => {
-    await evaluate(`document.querySelector('.group-header .controls-icon button .n-icon').click()`)
-    await waitFor(() => evaluate(`!!document.querySelector('.n-modal .n-tabs-tab')`))
-    await evaluate(`[...document.querySelectorAll('.n-modal .n-tabs-tab')].find(e=>/Drop|拖/.test(e.textContent)).click()`)
+    await evaluate(`document.querySelector('.group-header .add-portal-btn').click()`)
+    await waitFor(() => evaluate(`!!document.querySelector('[role="dialog"] [role="tab"]')`))
+    await evaluate(`[...document.querySelectorAll('[role="dialog"] [role="tab"]')].find(e=>/Drop|拖/.test(e.textContent)).dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}))`)
     await waitFor(() => evaluate(`!!document.querySelector('.native-drop-zone')`))
   }
   const escape = async () => {
     await send('Input.dispatchKeyEvent', { type:'keyDown', key:'Escape', code:'Escape', windowsVirtualKeyCode:27 })
     await send('Input.dispatchKeyEvent', { type:'keyUp', key:'Escape', code:'Escape', windowsVirtualKeyCode:27 })
-    await waitFor(() => evaluate(`!document.querySelector('.n-modal')`))
+    await waitFor(() => evaluate(`!document.querySelector('[role="dialog"]')`))
     // PortalTagModal emits close after its exit transition; wait for unmount
     // before clicking the parent control to create a fresh subscription.
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -58,8 +58,8 @@ async function exerciseDrops(h) {
   await waitFor(() => evaluate(`document.querySelector('.folder-list')?.textContent.includes('拖入分類')`), 1200000)
   assert.equal(await evaluate(`document.querySelectorAll('.folder-list .folder-item').length`), 1)
   // DropZone's dashed button is also block; the footer is the final block button.
-  await evaluate(`Array.from(document.querySelectorAll('.n-modal .n-button--block')).pop().click()`)
-  await waitFor(() => evaluate(`!document.querySelector('.n-modal')`))
+  await evaluate(`document.querySelector('[role="dialog"] .modal-submit').click()`)
+  await waitFor(() => evaluate(`!document.querySelector('[role="dialog"]')`))
   const saved = JSON.parse(await fs.readFile(normal, 'utf8'))
   const added = saved.portals[0].childs.find(p => p.link === folder)
   assert(added?.id)

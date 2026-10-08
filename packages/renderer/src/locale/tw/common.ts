@@ -7,5 +7,10 @@ export default {
   save: '儲存',
   reset: '重置',
   warning: '警告',
-  confirm: '確定'
+  confirm: '確定',
+  close: '關閉',
+  browse: '瀏覽',
+  clear: '清除',
+  loading: '載入中…',
+  dismiss: '關閉提示',
 }

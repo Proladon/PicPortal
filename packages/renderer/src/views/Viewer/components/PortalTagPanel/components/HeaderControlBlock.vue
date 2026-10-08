@@ -1,32 +1,68 @@
 <template>
-  <div v-if="!showPortalSearch" class="controls-container">
-    <n-button text @click="changePortalPanelPosition">
-      <n-icon
-        size="20"
-        :class="[
-          { transform: portalPanelPosition === 'right' },
-          { 'rotate-180': portalPanelPosition === 'right' }
-        ]"
-        class="cursor-pointer"
-        ><EnterSharp
-      /></n-icon>
-    </n-button>
-    <n-button text :disabled="readOnly" @click="showPortalGroupModal = true">
-      <n-icon size="20" class="cursor-pointer"><Folder /></n-icon>
-    </n-button>
-    <n-button text @click="showPortalSearch = true">
-      <n-icon size="20" class="cursor-pointer"><Search /></n-icon>
-    </n-button>
-  </div>
+  <div class="flex shrink-0 flex-col gap-2 px-3 pt-3 pb-2.5">
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex min-w-0 items-center gap-2 text-sm font-semibold">
+        <Waypoints class="size-4 shrink-0 text-primary" />
+        <span class="truncate">{{ t('portalPane.title') }}</span>
+        <Badge variant="secondary" class="h-4 px-1.5 text-[10px] tabular-nums">
+          {{ portalPaneStore.flattenPortals.length }}
+        </Badge>
+      </div>
+      <div class="controls-container flex shrink-0 items-center">
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              class="new-group-btn"
+              variant="ghost"
+              size="icon-sm"
+              :disabled="readOnly"
+              :aria-label="t('portalPane.controls.newGroup')"
+              @click="showPortalGroupModal = true"
+            >
+              <FolderPlus />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{{
+            t('portalPane.controls.newGroup')
+          }}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              class="panel-side-btn"
+              variant="ghost"
+              size="icon-sm"
+              :aria-label="sideLabel"
+              @click="changePortalPanelPosition"
+            >
+              <PanelLeft v-if="portalPanelPosition === 'right'" />
+              <PanelRight v-else />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{{ sideLabel }}</TooltipContent>
+        </Tooltip>
+      </div>
+    </div>
 
-  <div v-if="showPortalSearch" class="flex mb-[12px]">
-    <n-button text class="pr-[5px]" @click="resetSearch">
-      <n-icon size="20"><ChevronBack /></n-icon>
-    </n-button>
-    <n-input
-      :placeholder="translate('portalPane.search.placeholder')"
-      v-model:value="searchPortalName"
-    />
+    <InputGroup class="h-8">
+      <InputGroupAddon>
+        <Search />
+      </InputGroupAddon>
+      <InputGroupInput
+        v-model="searchPortalName"
+        class="portal-search"
+        :placeholder="t('portalPane.search.placeholder')"
+      />
+      <InputGroupAddon v-if="searchPortalName" align="inline-end">
+        <InputGroupButton
+          size="icon-xs"
+          :aria-label="t('common.clear')"
+          @click="resetSearch"
+        >
+          <X />
+        </InputGroupButton>
+      </InputGroupAddon>
+    </InputGroup>
   </div>
 
   <PortalGroupModal
@@ -38,30 +74,52 @@
 
 <script setup lang="ts">
 import PortalGroupModal from './Modal/PortalGroupModal.vue'
-import { NIcon, NButton, NInput } from 'naive-ui'
-import { EnterSharp, Folder, Search, ChevronBack } from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import {
+  FolderPlus,
+  PanelLeft,
+  PanelRight,
+  Search,
+  Waypoints,
+  X,
+} from '@lucide/vue'
+import { Badge } from '/@/components/ui/badge'
+import { Button } from '/@/components/ui/button'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '/@/components/ui/input-group'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '/@/components/ui/tooltip'
 import { useViewerStore } from '/@/store/viewerStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
-import useLocale from '/@/use/locale'
 import { useAppStore } from '/@/store/appStore'
 const readOnly = computed(() => useAppStore().readOnly)
 
 // ANCHOR Use
 const viewerStore = useViewerStore()
 const portalPaneStore = usePortalPaneStore()
-const { translate } = useLocale()
+const { t } = useI18n()
 // ANCHOR Data
-const showPortalSearch = ref<boolean>(false)
 const showPortalGroupModal = ref<boolean>(false)
 // ANCHOR Computed
 const portalPanelPosition = computed(() => viewerStore.portalPanelPosition)
+const sideLabel = computed(() =>
+  portalPanelPosition.value === 'right'
+    ? t('portalPane.controls.moveLeft')
+    : t('portalPane.controls.moveRight')
+)
 const searchPortalName = computed({
   get: () => portalPaneStore.searchPortalName,
-  set: (value: string) => {
-    if (!value) portalPaneStore.searchPortalName = ''
-    portalPaneStore.searchPortalName = value.trim()
-  }
+  set: (value: string | number) => {
+    portalPaneStore.searchPortalName = String(value ?? '').trim()
+  },
 })
 // ANCHOR Methods
 const changePortalPanelPosition = () => {
@@ -73,12 +131,5 @@ const changePortalPanelPosition = () => {
 
 const resetSearch = () => {
   portalPaneStore.searchPortalName = ''
-  showPortalSearch.value = false
 }
 </script>
-
-<style scoped lang="postcss">
-.controls-container {
-  @apply flex justify-between items-center mb-[10px] py-2 rounded-md;
-}
-</style>

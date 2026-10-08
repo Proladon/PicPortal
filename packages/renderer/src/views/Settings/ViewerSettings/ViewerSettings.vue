@@ -1,32 +1,41 @@
 <template>
-  <div class="general-settings">
-    <n-form>
-      <n-form-item label="Portalpanel Position">
-        <n-button-group>
-          <n-button
-            :type="portalPanelPosition === 'left' ? 'primary' : 'default'"
-            @click="syncModel.portalPanelPosition = 'left'"
-          >
-            左邊
-          </n-button>
-          <n-button
-            :type="portalPanelPosition === 'right' ? 'primary' : 'default'"
-            @click="syncModel.portalPanelPosition = 'right'"
-          >
-            右邊
-          </n-button>
-        </n-button-group>
-      </n-form-item>
-    </n-form>
+  <div class="general-settings viewer-settings flex flex-col gap-8">
+    <SettingsSection :title="t('settings.viewer.title')">
+      <SettingsRow
+        :label="t('settings.viewer.portalPanelPosition')"
+        :description="t('settings.viewer.portalPanelPositionDescription')"
+      >
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          class="panel-position"
+          :model-value="portalPanelPosition"
+          @update:model-value="onPositionChange"
+        >
+          <ToggleGroupItem value="left" class="gap-1.5 px-2.5">
+            <PanelLeft />
+            {{ t('settings.viewer.left') }}
+          </ToggleGroupItem>
+          <ToggleGroupItem value="right" class="gap-1.5 px-2.5">
+            <PanelRight />
+            {{ t('settings.viewer.right') }}
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </SettingsRow>
+    </SettingsSection>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItem, NButtonGroup, NButton } from 'naive-ui'
 import { computed } from 'vue'
-import useLocale from '/@/use/locale'
+import { useI18n } from 'vue-i18n'
+import { PanelLeft, PanelRight } from '@lucide/vue'
+import SettingsRow from '../components/SettingsRow.vue'
+import SettingsSection from '../components/SettingsSection.vue'
+import { ToggleGroup, ToggleGroupItem } from '/@/components/ui/toggle-group'
 
-const { translate } = useLocale()
+const { t } = useI18n()
 const emit = defineEmits(['update:model'])
 const props = defineProps({
   model: {
@@ -45,6 +54,9 @@ const syncModel = computed({
     return emit('update:model', value)
   },
 })
-</script>
 
-<style scoped lang="postcss"></style>
+const onPositionChange = (position: unknown) => {
+  if (position === 'left' || position === 'right')
+    syncModel.value.portalPanelPosition = position
+}
+</script>

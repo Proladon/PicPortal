@@ -1,26 +1,22 @@
 <template>
-  <n-spin v-if="loading" class="full grid-center-items" />
-  <n-empty
-    v-else-if="!pngs.length"
-    description="No images found"
-    class="full flex-center-items"
-  />
-  <n-scrollbar v-else class="h-full">
-    <div class="list-view">
+  <ViewerState v-if="loading || !pngs.length" :loading="loading" />
+  <div v-else class="h-full overflow-y-auto">
+    <div class="list-view flex flex-col gap-2 px-4 pt-1 pb-6">
       <VirtualListItem
         v-for="item in pngs"
         :key="item.path"
+        class="!h-[132px]"
         :img="item.path"
         @click="selectItem($event, item)"
       />
     </div>
-  </n-scrollbar>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
-import { NEmpty, NScrollbar, NSpin } from 'naive-ui'
 import VirtualListItem from '../VirtualListView/components/VirtualListItem.vue'
+import ViewerState from '../ViewerState.vue'
 import useViewer from '/@/use/useViewer'
 import { useViewerStore } from '/@/store/viewerStore'
 const viewerStore = useViewerStore()
@@ -40,12 +36,3 @@ const { loading, pngs, mainFolder, selectItem, showFiles } = useViewer(
 watch(mainFolder, chunkFiles)
 onMounted(chunkFiles)
 </script>
-
-<style scoped lang="postcss">
-.list-view {
-  @apply px-5 pb-10;
-}
-.list-view :deep(.virtual-list-item) {
-  height: 190px;
-}
-</style>

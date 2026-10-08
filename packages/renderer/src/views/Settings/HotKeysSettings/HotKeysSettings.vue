@@ -1,15 +1,13 @@
 <template>
-  <div class="hotkeys-settings">
-    <n-form label-placement="left">
-      <n-form-item label="清除已啟用portals">
-        <KeyBindInput v-model:model="syncModel.clearPortals" />
-      </n-form-item>
-    </n-form>
+  <div class="hotkeys-settings flex flex-col gap-2">
+    <label class="flex items-center justify-between gap-4 text-sm">
+      清除已啟用portals
+      <KeyBindInput v-model:model="syncModel.clearPortals" class="w-48" />
+    </label>
   </div>
 </template>
 
 <script setup lang="ts">
-import { NForm, NFormItem } from 'naive-ui'
 import KeyBindInput from './components/KeyBindInput.vue'
 import { computed } from 'vue'
 
@@ -30,5 +28,3 @@ const syncModel = computed({
   },
 })
 </script>
-
-<style scoped lang="postcss"></style>

@@ -12,9 +12,6 @@
       "vite/client",
       "node"
     ],
-    "typeRoots": [
-      "node_modules/@types",
-    ],
     "lib": ["ESNext"]
   },
 }

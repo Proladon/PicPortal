@@ -1,24 +1,33 @@
 <template>
-  <div ref="dropZoneRef" class="native-drop-zone h-full">
-    <n-button class="cursor-default h-full" dashed block>
-      <n-icon size="24" :depth="3">
-        <Archive />
-      </n-icon>
-    </n-button>
+  <div
+    ref="dropZoneRef"
+    class="native-drop-zone flex min-h-12 items-center justify-center gap-2 rounded-xl border border-dashed px-4 text-sm text-muted-foreground transition-colors"
+    :class="
+      isOverDropZone
+        ? 'border-primary bg-primary/5 text-primary'
+        : 'border-border bg-muted/20'
+    "
+  >
+    <slot>
+      <FolderInput class="size-5 shrink-0 opacity-70" />
+      <span v-if="hint" class="truncate">{{ hint }}</span>
+    </slot>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useDropZone } from '@vueuse/core'
-import { NButton, NIcon } from 'naive-ui'
-import { Archive } from '@vicons/ionicons5'
+import { FolderInput } from '@lucide/vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useDesktop } from '/@/desktop'
 import { reportDesktopError } from '/@/desktop/status'
 
 const dropZoneRef = ref<HTMLDivElement>()
 const emit = defineEmits(['drop', 'paths'])
-const props = defineProps({ projects: Boolean })
+const props = defineProps({
+  projects: Boolean,
+  hint: { type: String, default: '' },
+})
 const desktop = useDesktop()
 let disposed = false
 let unlisten: (() => void) | undefined
@@ -63,5 +72,3 @@ const onDrop = (files: File[] | null) => {
 
 const { isOverDropZone } = useDropZone(dropZoneRef, onDrop)
 </script>
-
-<style scoped lang="postcss"></style>

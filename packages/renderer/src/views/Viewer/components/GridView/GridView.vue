@@ -1,43 +1,98 @@
 <template>
-  <n-spin v-if="loading" class="full grid-center-items" />
-  <n-empty
-    v-if="!pngs.length && !loading"
-    description="No images found"
-    class="full flex-center-items"
-  />
-  <n-scrollbar v-if="pngs.length && !loading" class="grid-view">
-    <div
-      class="list-container"
-      :style="`grid-template-columns: repeat(auto-fit, minmax(${imgSize}px, 1fr));`"
-    >
-      <GridItem
-        v-for="item in itemsList"
-        :key="item.path"
-        :img="item.path"
-        @click="selectItem($event, item)"
-      />
+  <ViewerState v-if="loading || !pngs.length" :loading="loading" />
+  <div v-else class="flex h-full flex-col">
+    <div class="grid-view min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-4">
+      <div
+        class="list-container grid gap-3"
+        :style="`grid-template-columns: repeat(auto-fill, minmax(${imgSize}px, 1fr));`"
+      >
+        <GridItem
+          v-for="item in itemsList"
+          :key="item.path"
+          :img="item.path"
+          @click="selectItem($event, item)"
+        />
+      </div>
     </div>
-  </n-scrollbar>
-  <div v-if="pngs.length > 1 && !loading" class="pagination-container">
-    <n-pagination
-      v-model:page="page"
-      :page-count="pngs.length"
-      show-quick-jumper
-    />
+    <div
+      v-if="pngs.length > 1"
+      class="pagination-container flex shrink-0 items-center gap-3 border-t px-4 py-1.5"
+    >
+      <span class="w-28 shrink-0 text-xs text-muted-foreground tabular-nums">
+        {{ t('viewer.pagination.summary', { page, total: pngs.length }) }}
+      </span>
+      <Pagination
+        v-slot="{ page: current }"
+        v-model:page="page"
+        :total="pngs.length"
+        :items-per-page="1"
+        :sibling-count="1"
+        show-edges
+        class="min-w-0 flex-1"
+      >
+        <PaginationContent v-slot="{ items }">
+          <PaginationPrevious
+            size="sm"
+            :aria-label="t('viewer.pagination.previous')"
+          >
+            <ChevronLeft />
+          </PaginationPrevious>
+          <template v-for="(pageItem, index) in items" :key="index">
+            <PaginationItem
+              v-if="pageItem.type === 'page'"
+              :value="pageItem.value"
+              :is-active="pageItem.value === current"
+              size="icon-sm"
+              class="tabular-nums"
+            >
+              {{ pageItem.value }}
+            </PaginationItem>
+            <PaginationEllipsis v-else :index="index" />
+          </template>
+          <PaginationNext size="sm" :aria-label="t('viewer.pagination.next')">
+            <ChevronRight />
+          </PaginationNext>
+        </PaginationContent>
+      </Pagination>
+      <label
+        class="flex w-28 shrink-0 items-center justify-end gap-2 text-xs text-muted-foreground"
+      >
+        {{ t('viewer.pagination.jump') }}
+        <Input
+          type="number"
+          class="h-7 w-14 px-2 text-xs tabular-nums"
+          :min="1"
+          :max="pngs.length"
+          @keydown.enter="jumpTo"
+        />
+      </label>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import GridItem from './components/GridItem.vue'
-import { computed, ref } from 'vue'
+import ViewerState from '../ViewerState.vue'
+import { computed } from 'vue'
 import { onMounted, onUnmounted, watch } from 'vue'
-import { NScrollbar, NPagination, NEmpty, NSpin } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
+import { ChevronLeft, ChevronRight } from '@lucide/vue'
+import { Input } from '/@/components/ui/input'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from '/@/components/ui/pagination'
 import useViewer from '/@/use/useViewer'
 import { chunk, map, get } from 'lodash-es'
 import { useAppStore } from '/@/store/appStore'
 import { useViewerStore } from '/@/store/viewerStore'
 import hotkeys from 'hotkeys-js'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
 
@@ -64,6 +119,13 @@ const { loading, pngs, page, mainFolder, selectItem, showFiles } = useViewer(
   20,
   chunkFiles
 )
+
+const jumpTo = (event: KeyboardEvent) => {
+  const input = event.target as HTMLInputElement
+  const target = Math.round(Number(input.value))
+  if (target >= 1 && target <= pngs.value.length) page.value = target
+  input.value = ''
+}
 
 // --- Watch ---
 watch(mainFolder, async () => {
@@ -96,21 +158,3 @@ onUnmounted(() => {
   hotkeys.unbind('left', 'viewer', previousPage)
 })
 </script>
-
-<style lang="postcss" scoped>
-:deep(.n-scrollbar-content) {
-  @apply h-full;
-}
-
-.grid-view {
-  @apply relative overflow-y-auto h-full flex flex-col justify-between;
-}
-.list-container {
-  @apply w-full grid gap-5 pb-[30px];
-}
-
-.pagination-container {
-  @apply sticky bottom-0 left-0 right-0 py-2 px-[15px];
-  @apply bg-primary-bg grid place-content-center;
-}
-</style>

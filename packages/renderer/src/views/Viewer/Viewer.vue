@@ -1,63 +1,104 @@
 <template>
-  <div class="viewer">
-    <splitpanes v-if="portalPanelPosition === 'right'">
-      <pane>
-        <router-view></router-view>
-      </pane>
-      <pane size="30">
-        <PortalTagPanel />
-      </pane>
-    </splitpanes>
+  <div class="view-page h-full w-full">
+    <Empty v-if="!appStore.openProject" class="h-full">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <FolderKanban />
+        </EmptyMedia>
+        <EmptyTitle>{{ t('viewer.noProject.title') }}</EmptyTitle>
+        <EmptyDescription>{{
+          t('viewer.noProject.description')
+        }}</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button size="sm" as-child>
+          <router-link :to="{ name: 'Projects' }">
+            {{ t('viewer.noProject.goProjects') }}
+            <ArrowRight />
+          </router-link>
+        </Button>
+      </EmptyContent>
+    </Empty>
 
-    <splitpanes v-if="portalPanelPosition === 'left'">
-      <pane size="30">
-        <PortalTagPanel />
-      </pane>
-      <pane>
-        <router-view></router-view>
-      </pane>
-    </splitpanes>
+    <ResizablePanelGroup
+      v-else
+      :key="portalPanelPosition"
+      direction="horizontal"
+      :auto-save-id="`picportal-viewer-${portalPanelPosition}`"
+    >
+      <template v-if="portalPanelPosition === 'left'">
+        <ResizablePanel
+          :order="1"
+          :default-size="30"
+          :min-size="22"
+          :max-size="50"
+        >
+          <PortalTagPanel />
+        </ResizablePanel>
+        <ResizableHandle with-handle />
+        <ResizablePanel :order="2" :min-size="35">
+          <router-view></router-view>
+        </ResizablePanel>
+      </template>
+      <template v-else>
+        <ResizablePanel :order="1" :min-size="35">
+          <router-view></router-view>
+        </ResizablePanel>
+        <ResizableHandle with-handle />
+        <ResizablePanel
+          :order="2"
+          :default-size="30"
+          :min-size="22"
+          :max-size="50"
+        >
+          <PortalTagPanel />
+        </ResizablePanel>
+      </template>
+    </ResizablePanelGroup>
   </div>
   <FileExistModal
     :data="filesExist"
     v-if="filesExistCount > 0"
     :key="filesExist.id"
   />
-
-  <OpenProjectModal v-if="showOpenProjectModal" />
 </template>
 
 <script setup lang="ts">
-import OpenProjectModal from '/@/views/Viewer/components/OpenProjectModal.vue'
 import FileExistModal from '/@/components/Modal/FileExistModal.vue'
 import PortalTagPanel from './components/PortalTagPanel/PortalTagPanel.vue'
-import { Splitpanes, Pane } from 'splitpanes'
-import 'splitpanes/dist/splitpanes.css'
-import { useViewerStore } from '/@/store/viewerStore'
-import { computed, ref } from 'vue'
-import { onMounted, onUnmounted } from 'vue'
-import { useAppStore } from '/@/store/appStore'
+import { computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { ArrowRight, FolderKanban } from '@lucide/vue'
 import hotkeys from 'hotkeys-js'
+import { Button } from '/@/components/ui/button'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '/@/components/ui/empty'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '/@/components/ui/resizable'
+import { useViewerStore } from '/@/store/viewerStore'
+import { useAppStore } from '/@/store/appStore'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const viewerStore = useViewerStore()
 const portalPanelPosition = computed(() => viewerStore.portalPanelPosition)
-const showOpenProjectModal = ref<boolean>(false)
 const filesExistCount = computed(() => viewerStore.wrap.filesExist.length)
 const filesExist = computed(() => viewerStore.wrap.filesExist[0] || {})
 
 onMounted(() => {
   hotkeys.setScope('viewer')
-  if (!appStore.openProject) showOpenProjectModal.value = true
 })
 
 onUnmounted(() => {
   hotkeys.setScope('all')
 })
 </script>
-
-<style scoped lang="postcss">
-.viewer {
-  @apply w-full h-full;
-}
-</style>

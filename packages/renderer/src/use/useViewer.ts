@@ -1,4 +1,5 @@
-import { useMessage, useNotification } from 'naive-ui'
+import { toast } from 'vue-sonner'
+import { useI18n } from 'vue-i18n'
 import { watch } from 'vue'
 import { computed, ref } from 'vue'
 import { dataClone } from '/@/utils/data'
@@ -15,8 +16,7 @@ const useViewer = (
   const appStore = useAppStore()
   const viewerStore = useViewerStore()
   const portalPaneStore = usePortalPaneStore()
-  const message = useMessage()
-  const notify = useNotification()
+  const { t } = useI18n()
 
   const loading = ref(false)
   const pngs = ref<unknown>([])
@@ -76,7 +76,7 @@ const useViewer = (
     const htmlTarget = e.target.tagName
     if (ignore.includes(htmlTarget)) return
     if (!activePortals.value.length) {
-      message.warning('請先至少啟用一個 Portal')
+      toast.warning(t('viewer.notify.needPortal'))
       return
     }
 

@@ -16,7 +16,7 @@ async function exerciseCi(h) {
   assert.deepEqual(metadata, { os: 'win32', version, tauri: dependencies['@tauri-apps/api'] })
   for (const route of ['about', 'settings', 'projects']) {
     await evaluate(`location.hash='#/${route}'`)
-    await waitFor(() => evaluate(`!!document.querySelector('.${route}') && !document.querySelector('.n-spin-container--blur')`))
+    await waitFor(() => evaluate(`!!document.querySelector('.${route}') && !document.querySelector('.loading-overlay, .view-loading')`))
     assert.equal(await evaluate(`!!document.querySelector('.desktop-status')`), false)
   }
   assert.equal((await invoke('preferences_init')).completed, true)
@@ -64,7 +64,7 @@ async function exerciseCi(h) {
   await fs.rename(dataset.source, moved)
   try {
     await evaluate('$viewer.signal.refresh=true')
-    await waitFor(() => evaluate(`$viewer.folderFiles.length===0 && document.querySelector('.desktop-status')?.textContent.includes('NOT_FOUND') && !document.querySelector('.n-spin-container--blur')`))
+    await waitFor(() => evaluate(`$viewer.folderFiles.length===0 && document.querySelector('.desktop-status')?.textContent.includes('NOT_FOUND') && !document.querySelector('.loading-overlay, .view-loading')`))
   } finally { await fs.rename(moved, dataset.source) }
   await evaluate('$viewer.signal.refresh=true')
   await loadedImages('.image-item img')

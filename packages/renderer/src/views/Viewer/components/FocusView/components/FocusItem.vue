@@ -1,149 +1,66 @@
 <template>
-  <div class="focus-item">
-    <section class="viewer-container">
+  <div class="focus-item flex h-full min-h-0 flex-col gap-3">
+    <section
+      class="focus-stage relative min-h-0 flex-1 overflow-hidden rounded-xl bg-muted/40 ring-1 ring-foreground/5"
+    >
       <viewer
         :options="viewerOptions"
         :images="[toImageUrl(img)]"
-        class="viewer"
-        ref="viewer"
+        class="viewer size-full"
       >
-        <img class="w-full" :src="toImageUrl(img)" alt="" />
+        <img
+          class="size-full cursor-zoom-in object-contain"
+          :src="toImageUrl(img)"
+          alt=""
+        />
       </viewer>
     </section>
-    <hr />
-    <section class="info">
-      path: {{ img }}
-      <div class="portals" v-if="targetPortals.length">
-        <div class="portal-tag-list">
-          <n-tag
-            class="tag"
-            :closable="!appStore.readOnly"
-            @close="removePortal(portal)"
-            :color="{
-              color: portal.bg,
-              textColor: portal.fg,
-              borderColor: portal.bg
-            }"
+    <section
+      class="info flex shrink-0 items-start gap-4 rounded-xl border bg-card p-3"
+    >
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-medium">{{ fileName }}</p>
+        <p class="mt-0.5 font-mono text-[11px] break-all text-muted-foreground">
+          {{ img }}
+        </p>
+      </div>
+      <div class="portals flex max-w-[50%] flex-wrap justify-end gap-1.5">
+        <template v-if="targetPortals.length">
+          <PortalBadge
             v-for="portal in targetPortals"
             :key="portal.id"
-          >
-            {{ portal.name }}
-          </n-tag>
-        </div>
+            :portal="portal"
+            :closable="!appStore.readOnly"
+            @close="removePortal(portal)"
+          />
+        </template>
+        <span v-else class="text-xs text-muted-foreground">
+          {{ t('viewer.focus.noPortals') }}
+        </span>
       </div>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { sameFilePath } from '/@/utils/file'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import PortalBadge from '/@/components/PortalBadge.vue'
 import { toImageUrl } from '/@/desktop'
-import { computed, ref } from 'vue'
-import { onMounted, watch } from 'vue'
-import { NTag } from 'naive-ui'
-import { find, map, findIndex, pull } from 'lodash-es'
-import { dataClone } from '/@/utils/data'
+import { getFileName, getFileExt } from '/@/utils/file'
 import { useAppStore } from '/@/store/appStore'
-import { useViewerStore } from '/@/store/viewerStore'
-import { usePortalPaneStore } from '/@/store/portalPaneStore'
+import { useDockedPortals } from '/@/use/dockedPortals'
 
 const props = defineProps({
   img: {
-    type: String
-  }
+    type: String,
+  },
 })
+const { t } = useI18n()
 const appStore = useAppStore()
-const viewerStore = useViewerStore()
-const portalPaneStore = usePortalPaneStore()
 const viewerOptions = {}
-
-const targetPortals = ref<any>([])
-const target = ref<any>(null)
-const dockings = computed(() => viewerStore.dockings)
-const flattenPortals = computed(() => portalPaneStore.flattenPortals)
-
-// => 移除圖片上的 portal
-const removePortal = async (portal: any) => {
-  if (appStore.readOnly) return
-  const targetIndex = findIndex(dockings.value, (item: any) =>
-    sameFilePath(item.target, props.img)
-  )
-  const portalsRef: any = dataClone(target.value?.portals || [])
-  pull(portalsRef, portal.id)
-
-  if (!portalsRef.length) {
-    await appStore.DBSlice({ key: 'dockings', index: targetIndex })
-    await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
-    return
-  }
-
-  if (portalsRef.length) {
-    await appStore.DeepSaveToDB({
-      key: `[dockings][${targetIndex}][portals]`,
-      data: portalsRef
-    })
-    await appStore.SyncDBDataToState({ syncKeys: ['dockings'] })
-  }
-}
-
-// => 同步 docking
-const syncDockingsData = () => {
-  const exist = find(dockings.value, (item) =>
-    sameFilePath(item.target, props.img)
-  )
-
-  if (!exist) {
-    targetPortals.value = []
-    return
-  }
-  target.value = exist
-
-  targetPortals.value = exist.portals.flatMap((id) => {
-    const portal = flattenPortals.value.find((item) => item.id === id)
-    return portal ? [portal] : []
-  })
-}
-
-watch(dockings, () => {
-  console.log('dockings change')
-  syncDockingsData()
-  console.log(targetPortals.value)
-})
-
-watch(props, () => {
-  console.log('props change')
-  syncDockingsData()
-})
-
-onMounted(() => {
-  syncDockingsData()
-})
+const { targetPortals, removePortal } = useDockedPortals(() => props.img)
+const fileName = computed(
+  () => `${getFileName(props.img || '')}${getFileExt(props.img || '')}`
+)
 </script>
-
-<style lang="postcss" scoped>
-.focus-item {
-  @apply h-full flex flex-col;
-}
-
-.viewer-container {
-  @apply relative;
-}
-.viewer {
-  @apply overflow-y-hidden  flex-1;
-}
-
-img {
-  @apply w-full h-full object-contain;
-}
-.info {
-  @apply p-5 h-1/4;
-}
-
-.portals {
-  @apply top-0 left-0 w-full h-full py-2 px-3;
-}
-
-.portal-tag-list {
-  @apply flex flex-wrap gap-2 opacity-70 w-full;
-}
-</style>

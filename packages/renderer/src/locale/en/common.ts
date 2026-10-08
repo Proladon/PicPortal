@@ -7,5 +7,10 @@ export default {
   save: 'Save',
   reset: 'Reset',
   warning: 'Warning',
-  confirm: 'Confirm'
+  confirm: 'Confirm',
+  close: 'Close',
+  browse: 'Browse',
+  clear: 'Clear',
+  loading: 'Loading…',
+  dismiss: 'Dismiss',
 }

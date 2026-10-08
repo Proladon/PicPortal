@@ -1,53 +1,57 @@
-import { useAppStore } from '/@/store/appStore'
-import { GlobalThemeOverrides } from 'naive-ui'
+import { ref } from 'vue'
+import {
+  defaultAccentTheme,
+  defaultAppearance,
+  isAccentTheme,
+  isAppearance,
+} from '/@/config/theme'
+import type { AccentTheme, Appearance } from '/@/config/theme'
+
+const appearance = ref<Appearance>(defaultAppearance)
+const accent = ref<AccentTheme>(defaultAccentTheme)
+/** Whether the dark palette is currently applied (resolves `system`). */
+const isDark = ref(true)
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
+
+const applyAppearance = () => {
+  const dark =
+    appearance.value === 'system'
+      ? systemDark.matches
+      : appearance.value === 'dark'
+  isDark.value = dark
+  const root = document.documentElement
+  root.classList.toggle('dark', dark)
+  root.style.colorScheme = dark ? 'dark' : 'light'
+}
+
+systemDark.addEventListener('change', () => {
+  if (appearance.value === 'system') applyAppearance()
+})
 
 export const useTheme = () => {
-  const appStore = useAppStore()
-  const getAppTheme = () => document.documentElement.dataset.theme
-  const getCssVar = (varKey: string) => {
-    const root = getComputedStyle(document.documentElement)
-    return root.getPropertyValue(`--${varKey}`).trim()
+  /** Apply an accent palette (`settings.general.theme`). */
+  const setTheme = (theme?: string) => {
+    accent.value = isAccentTheme(theme) ? theme : defaultAccentTheme
+    document.documentElement.dataset.accent = accent.value
   }
 
-  const generateNaiveTheme = (): GlobalThemeOverrides => ({
-    common: {
-      baseColor: getCssVar('base'),
-      primaryColor: getCssVar('primary'),
-      primaryColorHover: getCssVar('primary'),
-      primaryColorPressed: getCssVar('secondary'),
-      // hoverColor: getCssVar('primary'),
-    },
-    Button: {
-      borderHover: `1px solid ${getCssVar('primary')}`,
-
-      textColor: getCssVar('base'),
-      textColorPrimary: getCssVar('tertiary-bg'),
-      textColorHoverPrimary: getCssVar('tertiary-bg'),
-
-      colorHover: getCssVar('primary'),
-      textColorHover: getCssVar('dark'),
-    },
-  })
-
-  const setTheme = async (theme: string) => {
-    if (!theme) theme = 'picportal'
-    document.documentElement.dataset.theme = theme
-    // Initial settings can arrive before stylesheets (including @imports) load.
-    if (document.readyState !== 'complete') {
-      await new Promise<void>((resolve) => window.addEventListener('load', () => resolve(), { once: true }))
-    }
-    appStore.theme = generateNaiveTheme()
+  /** Apply dark / light / system (`settings.general.appearance`). */
+  const setAppearance = (mode?: string) => {
+    appearance.value = isAppearance(mode) ? mode : defaultAppearance
+    applyAppearance()
   }
-  const defaultTheme = () => {
-    document.documentElement.dataset.theme = 'picportal'
-    appStore.theme = generateNaiveTheme()
+
+  const applySettings = (general?: { theme?: string; appearance?: string }) => {
+    setTheme(general?.theme)
+    setAppearance(general?.appearance)
   }
 
   return {
-    getAppTheme,
-    getCssVar,
+    accent,
+    appearance,
+    isDark,
     setTheme,
-    defaultTheme,
-    generateNaiveTheme,
+    setAppearance,
+    applySettings,
   }
 }

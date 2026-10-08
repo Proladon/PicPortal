@@ -1,103 +1,102 @@
 <template>
-  <div class="portal-group" v-if="showPortalGroup">
-    <section class="group-header">
-      <div class="flex flex-1 items-center gap-2" @click="expandGroup">
-        <n-badge color="#91B4C0" dot v-if="groupActivedPortalsCount" />
-        <n-ellipsis>
-          <span class="font-bold">{{ groupData.group }}</span>
-        </n-ellipsis>
-      </div>
-
-      <div class="controls-icon">
-        <n-button text v-if="!appStore.readOnly">
-          <n-icon size="20" @click="showPortalTagModal = true"><Add /></n-icon>
-        </n-button>
-
-        <n-popover
-          v-if="!appStore.readOnly"
-          raw
-          trigger="click"
-          placement="bottom-end"
-          :show="showPopOver"
-          @update:show="updatePopOver"
+  <div class="portal-group flex flex-col" v-if="showPortalGroup">
+    <section
+      class="group-header group/header flex h-8 cursor-pointer items-center gap-0.5 rounded-md pr-1 transition-colors hover:bg-accent/70"
+    >
+      <button
+        type="button"
+        class="group-toggle flex h-full min-w-0 flex-1 items-center gap-1.5 pl-1 text-left text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring/50 rounded-md"
+        :aria-expanded="isExpanded"
+        @click="expandGroup"
+      >
+        <ChevronRight
+          class="size-4 shrink-0 text-muted-foreground transition-transform duration-200"
+          :class="{ 'rotate-90': isExpanded }"
+        />
+        <span class="truncate">{{ groupData.group }}</span>
+        <span
+          class="shrink-0 text-xs font-normal text-muted-foreground tabular-nums"
         >
-          <template #trigger>
-            <n-button text>
-              <n-icon size="15">
-                <MenuSharp />
-              </n-icon>
-            </n-button>
-          </template>
+          {{ groupData.childs.length }}
+        </span>
+        <span
+          v-if="groupActivedPortalsCount"
+          class="ml-0.5 inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground tabular-nums"
+        >
+          {{ groupActivedPortalsCount }}
+        </span>
+      </button>
 
-          <!-- PopOver Content -->
-          <section class="py-2">
-            <div
-              class="portal-group-popover-item"
-              @click=";(listView = 'list'), (showPopOver = false)"
+      <div
+        v-if="!appStore.readOnly"
+        class="controls-icon flex shrink-0 items-center"
+      >
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              class="add-portal-btn text-muted-foreground"
+              variant="ghost"
+              size="icon-xs"
+              :aria-label="t('portalPane.portalGroup.addPortal')"
+              @click.stop="showPortalTagModal = true"
             >
-              <n-icon>
-                <ListSharp />
-              </n-icon>
-              <span>{{ translate('portalPane.portalGroup.view.list') }}</span>
-            </div>
-            <div
-              class="portal-group-popover-item"
-              @click=";(listView = 'grid'), (showPopOver = false)"
-            >
-              <n-icon>
-                <Grid />
-              </n-icon>
-              <span>{{ translate('portalPane.portalGroup.view.grid') }}</span>
-            </div>
-            <n-divider class="!my-2" />
-            <div
-              class="portal-group-popover-item"
-              @click="randomGroupPortalColor(groupData.id)"
-            >
-              <n-icon>
-                <ColorFill />
-              </n-icon>
-              <span>{{ translate('portalPane.portalGroup.randomColor') }}</span>
-            </div>
-            <div class="portal-group-popover-item">
-              <n-icon>
-                <ColorFill />
-              </n-icon>
-              <span>{{ translate('portalPane.portalGroup.syncColor') }}</span>
-            </div>
+              <Plus />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{{
+            t('portalPane.portalGroup.addPortal')
+          }}</TooltipContent>
+        </Tooltip>
 
-            <div
-              @click="openPortalGroupModal"
-              class="portal-group-popover-item"
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button
+              class="text-muted-foreground"
+              variant="ghost"
+              size="icon-xs"
+              :aria-label="t('portalPane.portalGroup.actions')"
+              @click.stop
             >
-              <n-icon>
-                <PencilSharp />
-              </n-icon>
-              <span>{{ translate('portalPane.portalGroup.rename') }}</span>
-            </div>
-
-            <div
-              @click="deleteGroup(groupData.id)"
-              class="portal-group-popover-item"
+              <Ellipsis />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="w-44">
+            <DropdownMenuLabel>{{
+              t('portalPane.portalGroup.view.label')
+            }}</DropdownMenuLabel>
+            <DropdownMenuRadioGroup v-model="listView">
+              <DropdownMenuRadioItem value="list">
+                <List />
+                {{ t('portalPane.portalGroup.view.list') }}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="grid">
+                <LayoutGrid />
+                {{ t('portalPane.portalGroup.view.grid') }}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem @select="randomGroupPortalColor(groupData.id)">
+              <Shuffle />
+              {{ t('portalPane.portalGroup.randomColor') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled>
+              <Paintbrush />
+              {{ t('portalPane.portalGroup.syncColor') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem @select="openPortalGroupModal">
+              <Pencil />
+              {{ t('portalPane.portalGroup.rename') }}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              @select="showDeleteConfirm = true"
             >
-              <n-icon>
-                <TrashBinOutline />
-              </n-icon>
-              <span>{{ translate('common.delete') }}</span>
-            </div>
-          </section>
-        </n-popover>
-
-        <n-button text :type="expand ? 'primary' : 'default'">
-          <n-icon
-            size="20"
-            v-if="groupData.childs.length"
-            @click="expandGroup"
-            :class="{ unexpend: !expand }"
-          >
-            <CaretDown />
-          </n-icon>
-        </n-button>
+              <Trash2 />
+              {{ t('common.delete') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </section>
 
@@ -111,13 +110,16 @@
       :support-pointer="false"
       handle=".portal-name"
       :disabled="appStore.readOnly"
-      :class="{
-        'list-view': listView === 'list',
-        'grid-view': listView === 'grid',
-      }"
+      :class="[
+        isExpanded ? 'pt-1 pb-2' : 'py-0.5',
+        {
+          'list-view flex flex-col gap-1 pl-6': listView === 'list',
+          'grid-view grid grid-cols-2 gap-1 pl-6': listView === 'grid',
+        },
+      ]"
     >
       <template #item="{ element }">
-        <div v-if="expand">
+        <div v-if="isExpanded" class="min-w-0">
           <PortalTag
             :key="element.id"
             :data="element"
@@ -126,6 +128,12 @@
         </div>
       </template>
     </draggable>
+    <p
+      v-if="isExpanded && !groupData.childs.length"
+      class="pb-2 pl-7 text-xs text-muted-foreground"
+    >
+      {{ t('portalPane.empty.group') }}
+    </p>
 
     <!-- Modal -->
     <PortalGroupModal
@@ -141,49 +149,80 @@
       v-if="showPortalTagModal"
       @close="showPortalTagModal = false"
     />
+
+    <ConfirmDialog
+      v-if="showDeleteConfirm"
+      :title="t('portalPane.portalGroup.deleteTitle')"
+      :content="
+        t('portalPane.portalGroup.deleteContent', { name: groupData.group })
+      "
+      :confirm-text="t('common.delete')"
+      @close="showDeleteConfirm = false"
+      @confirm="deleteGroup(groupData.id)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { PropType } from 'vue'
 import draggable from 'vuedraggable'
-import PortalGroupModal from './Modal/PortalGroupModal.vue'
-import { NButton, NIcon, NEllipsis, NPopover, NBadge, NDivider } from 'naive-ui'
-import {
-  Add,
-  CaretDown,
-  MenuSharp,
-  TrashBinOutline,
-  PencilSharp,
-  ColorFill,
-  ListSharp,
-  Grid,
-} from '@vicons/ionicons5'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import {
+  ChevronRight,
+  Ellipsis,
+  LayoutGrid,
+  List,
+  Paintbrush,
+  Pencil,
+  Plus,
+  Shuffle,
+  Trash2,
+} from '@lucide/vue'
+import PortalGroupModal from './Modal/PortalGroupModal.vue'
 import PortalTag from './PortalTag.vue'
 import PortalTagModal from './Modal/PortalTagModal.vue'
-import { filter, findIndex, find, random } from 'lodash-es'
+import ConfirmDialog from '/@/components/ConfirmDialog.vue'
+import { Button } from '/@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '/@/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '/@/components/ui/tooltip'
+import { filter, findIndex, random } from 'lodash-es'
 import { dataClone } from '/@/utils/data'
 import { useAppStore } from '/@/store/appStore'
 import { usePortalPaneStore } from '/@/store/portalPaneStore'
-import useLocale from '/@/use/locale'
 // --- Data ---
 const props = defineProps({
   groupData: { type: Object as PropType<PortalGroup>, required: true },
 })
 const appStore = useAppStore()
 const portalPaneStore = usePortalPaneStore()
-const { translate } = useLocale()
+const { t } = useI18n()
 const listView = ref('grid')
 const expand = ref(false)
-const showPopOver = ref(false)
 const showPortalTagModal = ref(false)
 const showPortalGroupModal = ref(false)
+const showDeleteConfirm = ref(false)
 
 // --- Computed ---
 const portalsData = computed(() => portalPaneStore.portals)
 const activePortals = computed(() => portalPaneStore.activePortals)
 const searchPortalName = computed(() => portalPaneStore.searchPortalName)
+const isExpanded = computed(
+  () => expand.value || Boolean(searchPortalName.value)
+)
 const groupActivedPortalsCount = computed(() => {
   const groupId = props.groupData.id
   const activeds = activePortals.value
@@ -219,12 +258,10 @@ const showPortalGroup = computed(() => {
 
 const openPortalGroupModal = () => {
   showPortalGroupModal.value = true
-  showPopOver.value = false
 }
 
 const expandGroup = async () => {
-  // if (!props.groupData.childs.length) return
-  expand.value = !expand.value
+  expand.value = !isExpanded.value
 }
 
 // => 刪除 portalGroup
@@ -248,10 +285,6 @@ const deleteGroup = async (groupId: any) => {
   }
 }
 
-const updatePopOver = (show: boolean) => {
-  showPopOver.value = show
-}
-
 const randomGroupPortalColor = async (groupId: string) => {
   const protals: PortalGroup[] = dataClone(portalsData.value)
   const groupIndex = findIndex(protals, { id: groupId })
@@ -262,42 +295,5 @@ const randomGroupPortalColor = async (groupId: string) => {
   })
   await appStore.SaveToDB({ key: 'portals', data: protals })
   await appStore.SyncDBDataToState({ syncKeys: ['portals'] })
-  updatePopOver(false)
 }
 </script>
-
-<style lang="postcss" scoped>
-.portal-group {
-  @apply flex flex-col text-base;
-  @apply border border-1 border-transparent;
-}
-
-.group-header {
-  @apply flex items-center justify-between cursor-pointer;
-
-  .controls-icon {
-    @apply flex flex-shrink-0 items-center gap-1;
-  }
-}
-
-.list-view {
-  @apply text-left py-2 pl-7;
-  @apply flex flex-col gap-3;
-}
-
-.grid-view {
-  @apply grid grid-cols-2 gap-3 pl-7 py-2;
-}
-
-.unexpend {
-  @apply transform rotate-270;
-}
-
-.portal-group-popover-item {
-  @apply flex items-center gap-2 cursor-pointer px-3;
-  @apply hover:(text-dark bg-primary);
-}
-.portal-group-popover-item:hover span {
-  @apply text-dark;
-}
-</style>

@@ -14,7 +14,15 @@ export default () => {
   const portalPaneStore = usePortalPaneStore()
   const appStore = useAppStore()
   let disposed = false
+  // Esc closes popovers / dialogs first; only clear portals when none is open.
+  const hasOpenLayer = () =>
+    Boolean(
+      document.querySelector(
+        '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]'
+      )
+    )
   const clearPortals = (event: KeyboardEvent) => {
+    if (hasOpenLayer()) return
     event.preventDefault()
     portalPaneStore.ResetActivePortal()
   }

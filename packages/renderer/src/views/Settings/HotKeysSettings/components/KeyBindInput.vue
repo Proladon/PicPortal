@@ -1,17 +1,16 @@
 <template>
-  <div>
-    <n-input
-      readonly
-      v-model:value="syncModel"
-      placeholder="press key"
-      :on-focus="initEvents"
-      :on-blur="destroyEvents"
-    />
-  </div>
+  <Input
+    readonly
+    :model-value="syncModel"
+    placeholder="press key"
+    class="font-mono text-xs"
+    @focus="initEvents"
+    @blur="destroyEvents"
+  />
 </template>
 
 <script setup lang="ts">
-import { NInput } from 'naive-ui'
+import { Input } from '/@/components/ui/input'
 import { ref } from 'vue'
 import { get } from 'lodash-es'
 import { computed } from 'vue'
@@ -77,5 +76,3 @@ const destroyEvents = (e: FocusEvent) => {
   target.removeEventListener('keyup', keyupHandler)
 }
 </script>
-
-<style scoped lang="postcss"></style>

@@ -1,10 +1,34 @@
 <template>
-  <n-spin :show="loading" class="w-full h-full">
-    <div class="settings">
-      <div class="pane left">
-        <n-menu v-model:value="activeTab" :options="menuOptions" />
+  <div class="settings relative flex h-full">
+    <aside class="settings-nav flex w-56 shrink-0 flex-col gap-1 border-r p-4">
+      <div class="mb-3 px-2">
+        <h1 class="text-lg font-semibold tracking-tight">
+          {{ t('settings.title') }}
+        </h1>
+        <p class="text-xs text-muted-foreground">
+          {{ t('settings.description') }}
+        </p>
       </div>
-      <div class="pane right" v-if="loaded">
+      <button
+        v-for="item in menuOptions"
+        :key="item.key"
+        type="button"
+        class="flex h-8 items-center gap-2 rounded-md px-2 text-sm transition-colors"
+        :class="
+          activeTab === item.key
+            ? 'bg-accent font-medium text-accent-foreground'
+            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+        "
+        :data-key="item.key"
+        @click="activeTab = item.key"
+      >
+        <component :is="item.icon" class="size-4" />
+        {{ item.label }}
+      </button>
+    </aside>
+
+    <div class="min-w-0 flex-1 overflow-y-auto">
+      <div v-if="loaded" class="mx-auto max-w-2xl px-8 pt-7 pb-24">
         <GeneralSettings
           v-if="activeTab === 'general'"
           v-model:model="formData.general"
@@ -19,22 +43,30 @@
         /> -->
       </div>
     </div>
-  </n-spin>
 
-  <SaveDialog
-    v-if="showSave"
-    @cancel=";(showSave = false), reset()"
-    @save="save"
-  />
+    <div
+      v-if="loading"
+      class="loading-overlay absolute inset-0 flex items-center justify-center bg-background/60"
+    >
+      <Spinner class="size-6 text-muted-foreground" />
+    </div>
+
+    <SaveDialog
+      v-if="showSave"
+      @cancel=";(showSave = false), reset()"
+      @save="save"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { NMenu, NSpin } from 'naive-ui'
 import SaveDialog from './components/SaveDialog.vue'
 import GeneralSettings from './GeneralSettings/GeneralSettings.vue'
-import HotKeysSettings from './HotKeysSettings/HotKeysSettings.vue'
 import ViewerSettings from './ViewerSettings/ViewerSettings.vue'
 import { reactive, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Images, SlidersHorizontal } from '@lucide/vue'
+import { Spinner } from '/@/components/ui/spinner'
 import { useDesktop } from '/@/desktop'
 import { reportDesktopError } from '/@/desktop/status'
 import { createDefaultSettings, getSettings } from '/@/use/settings'
@@ -47,15 +79,15 @@ import { watch } from 'vue'
 import { dataClone } from '/@/utils/data'
 import { useTheme } from '/@/use/theme'
 
-const { setTheme } = useTheme()
-const { translate, changeLocale } = useLocale()
+const { applySettings } = useTheme()
+const { t } = useI18n()
+const { changeLocale } = useLocale()
 const { userStore } = useDesktop()
 
 const activeTab = ref('general')
 const showSave = ref(false)
 const loading = ref(false)
 const loaded = ref(false)
-const menuOptions = ref()
 const formData = reactive(createDefaultSettings())
 const config = ref<any>(null)
 
@@ -70,20 +102,14 @@ watch(
   { deep: true }
 )
 
-const generateMenu = () => {
-  const menu = [
-    {
-      label: translate('settings.general.title'),
-      key: 'general',
-    },
-    { label: 'Viewer', key: 'viewer' },
-    // {
-    //   label: 'HotKeys',
-    //   key: 'hotkeys',
-    // },
-  ]
-  menuOptions.value = menu
-}
+const menuOptions = computed(() => [
+  {
+    label: t('settings.general.title'),
+    key: 'general',
+    icon: SlidersHorizontal,
+  },
+  { label: t('settings.viewer.title'), key: 'viewer', icon: Images },
+])
 
 const save = async () => {
   if (!loaded.value) return
@@ -101,13 +127,13 @@ const save = async () => {
 const reset = () => {
   const data = config.value
   Object.assign(formData, dataClone(data))
-  setTheme(formData.general.theme)
+  applySettings(formData.general)
 }
 
 const syncUserConfig = async () => {
   const settings = await getSettings()
   changeLocale(settings.general.locale)
-  setTheme(settings.general.theme)
+  applySettings(settings.general)
 
   // const cloneSettings =
   Object.assign(formData, dataClone(settings))
@@ -115,15 +141,17 @@ const syncUserConfig = async () => {
   useViewerStore().SET_PORTAL_PANEL_POSITION(
     settings.viewer.portalPanelPosition
   )
-  generateMenu()
 }
 
 const unregisterSave = registerSettingsSave(save)
-onUnmounted(unregisterSave)
+onUnmounted(() => {
+  // Leaving without saving drops the live theme preview.
+  if (showSave.value && config.value) applySettings(config.value.general)
+  unregisterSave()
+})
 
 onMounted(async () => {
   loading.value = true
-  generateMenu()
   try {
     await syncUserConfig()
     loaded.value = true
@@ -134,17 +162,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style lang="postcss" scoped>
-.settings {
-  @apply flex gap-[30px] w-full p-[30px];
-}
-
-.pane {
-  @apply w-full;
-}
-
-.left {
-  @apply w-[300px];
-}
-</style>

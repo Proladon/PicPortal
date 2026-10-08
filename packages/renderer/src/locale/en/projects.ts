@@ -1,29 +1,58 @@
 export default {
-  pageTitle: 'Project',
+  pageTitle: 'Projects',
+  description: 'Pick a project to start sorting images',
+  count: '{count} projects',
   import: 'Import Project',
+  openExisting: 'Open project (.db)',
+  importElectron: 'Import Electron settings',
   newProject: 'New Project',
+  dropHint: 'Drop a .db project file here to open it',
+  empty: {
+    title: 'No projects yet',
+    description: 'Create a new project or open an existing project file.',
+  },
+  card: {
+    edit: 'Edit project',
+    delete: 'Delete project',
+    current: 'Current',
+  },
   notify: {
-    notFoundProject: '專案檔已不存在',
-    deleteSuccess: '專案已刪除',
-    updateSuccess: '專案已更新',
-    importSuccess: '專案已導入',
-    createSuccess: '專案已建立'
+    notFoundProject: 'Project file no longer exists',
+    deleteSuccess: 'Project deleted',
+    updateSuccess: 'Project updated',
+    importSuccess: 'Project imported',
+    createSuccess: 'Project created',
+    busy: 'Finish the batch job and resolve conflicts first',
+    settingsImported:
+      'Settings imported: {count} projects added; existing settings were kept',
   },
   deleteProject: {
-    title: 'Warning',
-    content: 'Confirm delete project'
+    title: 'Delete project',
+    content:
+      'Remove "{name}" from the list? The project file itself is not deleted.',
   },
   editProject: {
     title: 'Edit Project',
+    importTitle: 'Import Project',
     import: 'Import',
-    update: 'Update'
+    update: 'Update',
   },
   createProject: {
     title: 'Create New Project',
+    description: 'The project file (.db) stores your portals and image links.',
     create: 'Create',
+    fields: {
+      name: 'Project name',
+      path: 'Location',
+      color: 'Label color',
+    },
     placeholder: {
       projectName: 'Input project name',
-      projectPath: 'Select project path'
-    }
-  }
+      projectPath: 'Select project path',
+    },
+    validation: {
+      name: 'Project name is required',
+      path: 'Project path is required',
+    },
+  },
 }
