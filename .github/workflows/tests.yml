@@ -37,7 +37,6 @@ jobs:
       - run: npm run version:check
       - run: npm run typecheck
       - run: npm run lint -- --quiet
-      - run: npm run test:desktop
       - run: npm run test:tauri-adapter
       - run: npm run test:batch
       - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
@@ -57,12 +56,6 @@ jobs:
         run: npm run test:tauri-installer
       - name: Build distributable with normal application identity
         run: npm run build:installer
-      - name: Preserve Electron fallback
-        run: |
-          npm run build:electron
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          npm run test:baseline
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: picportal-windows-x64

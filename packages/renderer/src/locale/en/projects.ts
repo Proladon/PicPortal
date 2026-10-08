@@ -2,7 +2,6 @@ export default {
   pageTitle: 'Projects',
   description: 'Pick a project to start sorting images',
   count: '{count} projects',
-  import: 'Import Project',
   openExisting: 'Open project (.db)',
   importElectron: 'Import Electron settings',
   newProject: 'New Project',
@@ -20,7 +19,6 @@ export default {
     notFoundProject: 'Project file no longer exists',
     deleteSuccess: 'Project deleted',
     updateSuccess: 'Project updated',
-    importSuccess: 'Project imported',
     createSuccess: 'Project created',
     busy: 'Finish the batch job and resolve conflicts first',
     settingsImported:
@@ -33,8 +31,6 @@ export default {
   },
   editProject: {
     title: 'Edit Project',
-    importTitle: 'Import Project',
-    import: 'Import',
     update: 'Update',
   },
   createProject: {

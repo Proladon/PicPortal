@@ -13,7 +13,7 @@
           v-model:path="formData.path"
           v-model:color="formData.color"
           :errors="errors"
-          :path-readonly="desktop.runtime === 'tauri'"
+          path-readonly
           @browse="browseFolder"
         />
         <DialogFooter>
@@ -54,11 +54,10 @@ import { useDesktop } from '/@/desktop'
 import { saveProjectDialog } from '/@/utils/browserDialog'
 import { useModal } from '/@/use/modal'
 
-const emit = defineEmits(['refresh', 'close', 'created'])
+const emit = defineEmits(['close', 'created'])
 
 // ANCHOR Use
-const desktop = useDesktop()
-const { fileSystem, userStore } = desktop
+const { fileSystem, userStore } = useDesktop()
 const { t } = useI18n()
 const { showModal, updateModalShow } = useModal(emit)
 // ANCHOR Data
@@ -122,8 +121,7 @@ const createNewProject = async () => {
     nextProjects.push(newProject)
     await userStore.set('projects', nextProjects)
     toast.success(t('projects.notify.createSuccess'), { duration: 1500 })
-    if (desktop.runtime === 'tauri') emit('created', newProject)
-    else emit('refresh')
+    emit('created', newProject)
     updateModalShow(false)
   } finally {
     submitting.value = false

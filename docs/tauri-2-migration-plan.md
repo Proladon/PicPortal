@@ -1,7 +1,7 @@
 # PicPortal 遷移至 Tauri 2 執行規劃
 
 建立日期：2026-10-07  
-狀態：階段 6 已加入 Windows CI、release 自動測試、NSIS 安裝／解除安裝驗證與手動草稿發布流程；本機驗證通過。GitHub CI 真正執行、乾淨環境／WebView2 分支、更新簽章與流程及效能比較仍待完成。2026-10-08 使用者決定先完成 CI 與安裝包，updater 留待後續設定；不進入階段 7。外部資料夾與 `.db` 拖入沿用延期例外，不將延期視為通過。詳見 [實作紀錄](./tauri-2-migration-progress.md)與 [Windows 交付說明](./tauri-windows-release.md)。下列核取方塊代表實作驗收，不代表文件完成度。
+狀態：階段 7 已移除 Electron，專案只使用 Tauri 2。2026-10-08 使用者決定在里程碑 D 未完成時進入階段 7；GitHub CI 真正執行、乾淨環境／WebView2 分支、更新簽章與流程及效能比較仍待完成，updater 留待後續設定。外部資料夾與 `.db` 拖入沿用延期例外，不將延期視為通過。詳見 [實作紀錄](./tauri-2-migration-progress.md)與 [Windows 交付說明](./tauri-windows-release.md)。下列核取方塊代表實作驗收，不代表文件完成度。
 
 ## 目標與範圍
 
@@ -15,7 +15,7 @@
 - 採用實作時確認相容的 Tauri 2.x 穩定版本，固定依賴與 lockfile，不限定最初的 2.0.0。
 - 這份規劃不包含行動版、UI 重設計、SQLite 遷移、縮圖快取或大規模前端套件升級。
 
-遷移期間保留 Electron 作為行為比對與回退入口。兩種執行環境使用資料副本驗收，避免同時寫入同一份專案。
+遷移期間（階段 0–6）保留 Electron 作為行為比對與回退入口；階段 7 已移除。兩種執行環境使用資料副本驗收，避免同時寫入同一份專案。
 
 ## 現況與替換方向
 
@@ -208,6 +208,8 @@ Tauri 的開發伺服器與前端產物透過 `devUrl`、`beforeDevCommand`、`f
 
 **進入條件：里程碑 D 完成，Tauri 日常操作與安裝／更新流程通過驗收。**
 
+2026-10-08 使用者指示「移除 Electron，進行階段 7」。里程碑 D 尚未完成（GitHub CI 真正執行、乾淨環境、更新流程、效能比較），依使用者決定作為例外進入；這些項目沒有因移除 Electron 而視為通過。
+
 **工作內容**
 
 - 移除 Electron adapter、`useElectron()`、bridge 型別、`packages/main` 與 `packages/preload`。
@@ -219,10 +221,12 @@ Tauri 的開發伺服器與前端產物透過 `devUrl`、`beforeDevCommand`、`f
 
 **驗收條件／最終完成定義**
 
-- [ ] 應用原始碼、執行依賴與生效的 CI／scripts 不再需要 Electron；歷史紀錄與本規劃中的說明不算殘留。
-- [ ] 從乾淨 checkout 依文件可安裝依賴、開發啟動、檢查與打包，不需要 Electron 或 Node.js sidecar。
-- [ ] 清理後重新執行完整檢查與 Windows 安裝 smoke test，結果通過。
+- [x] 應用原始碼、執行依賴與生效的 CI／scripts 不再需要 Electron；歷史紀錄與本規劃中的說明不算殘留。
+- [x] 從乾淨 checkout 依文件可安裝依賴、開發啟動、檢查與打包，不需要 Electron 或 Node.js sidecar。
+- [x] 清理後重新執行完整檢查與 Windows 安裝 smoke test，結果通過。
 - [ ] 舊專案、設定匯入、分類儲存、批次作業、拖曳與更新的驗收紀錄齊全。
+
+2026-10-08：前三項在 Windows 本機驗證（GitHub CI 尚未對此變更執行）。第四項維持未完成：外部拖入延期、更新流程未設定。詳見[實作紀錄](./tauri-2-migration-progress.md#階段-7移除-electron)。
 
 ## 主要風險與處理
 

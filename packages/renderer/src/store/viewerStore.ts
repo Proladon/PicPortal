@@ -208,17 +208,14 @@ export const useViewerStore = defineStore('viewer', {
           filter(dockings, (i: any) => i.portals.length),
           'target'
         )
-        if (useDesktop().runtime === 'tauri') {
-          const scanned = new Map<string, string>(
-            files.map((file: string) => [filePathKey(file), file])
-          )
-          return res.flatMap((target: string) =>
-            scanned.get(filePathKey(target))
-              ? [scanned.get(filePathKey(target))!]
-              : []
-          )
-        }
-        return res
+        const scanned = new Map<string, string>(
+          files.map((file: string) => [filePathKey(file), file])
+        )
+        return res.flatMap((target: string) =>
+          scanned.get(filePathKey(target))
+            ? [scanned.get(filePathKey(target))!]
+            : []
+        )
       }
       return files
     },

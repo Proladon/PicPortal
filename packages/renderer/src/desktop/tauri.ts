@@ -181,7 +181,6 @@ export function createTauriAdapter(): DesktopApi {
         fileSystem: fileSystem(() => captured),
       }
     },
-    runtime: 'tauri',
     platform,
     initialize() {
       initialization ||= Promise.all([
@@ -238,6 +237,5 @@ export function createTauriAdapter(): DesktopApi {
       finishClose: () => invoke('desktop_finish_close'),
     },
     toImageUrl: (path) => (path ? convertFileSrc(path) : ''),
-    getDroppedPaths: () => [],
   }
 }

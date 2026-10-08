@@ -9,7 +9,9 @@ async function main() {
     const output = path.join(dataset.root, 'tauri.cjs')
     await build({ stdin: { contents: `export { useDesktop } from './packages/renderer/src/desktop'; export { mockIPC, mockWindows, clearMocks } from '@tauri-apps/api/mocks'`, resolveDir: process.cwd(), loader: 'ts' }, outfile: output, bundle: true, platform: 'node', format: 'cjs' })
     const { useDesktop, mockIPC, mockWindows, clearMocks } = require(output)
+    assert.throws(() => useDesktop(), /DESKTOP_UNAVAILABLE/)
     global.window = { crypto: require('crypto').webcrypto, devicePixelRatio: 2 }
+    assert.throws(() => useDesktop(), /DESKTOP_UNAVAILABLE/, 'A plain browser must not get a desktop adapter')
     global.isTauri = true
     mockWindows('main')
     const commands = []
@@ -45,7 +47,7 @@ async function main() {
     }, { shouldMockEvents: true })
     window.__TAURI_INTERNALS__.convertFileSrc = (file) => `asset://${encodeURIComponent(file)}`
     const desktop = useDesktop()
-    assert.equal(desktop.runtime, 'tauri')
+    assert.strictEqual(useDesktop(), desktop)
     const first = desktop.initialize()
     assert.strictEqual(desktop.initialize(), first)
     await first
@@ -117,7 +119,6 @@ async function main() {
     assert.equal(closes,1)
     await desktop.appWindow.finishClose()
     assert.equal(commands.at(-1)[0],'desktop_finish_close')
-    assert.deepEqual(desktop.getDroppedPaths([{ path: 'not-trusted' }]), [])
     clearMocks()
     console.log('PASS Tauri adapter: runtime selection, initialization, window controls, versions, URLs, persistence barrier, native drops and close lifecycle')
   } finally {

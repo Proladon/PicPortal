@@ -1,9 +1,6 @@
 <template>
   <header
     class="title-bar flex h-9 shrink-0 select-none items-center border-b border-sidebar-border bg-sidebar text-sidebar-foreground"
-    :style="
-      desktop.runtime === 'electron' ? '-webkit-app-region: drag' : undefined
-    "
     @mousedown="dragWindow"
   >
     <section
@@ -67,12 +64,10 @@ import { useAppStore } from '/@/store/appStore'
 
 const { t } = useI18n()
 const appStore = useAppStore()
-const desktop = useDesktop()
-const { appWindow } = desktop
+const { appWindow } = useDesktop()
 
 const dragWindow = async (event: MouseEvent) => {
-  if (desktop.runtime === 'tauri' && event.button === 0)
-    await appWindow.startDragging()
+  if (event.button === 0) await appWindow.startDragging()
 }
 
 const closeWin = async () => {

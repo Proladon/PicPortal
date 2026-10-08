@@ -69,10 +69,6 @@ export async function finishClose(save: boolean): Promise<void> {
   }
 }
 export async function subscribeClose(): Promise<() => void> {
-  if (useDesktop().runtime !== 'tauri')
-    return () => {
-      /* Electron handles native close. */
-    }
   return useDesktop().onCloseRequested(() => {
     if (closing.value || closeWaiting.value) return
     if (settingsDirty.value || useViewerStore().wrap.wraping)
